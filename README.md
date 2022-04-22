@@ -1,13 +1,13 @@
 ![Coze](web/coze_logo_zami_white_450x273.png)
 # Coze js
 
+Please see the Coze README in the [Go project's readme.](https://github.com/Cyphrme/Coze)
 
 For your project use `coze.min.js`.
 
-For the main Coze README, see the [Go project's readme.](https://github.com/Cyphrme/Coze)
 
-
-# How to Build
+# Developing Coze js
+## How to Build
 1. Install esbuild.
 2. Run the commands below. 
 
