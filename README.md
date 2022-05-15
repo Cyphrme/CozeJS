@@ -1,7 +1,9 @@
+# ⚠️ COZE IS IN PRE-ALPHA AND HAS SECURITY CONCERNS.  USE AT YOUR OWN RISK ⚠️
+
 ![Coze](web/coze_logo_zami_white_450x273.png)
 # Coze js
 
-Please see the Coze README in the [Go project's readme.](https://github.com/Cyphrme/Coze)
+Please see the README in the [Go project.](https://github.com/Cyphrme/Coze)
 
 For your project use `coze.min.js`.
 
@@ -26,7 +28,7 @@ Create the Coze distribution file.
 esbuild join.js --bundle --format=esm --minify --outfile=coze.min.js
 ```
 
-If developing we find the human readable join file useful.
+When developing we find the human readable join file useful.
 
 ```
 esbuild join.js --bundle --format=esm --outfile=coze.join.js

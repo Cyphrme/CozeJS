@@ -61,8 +61,8 @@ var CryptoKey = {
 		var jwk = {};
 		jwk.use = "sig";
 		//jwk.key_ops = ["sign", "verify"]; // Don't appear to need this anymore in Chrome.  
-		jwk.x = await BSCNV.HexTob64UT(cozeKey.x);
-		jwk.y = await BSCNV.HexTob64UT(cozeKey.y);
+		jwk.x = await BSCNV.HexTob64ut(cozeKey.x);
+		jwk.y = await BSCNV.HexTob64ut(cozeKey.y);
 		jwk.crv = Enum.Curve(cozeKey.alg);
 		jwk.kty = "EC";
 
@@ -73,7 +73,7 @@ var CryptoKey = {
 			var signOrVerify = "verify";
 		} else {
 			signOrVerify = "sign";
-			jwk.d = await BSCNV.HexTob64UT(cozeKey.d);
+			jwk.d = await BSCNV.HexTob64ut(cozeKey.d);
 		}
 
 		var cryptoKey = await crypto.subtle.importKey(
@@ -232,16 +232,16 @@ var CryptoKey = {
 		// Key components for a ECDSA keys. 
 		// Convert "RFC 4648 base64 URL Safe Truncated" to Hex.  
 		// ECDSA and Ed have x
-		cz.x = BSCNV.B64UTToHex(exported.x);
+		cz.x = BSCNV.B64ToHex(exported.x);
 
 		// Only private ECDSA keys have `d`.
 		if (exported.hasOwnProperty('d')) {
-			cz.d = BSCNV.B64UTToHex(exported.d);
+			cz.d = BSCNV.B64ToHex(exported.d);
 		}
 
 		// In case of future support: Ed does not have `y` and only uses `x`.  
 		if (exported.hasOwnProperty('y')) {
-			cz.y = BSCNV.B64UTToHex(exported.y);
+			cz.y = BSCNV.B64ToHex(exported.y);
 		}
 
 		cz.tmb = await CozeKey.Thumbprint(cz);

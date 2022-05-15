@@ -1,15 +1,15 @@
 "use strict";
 
-import * as Can   from './canon.js'; // import as "Can" since func "Canon" will conflict in `coze.join.js`. 
-import * as Enum  from './coze_enum.js';
-import * as CZK   from './coze_key.js';
-import * as CTK   from './cryptokey.js';
+import * as Can from './canon.js'; // import as "Can" since func "Canon" will conflict in `coze.join.js`. 
+import * as Enum from './coze_enum.js';
+import * as CZK from './coze_key.js';
+import * as CTK from './cryptokey.js';
 import * as BSCNV from './base_convert.js';
 
 export {
 	Sign,
 	SignCy,
-	
+
 	Verify,
 	VerifyCy,
 	VerifyCyArray,
@@ -27,7 +27,7 @@ export {
 // HeadCanon is the minimum required fields for a valid signed cy.head.
 // MsgCanon is the canon for the "msg" cy.  
 const HeadCanon = ["alg", "iat", "tmb", "typ"];
-const MsgCanon  = ["alg", "iat", "msg", "tmb", "typ"];
+const MsgCanon = ["alg", "iat", "msg", "tmb", "typ"];
 
 /**
 @typedef {import('./coze_key.js').CozeKey} CozeKey
@@ -67,7 +67,7 @@ cy is a signed or encrypted coze object.  See docs for more about `cy`.
  * @returns {Hex}                Hex `sig`.  Empty on invalid. 
  * @throws  error                invalid key/parse error.  
  */
- async function Sign(head, cozeKey, canon) {
+async function Sign(head, cozeKey, canon) {
 	head = await sanitize(head, cozeKey, canon);
 	return sign(head, cozeKey);
 }
@@ -86,15 +86,15 @@ cy is a signed or encrypted coze object.  See docs for more about `cy`.
  * @returns {cy}                   Cy.  Empty on invalid. 
  * @throws  error                  invalid key/parse error.  
  */
- async function SignCy(cy, cozeKey, canon) {
+async function SignCy(cy, cozeKey, canon) {
 	// Written like this, instead of calling just Sign(), because although JS
 	// objects are pass by reference, the order of keys does not change without
 	// resetting object (For example, `function reset(obj){obj={};}` does not
 	// reset `obj` because JS is "pass by sharing" and not true pass by reference
 	// for objects.)
 	let outCy = {};
-	outCy.head = await sanitize(cy.head,cozeKey,canon);
-	outCy.sig = await sign(outCy.head,cozeKey);
+	outCy.head = await sanitize(cy.head, cozeKey, canon);
+	outCy.sig = await sign(outCy.head, cozeKey);
 	return outCy;
 }
 
@@ -109,7 +109,7 @@ cy is a signed or encrypted coze object.  See docs for more about `cy`.
  * @returns {Hex}                      Hex `sig`.  Empty on invalid. 
  * @throws  error                      invalid key/parse error.  
  */
-async function sanitize(head, cozeKey, canon){
+async function sanitize(head, cozeKey, canon) {
 	if (isEmpty(cozeKey)) {
 		throw new Error("Coze: Key not set. ");
 	}
@@ -129,9 +129,9 @@ async function sanitize(head, cozeKey, canon){
  * @returns {Hex}                 Hex `sig`.  Empty on invalid. 
  * @throws  error                 invalid key/parse error.  
  */
-async function sign(obj, cozeKey){
+async function sign(obj, cozeKey) {
 	return CTK.CryptoKey.SignBufferToHex(
-		await CTK.CryptoKey.FromCozeKey(cozeKey), 
+		await CTK.CryptoKey.FromCozeKey(cozeKey),
 		await BSCNV.SToArrayBuffer(JSON.stringify(obj))
 	);
 }
@@ -146,21 +146,21 @@ async function sign(obj, cozeKey){
  * @return {boolean}             invalid key/parse error. 
  * @throws error
  */
- async function Verify(head, cozekey, sig) {
+async function Verify(head, cozekey, sig) {
 	return CTK.CryptoKey.VerifyABMsgSig(
-		await CTK.CryptoKey.FromCozeKeyToPublic(cozekey), 
-		await BSCNV.SToArrayBuffer(await Can.Canons(head)), 
+		await CTK.CryptoKey.FromCozeKeyToPublic(cozekey),
+		await BSCNV.SToArrayBuffer(await Can.Canons(head)),
 		await BSCNV.HexToArrayBuffer(sig)
 	);
 };
 
 /**
- * VerifyCy returns a boolean.  Object parameter `cy` must have `cy.head`
- * and optionally `cy.sig` and `cy.key`.
+ * VerifyCy returns a boolean.  Parameter `cy` must have `cy.head` and
+ * optionally `cy.sig` and `cy.key`.
  *
  * If parameters `pubkey` or `sig` are set they will respectively overwrite
  * `cy.key` and `cy.sig`.
- * @param  {cy}       cy           .
+ * @param  {cy}       cy           `cy` with optional `key` and/or `sig` set.  
  * @param  {CozeKey}  [cozekey]    CozeKey to use to validate the coze message. 
  * @param  {Sig}      [sig]        String.  Hex sig.   
  * @return {boolean}               Valid or not
@@ -168,9 +168,14 @@ async function sign(obj, cozeKey){
  */
 async function VerifyCy(cy, pubkey, sig) {
 	let p = await GetCyParts(cy, pubkey, sig);
+
+	if (p.head.tmb !== p.key.tmb) {
+		throw new Error("Coze.VerifyCy: head.tmb does not match key.tmb.");
+	}
+
 	return CTK.CryptoKey.VerifyABMsgSig(
-		await CTK.CryptoKey.FromCozeKeyToPublic(p.key), 
-		await BSCNV.SToArrayBuffer(await Can.Canons(p.head, p.can)), 
+		await CTK.CryptoKey.FromCozeKeyToPublic(p.key),
+		await BSCNV.SToArrayBuffer(await Can.Canons(p.head, p.can)),
 		await BSCNV.HexToArrayBuffer(p.sig));
 };
 
@@ -210,14 +215,7 @@ async function VerifyCyArray(cy, CozeKeyPublic) {
 			c = c.cy;
 		}
 
-		// Does cy have a public key?  If not, use CozeKeyPublic. 
-		if (isEmpty(c.key)) {
-			if (c.head.tmb == CozeKeyPublic.tmb) {
-				c.key = CozeKeyPublic;
-			}
-		}
-
-		let valid = await VerifyCy(c);
+		let valid = await VerifyCy(c, CozeKeyPublic);
 		if (valid) {
 			verifiedObj.VerifiedCount++;
 		} else {
@@ -254,7 +252,7 @@ async function signObj(obj, cozeKey, canon) {
 		obj = JSON.parse(obj); // May throw error
 	}
 	return CTK.CryptoKey.SignBufferToHex(
-		await CTK.CryptoKey.FromCozeKey(cozeKey), 
+		await CTK.CryptoKey.FromCozeKey(cozeKey),
 		await BSCNV.SToArrayBuffer(await Can.Canons(obj, canon))
 	);
 };
@@ -265,9 +263,7 @@ async function signObj(obj, cozeKey, canon) {
  * CyParts 
  * 
  * @typedef  {Object}  CyParts
- * @property {head}    head - Coze head.
- * @property {Number}  iat  - "Issued at".
- * @property {Hex}     tmb  - Key used to sign head.  
+ * @property {head}    head - Coze `head` with `alg`, `iat`, and `tmb` set. 
  * @property {CozeKey} key  - CozeKey.
  * @property {sig}     sig  - Hex sig.  
  * @property {Array}   can  - Array Canon.  e.g. ["alg","x"]
@@ -307,7 +303,9 @@ async function GetCyParts(cy, pubkey, sig) {
 	if (typeof cy == "string") {
 		c = JSON.parse(cy); // May throw error
 	} else {
-		c = {...cy}; // Copy of original.
+		c = {
+			...cy
+		}; // Copy of original.
 	}
 
 	// Is `cy` encapsulated?  If so, unencapsulate.
@@ -324,33 +322,24 @@ async function GetCyParts(cy, pubkey, sig) {
 
 	// if set, pubkey overwrites key. 
 	if (!isEmpty(pubkey)) {
-		cyp.key = await CZK.ToPublicCozeKey(pubkey);
+		cyp.key = await CZK.ToPublicCozeKey(pubkey); // sanitizes and recalcs tmb
 	} else {
-		cyp.key = c.key;
+		cyp.key = await CZK.ToPublicCozeKey(c.key); // sanitizes and recalcs tmb
 	}
 	if (isEmpty(cyp.key)) {
 		throw new Error("Coze.GetCyParts: A public key is not set.");
 	}
+	if (cyp.head.tmb !== cyp.key.tmb) {
+		throw new Error("Coze.GetCyParts: `head.tmb` does not match `key.tmb`.");
+	}
 
 	if (!isEmpty(sig)) {
 		cyp.sig = sig;
-	}
-	if (!isEmpty(c.sig)) {
+	}else{
 		cyp.sig = c.sig;
 	}
-
 	if (isEmpty(cyp.sig)) {
 		throw new Error("Coze.GetCyParts: A sig is not set.");
-	}
-
-	// Allow signing without a `head.tmb`, but if it is set, it must match key. 
-	if (!isEmpty(cyp.head.tmb)) {
-		cyp.tmb = cyp.head.tmb;
-	} else if (!isEmpty(cyp.key.tmb)) {
-		cyp.tmb = cyp.key.tmb;
-	}  
-	if (cyp.tmb != cyp.key.tmb) {
-		throw new Error("Coze.GetCyParts: `head.tmb` does not match key's `tmb`.");
 	}
 
 	// If can is empty, recalculate `can` based on current head. 
@@ -395,12 +384,12 @@ async function GetCyParts(cy, pubkey, sig) {
  * @param   {any}     thing    Thing you wish was empty.  
  * @returns {boolean}          Boolean.  
  */
- function isEmpty(thing) {
+function isEmpty(thing) {
 	if (typeof thing === 'function') {
 		return false;
 	}
 
-	if (thing === Object(thing)) { 
+	if (thing === Object(thing)) {
 		if (Object.keys(thing).length === 0) {
 			return true;
 		}
@@ -427,16 +416,16 @@ async function GetCyParts(cy, pubkey, sig) {
  */
 function isBool(bool) {
 	if (
-		bool === false || 
+		bool === false ||
 		bool === "false" ||
-		bool === undefined || 
-		bool === "undefined" || 
-		bool === "" || 
-		bool === 0 || 
-		bool === "0" || 
-		bool === null || 
-		bool === "null" || 
-		bool === "NaN" || 
+		bool === undefined ||
+		bool === "undefined" ||
+		bool === "" ||
+		bool === 0 ||
+		bool === "0" ||
+		bool === null ||
+		bool === "null" ||
+		bool === "NaN" ||
 		Number.isNaN(bool) ||
 		bool === Object(bool) // isObject
 	) {

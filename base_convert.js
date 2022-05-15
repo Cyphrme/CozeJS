@@ -19,25 +19,9 @@ export {
 	SToArrayBuffer,
 
 	// RFC base 64s
-	HexTob64UT,
-	B64UTToHex,
+	HexTob64ut,
+	B64ToHex,
 }
-
-// // Not used in Coze:
-// export {
-// 	AB,
-// 	BaseConvert,
-// 	ToUTF8Array,
-// 	ArrayBufferToS,
-// 	SToB64UT,
-// 	B64UTToS,
-// 	SToUB64,
-// 	UB64ToS,
-// 	U64To64UT,
-// 	B64UTToUb64,
-// 	ArrayBufferTo64UT,
-// 	JSONto64UT,
-// }
 
 /**
  * @typedef {import('./coze.js').Hex}  Hex
@@ -48,137 +32,6 @@ export {
  * @typedef {String} b64ut    - base 64 url truncated.  Excludes padding. 
  * @typedef {String} Base64   - Cyphr.me Base64.  
  **/
-
-const Base16 = "0123456789ABCDEF";
-const Base16Lower = "0123456789abcdef";
-
-// Base64Unsafe are the RFC 4648, non-url safe base 64 characters. 
-const Base64Unsafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-// base64Urlis RFC 4648 URL safe base 64 characters.  We think this should have been named "base64Uri"
-const Base64Url = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-
-
-// Defined Alphabets.  AB = "alphabets"
-var AB = {
-	Base16: Base16,
-	Base16Lower: Base16Lower,
-	Base64Unsafe: Base64Unsafe,
-	Base64Url: Base64Url,
-}
-
-
-// BaseConvert converts a given string with a given encoding alphabet
-// into another base with another given encoding alphabet.  
-//
-// Base/radix is assumed from alphabet sizes. 
-//
-function BaseConvert(string, inputAlphabet, outputAlphabet) {
-	const add = (x, y, base) => {
-		let z = [];
-		const n = Math.max(x.length, y.length);
-		let carry = 0;
-		let i = 0;
-		while (i < n || carry) {
-			const xi = i < x.length ? x[i] : 0;
-			const yi = i < y.length ? y[i] : 0;
-			const zi = carry + xi + yi;
-			z.push(zi % base);
-			carry = Math.floor(zi / base);
-			i++;
-		}
-		return z;
-	}
-
-	const multiplyByNumber = (num, power, base) => {
-		if (num < 0) return null;
-		if (num == 0) return [];
-
-		let result = [];
-		while (true) {
-			num & 1 && (result = add(result, power, base));
-			num = num >> 1;
-			if (num === 0) break;
-			power = add(power, power, base);
-		}
-
-		return result;
-	}
-
-	// decodeInput finds the position of each character in alphabet, thus
-	// decoding the input string into a useful array.  
-	const decodeInput = (string) => {
-		const digits = string.split('');
-		let arr = [];
-		for (let i = digits.length - 1; i >= 0; i--) {
-			const n = inputAlphabet.indexOf(digits[i])
-			// Continue even if character is not found (possibly a padding character.)
-			// if (n == -1) return null;
-			if (n == -1) continue;
-			arr.push(n);
-		}
-		return arr;
-	}
-
-	const fromBase = inputAlphabet.length;
-	const toBase = outputAlphabet.length;
-	const digits = decodeInput(string);
-	if (digits === null) return null;
-
-
-	// Get an array of what each position of character should be. 
-	let outArray = [];
-	let power = [1];
-	for (let i = 0; i < digits.length; i++) {
-		outArray = add(outArray, multiplyByNumber(digits[i], power, toBase), toBase);
-		power = multiplyByNumber(fromBase, power, toBase);
-	}
-
-	// Finally, decode array into characters.  
-	let out = '';
-	for (let i = outArray.length - 1; i >= 0; i--) {
-		out += outputAlphabet[outArray[i]];
-	}
-
-	return out;
-};
-
-
-
-/**
- * ToUTF8Array accepts a string and returns the utf8 encoding of the string.
- * 
- * @param {string} str         str that is being converted to UTF8
- * @returns {number[]} utf8    utf8 is the number array returned from the input string.
- */
-function ToUTF8Array(str) {
-	var utf8 = [];
-	for (var i = 0; i < str.length; i++) {
-		var charcode = str.charCodeAt(i);
-		if (charcode < 0x80) utf8.push(charcode);
-		else if (charcode < 0x800) {
-			utf8.push(0xc0 | (charcode >> 6),
-				0x80 | (charcode & 0x3f));
-		} else if (charcode < 0xd800 || charcode >= 0xe000) {
-			utf8.push(0xe0 | (charcode >> 12),
-				0x80 | ((charcode >> 6) & 0x3f),
-				0x80 | (charcode & 0x3f));
-		}
-		// surrogate pair
-		else {
-			i++;
-			// UTF-16 encodes 0x10000-0x10FFFF by
-			// subtracting 0x10000 and splitting the
-			// 20 bits of 0x0-0xFFFFF into two halves
-			charcode = 0x10000 + (((charcode & 0x3ff) << 10) |
-				(str.charCodeAt(i) & 0x3ff));
-			utf8.push(0xf0 | (charcode >> 18),
-				0x80 | ((charcode >> 12) & 0x3f),
-				0x80 | ((charcode >> 6) & 0x3f),
-				0x80 | (charcode & 0x3f));
-		}
-	}
-	return utf8;
-};
 
 /**
  * Converts a string to an ArrayBuffer.   
@@ -215,7 +68,7 @@ async function ArrayBufferToS(ab) {
 }
 
 /**
- * HexTob64UT is hex to "RFC 4648 URL Safe Truncated".  
+ * HexTob64ut is hex to "RFC 4648 URL Safe Truncated".  
  * 
  * Taken from https://github.com/LinusU/hex-to-array-buffer  MIT license
  * 
@@ -293,13 +146,13 @@ async function ArrayBufferToHex(buffer) {
 
 
 /**
- * B64UTToHex is "RFC 4648 base64 URL Safe Truncated" to Hex.  
+ * B64ToHex is "RFC 4648 base64 URL Safe Truncated" to Hex.  
  * 
  * @param   {b64ut} b64ut   String. b64ut.
  * @returns {Hex}           String. Hex.  
  */
- function B64UTToHex(b64ut) {
-	let ub64 = B64UTToUb64(b64ut)
+ function B64ToHex(b64ut) {
+	let ub64 = URISafeToUnsafe(b64ut)
 	const raw = atob(ub64);
 	let result = '';
 	for (let i = 0; i < raw.length; i++) {
@@ -310,111 +163,57 @@ async function ArrayBufferToHex(buffer) {
 }
 
 /**
- * HexTob64UT is hHx to "RFC 4648 base64 URL Safe Truncated".  
+ * HexTob64ut is hHx to "RFC 4648 base64 URL Safe Truncated".  
  * 
  * @param   {Hex}    hex    String. Hex.
  * @returns {b64ut}         String. b64ut.
  */
-async function HexTob64UT(hex) {
+async function HexTob64ut(hex) {
 	let ab = await HexToArrayBuffer(hex);
-	let b64ut = await ArrayBufferTo64UT(ab);
+	let b64ut = await ArrayBufferTo64ut(ab);
 	return b64ut;
 }
 
 /**
- * Takes a string and encodes it into b64ut.
- * 
- * @param   {string} string 
- * @returns {b64u}
- */
-function SToB64UT(string) {
-	return btoa(string).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-}
-
-/**
- * Takes a base64url string and decodes it back into a string.
- * "base64url To String"
- * 
- * @param   {b64u}   String. 
- * @returns {string} String.
- */
-function B64UTToS(string) {
-	// atob doesn't care about the padding character '='
-	return atob(string.replace(/-/g, '+').replace(/_/g, '/'));
-}
-
-/**
- * Takes a string and encodes it into a unsafe base64 string.
- * "String to Unsafe base64"
- * 
- * @param   {string} string   String.
- * @returns {ub64}            String. Unsafe base64 
- */
-function SToUB64(string) {
-	return btoa(string);
-}
-
-/**
- * Takes an unsafe base64 string and decodes it back into a string.
- * "Unsafe base64 to String"
- * 
- * @param   {ub64}   string  String.  Unsafe base64 string.
- * @returns {string}
- */
-function UB64ToS(string) {
-	return atob(string);
-}
-
-/**
- * Unsafe base64 to base64 url truncated. (JOSE compatible.)
- * 
- * @param   {ub64}   ub64   String. ub64.
- * @returns {b64ut}  b64ut  String. 
- */
-function U64To64UT(ub64) {
-	return U64To64U(ub64).replace(/=/g, '');
-}
-
-/**
- * Unsafebase64 to base64url. (NOT JOSE compatible)
- * 
- * @param   {ub64} ub64 String. ub64.
- * @returns {b64u}      String. base64url.
- */
-function U64To64U(ub64) {
-	// Replace + and / with - and _.
-	return ub64.replace(/\+/g, '-').replace(/\//g, '_');
-}
-
-
-/**
- * B64UTToUb64 base64 url truncated to unsafe base64 (NOT JOSE compatible)
+ * URISafeToUnsafe base64 url truncated to unsafe base64 (NOT JOSE compatible)
  * // TODO add padding back. 
  * 
  * @param   {b64ut} b64ut String. RFC 4648 base64 url safe truncated.
  * @returns {ub64}        String. RFC 4648 unsafe base64.
  */
-function B64UTToUb64(ub64) {
+function URISafeToUnsafe(ub64) {
 	// Replace + and / with - and _
 	return ub64.replace(/-/g, '+').replace(/_/g, '/');
 }
 
 /**
- * ArrayBufferTo64UT Array buffer to base64url.
+ * ArrayBufferTo64ut Array buffer to base64url.
  * 
  * @param   {ArrayBuffer} buffer  ArrayBuffer. Arbitrary bytes. UTF-16 is Javascript native.
  * @returns {b64ut}               String. b64ut encoded string.
  */
-function ArrayBufferTo64UT(buffer) {
+function ArrayBufferTo64ut(buffer) {
 	var string = String.fromCharCode.apply(null, new Uint8Array(buffer));
-	return U64To64UT(btoa(string));
+	return base64t(URIUnsafeToSafe(btoa(string)));
 }
 
+
 /**
- * JSONto64UT serializes a JSON object and converts it to a  b64ut string. 
- * @param  {Object} json    Object. JSON.
- * @return {b64ut}          String. b64ut. 
+ * URIUnsafeToSafe converts any URI unsafe string to URI safe.  
+ * 
+ * @param   {string} ub64t 
+ * @returns {string} b64ut 
  */
-function JSONto64UT(json) {
-	return U64To64UT(btoa(JSON.stringify(json)));
+ function URIUnsafeToSafe(ub64) {
+	return ub64.replace(/\+/g, '-').replace(/\//g, '_');
+};
+
+/**
+ * base64t removes base64 padding if applicable.   
+ * 
+ * @param   {string} base64 
+ * @returns {string} base64t
+ */
+ function base64t(base64){
+	return base64.replace(/=/g, '');
 }

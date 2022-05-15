@@ -70,8 +70,7 @@ async function NewCozeKey(alg) {
 
 	let CozeKey = await CTK.CryptoKey.ToCozeKey(keyPair.privateKey)
 
-	// Javascript time is not Unix time.  To get Unix, divide by 1000.  
-	CozeKey.iat = Math.floor(Date.now() / 1000);
+	CozeKey.iat = Math.floor(Date.now() / 1000);// To get Unix from js, divide by 1000.  
 	CozeKey.tmb = await Thumbprint(CozeKey);
 	CozeKey.kid = "My Cyphr.me Key.";
 
