@@ -5,7 +5,9 @@ import * as Coze from './coze.js';
 import * as Can from './canon.js';
 import * as BSCNV from './base_convert.js';
 import * as Enum from './coze_enum.js';
-import {isEmpty} from './coze.js';
+import {
+	isEmpty
+} from './coze.js';
 
 export {
 	NewCozeKey,
@@ -14,13 +16,14 @@ export {
 	VerifyMsg,
 
 	Correct,
-	Normal,
 	Valid,
 
 	Thumbprint,
 
 	Revoke,
 	IsRevoked,
+
+	IsTmbOnly,
 
 	ECDSATmbCanon,
 	EdDSATmbCanon,
@@ -70,7 +73,7 @@ async function NewCozeKey(alg) {
 
 	let CozeKey = await CTK.CryptoKey.ToCozeKey(keyPair.privateKey)
 
-	CozeKey.iat = Math.floor(Date.now() / 1000);// To get Unix from js, divide by 1000.  
+	CozeKey.iat = Math.floor(Date.now() / 1000); // To get Unix from js, divide by 1000.  
 	CozeKey.tmb = await Thumbprint(CozeKey);
 	CozeKey.kid = "My Cyphr.me Key.";
 
@@ -163,6 +166,8 @@ async function Valid(privateCozeKey) {
  * public keys cannot (necessarily) be validated without verifying a signed
  * message. Use function "Verify" for public keys with a signed message.  Use
  * function "Correct" to check for the correct construction of a public key.  
+ * 
+ * TODO Check for tmb only keys
  *
  * @param   {CozeKey}    cozeKey  Object. Coze key. 
  * @returns {boolean}             Boolean. Always returns true unless error.   
@@ -171,10 +176,14 @@ async function Valid(privateCozeKey) {
 async function Correct(cozeKey) {
 	let required = [
 		'alg',
-		'iat',
 		'tmb',
-		'x',
 	]
+
+	let tmbOnly = IsTmbOnly(cozeKey);
+	if (!tmbOnly) {
+		console.debug('not a tmb only key');
+		required.push(["iat", "x"]);
+	}
 
 	for (let element of required) {
 		if (!(element in cozeKey)) {
@@ -182,15 +191,19 @@ async function Correct(cozeKey) {
 		}
 	}
 
-	// Sanity check - No keys from the future allowed.
-	if (cozeKey.iat > Math.round((Date.now() / 1000))) {
-		throw new Error("CozeKey.Correct: cannot have iat greater than present time");
-	}
-
 	if (cozeKey.alg == "Ed25519") {
 		if (cozeKey.x.length < 64) { // Ed25519's public key is 32 bytes (64 in Hex)
 			throw new Error("CozeKey.Correct: x is too short.  Has length: " + cozeKey.x.length);
 		}
+	}
+
+	if (tmbOnly) {
+		return true;
+	}
+
+	// Sanity check - No keys from the future allowed.
+	if (cozeKey.iat > Math.round((Date.now() / 1000))) {
+		throw new Error("CozeKey.Correct: cannot have iat greater than present time");
 	}
 
 	if (Enum.Genus(cozeKey.alg) == "ECDSA") {
@@ -227,37 +240,6 @@ async function Correct(cozeKey) {
 
 	return true;
 };
-
-/**
- * Normal returns a normalized Coze key with "alg","iat","tmb',"x", and
- * if present, "kid", and "y".
- *
- * Truncates `kid` at 50 characters and throws on oversized `iat`.
- *
- * @param   {CozeKey}    cozeKey  Coze key. 
- * @returns {CozeKey}             Normalized Coze key.  
- * @throws                        
- */
-async function Normal(cozeKey) {
-	var nck = {};
-	nck.alg = cozeKey.alg;
-	if (cozeKey.iat > 9007199254740991) { // max safe Javascript integer.
-		throw "Coze.Normal: `iat` too large"
-	}
-	nck.iat = cozeKey.iat;
-	if (!isEmpty(cozeKey.kid)) {
-		nck.kid = cozeKey.kid.substring(0, 50); // `kid` soft limit of 50
-	}
-	nck.x = cozeKey.x;
-	if (Enum.Genus(cozeKey.alg) == "ECDSA") { 	// y is required for ECDSA
-		nck.y = cozeKey.y;
-	}
-
-	if (!Correct(nck)) {
-		throw new Error("CozeKey.Normal: Coze key not correct");
-	}
-	return nck
-}
 
 /**
  * ToPublicCozeKey takes a public or private Coze key and returns a normalized
@@ -360,3 +342,21 @@ function IsRevoked(cozeKey) {
 
 	return false;
 };
+
+/**
+ * Checks if a Coze Key Object is a tmb only key. Logic assumes the following:
+ * If a CozeKey has at least 2 fields, AND 'alg' is populated, AND it contains
+ * 'tmb', AND either 'x' OR 'iat' is empty, then the Coze Key is considered to
+ * be a thumbprint only key.
+ * @param   {CozeKey}  ck   Object. CozeKey.
+ * @returns {Boolean}       Bool.   True if the CozeKey is a thumbprint only key.
+ */
+function IsTmbOnly(ck) {
+	if (isEmpty(ck) || typeof ck !== "object") {
+		throw new Error("must pass a valid Coze Key object");
+	}
+	if (Object.keys(ck).length >= 2 && !isEmpty(ck.alg) && !isEmpty(ck.tmb) && (isEmpty(ck.x) || isEmpty(ck.iat))) {
+		return true;
+	}
+	return false;
+}

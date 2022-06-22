@@ -68,31 +68,27 @@ async function ArrayBufferToS(ab) {
 }
 
 /**
- * HexTob64ut is hex to "RFC 4648 URL Safe Truncated".  
+ * HexToArrayBuffer converts string Hex to ArrayBuffer. 
  * 
- * Taken from https://github.com/LinusU/hex-to-array-buffer  MIT license
- * 
- * @param   {Hex}         hex    String. Hex representation.
+ * @param   {Hex}          Hex   String Hex. 
  * @returns {ArrayBuffer}        ArrayBuffer. 
  */
 async function HexToArrayBuffer(hex) {
-	if (typeof hex !== 'string') {
-		throw new TypeError('base_convert.HexToArrayBuffer: Expected input to be a string')
+	if (hex === undefined) { // undefined is different from 0 since 0 == "AA"
+		return new Uint8Array().buffer;
 	}
 
 	if ((hex.length % 2) !== 0) {
-		throw new RangeError('base_convert.HexToArrayBuffer: Expected string to be an even number of characters')
+		throw new RangeError('HexToArrayBuffer: Hex is not even.')
 	}
 
-	var view = new Uint8Array(hex.length / 2)
-
+	var a = new Uint8Array(hex.length / 2)
 	for (var i = 0; i < hex.length; i += 2) {
-		view[i / 2] = parseInt(hex.substring(i, i + 2), 16)
+		a[i / 2] = parseInt(hex.substring(i, i + 2), 16)
 	}
 
-	return view.buffer
-}
-
+	return a.buffer
+};
 
 /**
  * ArrayBufferToHex accepts an ArrayBuffer and returns  Hex.
@@ -151,7 +147,7 @@ async function ArrayBufferToHex(buffer) {
  * @param   {b64ut} b64ut   String. b64ut.
  * @returns {Hex}           String. Hex.  
  */
- function B64ToHex(b64ut) {
+function B64ToHex(b64ut) {
 	let ub64 = URISafeToUnsafe(b64ut)
 	const raw = atob(ub64);
 	let result = '';
@@ -197,14 +193,13 @@ function ArrayBufferTo64ut(buffer) {
 	return base64t(URIUnsafeToSafe(btoa(string)));
 }
 
-
 /**
  * URIUnsafeToSafe converts any URI unsafe string to URI safe.  
  * 
  * @param   {string} ub64t 
  * @returns {string} b64ut 
  */
- function URIUnsafeToSafe(ub64) {
+function URIUnsafeToSafe(ub64) {
 	return ub64.replace(/\+/g, '-').replace(/\//g, '_');
 };
 
@@ -214,6 +209,6 @@ function ArrayBufferTo64ut(buffer) {
  * @param   {string} base64 
  * @returns {string} base64t
  */
- function base64t(base64){
+function base64t(base64) {
 	return base64.replace(/=/g, '');
 }
