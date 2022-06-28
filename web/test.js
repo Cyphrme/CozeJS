@@ -79,15 +79,12 @@ async function stats() {
 function appendResult(obj) {
 	let clone = jsResultTemplate.content.cloneNode(true);
 	let test = "" + obj.name + "\: ";
-	let res;
-	let expected;
 	if (obj.result != obj.golden) {
-		console.error("❌ Failed.  Expected: " + obj.golden + " Got: " + obj.result);
+		console.error("❌ Failed.  Got: " + obj.result + " Expected: " + obj.golden);
 		test += "❌ Failed";
 		clone.querySelector('div').classList.add("text-danger")
-		res = "Results: " + obj.result;
-		expected = "Expected: " + obj.golden;
-
+		clone.querySelector('.result').textContent = "Got: " + obj.result;
+		clone.querySelector('.expected').innerHTML = "Expected: " + obj.golden;
 		testFailCount++;
 	} else {
 		// Test Passed
@@ -99,8 +96,7 @@ function appendResult(obj) {
 	totalTestsRan++;
 
 	clone.querySelector('.test').textContent = test;
-	clone.querySelector('.result').textContent = res;
-	clone.querySelector('.expected').textContent = expected;
+
 
 	document.getElementById("testsResultsList").append(clone);
 };

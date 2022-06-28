@@ -4,7 +4,7 @@
 // 
 // For another potential workaround: https://stackoverflow.com/questions/43817297/inlining-ecmascript-modules-in-html
 //
-// export {SToArrayBuffer,HexToArrayBuffer,ArrayBufferToHex} from './base_convert.js'
+// export {SToArrayBuffer,ArrayBufferTo64ut} from './base_convert.js'
 // export * from './canon.js';
 // export * from './coze_enum.js';
 // export * from './coze_key.js';

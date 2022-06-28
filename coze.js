@@ -1,226 +1,194 @@
 "use strict";
 
 import * as Can from './canon.js'; // import as "Can" since func "Canon" will conflict in `coze.join.js`. 
-import * as Enum from './coze_enum.js';
-import * as CZK from './coze_key.js';
+import * as Enum from './alg.js';
+import * as CZK from './cozekey.js';
 import * as CTK from './cryptokey.js';
 import * as BSCNV from './base_convert.js';
 
 export {
 	Sign,
-	SignCy,
-
+	SignCoze,
 	Verify,
-	VerifyCy,
-	VerifyCyArray,
-
-	GetCyParts,
-
-	HeadCanon,
-	MsgCanon,
+	VerifyCoze,
+	VerifyCozeArray,
+	Meta,
+	PayCanon,
 
 	// Helpers
 	isEmpty,
 	isBool,
 }
 
-// HeadCanon is the minimum required fields for a valid signed cy.head.
-// MsgCanon is the canon for the "msg" cy.  
-const HeadCanon = ["alg", "iat", "tmb", "typ"];
-const MsgCanon = ["alg", "iat", "msg", "tmb", "typ"];
-
 /**
-@typedef {import('./coze_key.js').CozeKey} CozeKey
-@typedef {import('./coze_enum.js').Alg}    Alg
+@typedef {import('./cozekey.js').CozeKey} CozeKey
+@typedef {import('./alg.js').Alg}     Alg
+@typedef {import('./canon.js').Canon} Canon
 
 Basic Coze Types
-@typedef  {String} Hex   - Coze Hex. Hex is upper case and always left padded. 
-@typedef  {Hex}    Sig   - The signature.   
-@typedef  {number} Time  - The Unix time.
+@typedef  {String} B64       - Coze b64ut (RFC 4648 base64 url truncated)
+@typedef  {String} Message   - A not-hashed message to be signed. 
+@typedef  {B64}    Digest    - A digest in b64ut.
+@typedef  {B64}    Sig       - The signature.   
+@typedef  {Number} Time      - The Unix time.
 
-head is the minimum `cy.head` object.  `cy.head` or just `head` may have
-more fields, but a signed coze should minimally have these.  
-@typedef  {Object} head  
-@property {Alg}    alg  - Cryptographic signing or encryption algorithm - e.g. "ES256".
-@property {Time}   iat  - Unix time message was signed or encrypted. e.g. 1624472390.
-@property {Hex}    tmb  - Signing thumbprint digest e.g. 0148F4CD9093C9CBE3E8BF78D3E6C9B824F11DD2F29E2B1A630DD1CE1E176CDD.
-@property {String} typ  - Coze object type.  e.g. "cyphr.me/msg/create".
+Pay contains the standard `Coze.Pay` fields.  
+@typedef  {Object} Pay  
+@property {Alg}    alg  - Algorithm -           e.g. "ES256".
+@property {Time}   iat  - Unix time of signing. e.g. 1623132000.
+@property {Hex}    tmb  - Signing thumbprint    e.g. cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk
+@property {String} typ  - Type.                 e.g. "cyphr.me/msg/create".
 
-cy is a signed or encrypted coze object.  See docs for more about `cy`.
-@typedef  {Object}  cy    
-@property {head}    head   - The `head`.  See head.  
+Coze is a signed coze object.  See docs for more about `coze`.
+@typedef  {Object}  Coze    
+@property {Pay}     pay    - The `pay`.  See Pay.  
 @property {Sig}     sig    - The Hex signature.  
-@property {Hex}     [cad]  - The canon digest, which is the digest of the canon fields of head.  `cad` may be implicit and not appear in a `cy`.  e.g. ADE8A110C0DC90CAA509CC20213DDF75D6FD5C9920079C79AB6FB15240FFE0A9
-@property {Array}   [can]  - The canon fields of head.  `can` may be implicit and not appear in a `cy`. e.g.  ["alg", "iat", "msg", "tmb", "typ"]
-@property {CozeKey} [key]  - Public Coze Key used in signing the `cy`.   `key` may be implicit, by `cy.head.tmb`, and not appear in a `cy`.
+@property {B64}     [cad]  - Canonical digest of `pay`.     e.g. LSgWE4vEfyxJZUTFaRaB2JdEclORdZcm4UVH9D8vVto
+@property {Array}   [can]  - The canon fields of pay.       e.g.  ["alg", "iat", "msg", "tmb", "typ"]
+@property {B64}     [czd]  - Coze digest.
+@property {CozeKey} [key]  - Coze Key used to sign `coze`.  
+
+VerifiedArray - Used when verifying array of cozies.  
+@typedef  {Object}  VerifiedArray
+@property {boolean} VerifiedAll   - Indicates if whole array was verified.  False on error or if anything was not verified.
+@property {number}  VerifiedCount - Number of objects verified.  
+@property {number}  FailedCount   - Number of objects that failed verification.  
+@property {Coze[]}  FailedCoze    - Objects that failed verification.
 */
 
-/**
- * Sign signs a given `head` with a given private Coze key and returns Hex sig.
- * `head` will be updated with correct values for:
- * 1. `alg` based on key.
- * 2. `iat` to now.
- * 3. `tmb` recalculated from key.
- * @param   {head}    head       `head` object/string.
- * @param   {CozeKey} cozeKey    Private coze key.        
- * @param   {Array}   [canon]    Canon. [Optional]      
- * @returns {Hex}                Hex `sig`.  Empty on invalid. 
- * @throws  error                invalid key/parse error.  
- */
-async function Sign(head, cozeKey, canon) {
-	head = await sanitize(head, cozeKey, canon);
-	return sign(head, cozeKey);
-}
+// PayCanon is the standard coze.pay fields.
+const PayCanon = ["alg", "iat", "tmb", "typ"];
 
 /**
- * SignCy signs `cy.head` with a given private Coze key and returns a new `cy`
- * with `sig` and canonicalized `head` populated.  
- *
- * Why does sSignCy() exist when Sign() already exists?  SignCy returns a
- * canonicalized `cy` while Sign() only returns a signature.  If that's not
- * needed, use `Sign()`: `cy.sig = Sign(cy.head, cozeKey);`
- *
- * @param   {Cy}        cy         Object cy or string cy
- * @param   {CozeKey}   cozeKey    A private coze key.        
- * @param   {Array}     [canon]    Array for canonical keys. [Optional]      
- * @returns {cy}                   Cy.  Empty on invalid. 
- * @throws  error                  invalid key/parse error.  
- */
-async function SignCy(cy, cozeKey, canon) {
-	// Written like this, instead of calling just Sign(), because although JS
-	// objects are pass by reference, the order of keys does not change without
-	// resetting object (For example, `function reset(obj){obj={};}` does not
-	// reset `obj` because JS is "pass by sharing" and not true pass by reference
-	// for objects.)
-	let outCy = {};
-	outCy.head = await sanitize(cy.head, cozeKey, canon);
-	outCy.sig = await sign(outCy.head, cozeKey);
-	return outCy;
-}
-
-/**
- * sanitize canonicalized head and sets:
- * 1. `alg` based on key.
- * 2. `iat` to now.
- * 3. `tmb` recalculated from key.
- * @param   {head|string}   head       `head` object/string.
+ * Sign signs message with private Coze key and returns b64ut sig.
+ * @param   {String}        message    message object/string.
  * @param   {CozeKey}       cozeKey    Private coze key.        
- * @param   {Array}         [canon]    Canon. [Optional]      
- * @returns {Hex}                      Hex `sig`.  Empty on invalid. 
+ * @returns {B64}                      b64ut `sig`.  Empty on invalid. 
  * @throws  error                      invalid key/parse error.  
  */
-async function sanitize(head, cozeKey, canon) {
-	if (isEmpty(cozeKey)) {
-		throw new Error("Coze: Key not set. ");
-	}
-	if (CZK.IsRevoked(cozeKey)) {
-		throw new Error("Coze: Cannot sign with revoked key.");
-	}
-	head.alg = cozeKey.alg;
-	head.tmb = await CZK.Thumbprint(cozeKey);
-	head.iat = Math.round((Date.now() / 1000)); // Javascript's Date converted to Unix time.
-	return Can.Canon(head, canon); // Guarantees order.
-}
-
-/**
- * sign signs a given `obj` with a given private Coze key and returns Hex sig.
- * @param   {Object}   obj       `head` object/string.
- * @param   {CozeKey}  cozeKey    Private coze key.          
- * @returns {Hex}                 Hex `sig`.  Empty on invalid. 
- * @throws  error                 invalid key/parse error.  
- */
-async function sign(obj, cozeKey) {
-	return CTK.CryptoKey.SignBufferToHex(
-		await CTK.CryptoKey.FromCozeKey(cozeKey),
-		await BSCNV.SToArrayBuffer(JSON.stringify(obj))
+async function Sign(message, cozeKey) {
+	let cryptokey = await CTK.CryptoKey.FromCozeKey(cozeKey);
+	return CTK.CryptoKey.SignBufferB64(
+		cryptokey,
+		await BSCNV.SToArrayBuffer(message)
 	);
 }
 
+/**
+ * SignCoze signs in place coze.pay with a private Coze key. Returns the same,
+ * but updated, coze.
+ * 
+ * `pay` will be updated with values for:
+ * 1. `alg` based on key.
+ * 2. `iat` to now.
+ * 3. `tmb` recalculated from key.
+ *
+ * @param   {Coze}      coze       Object coze or string coze
+ * @param   {CozeKey}   cozeKey    A private coze key.        
+ * @param   {Array}     [canon]    Array for canonical keys. [Optional]
+ * @returns {coze}                 The same coze as input.
+ * @throws  error                  invalid key/parse error.  
+ */
+async function SignCoze(coze, cozeKey, canon) {
+	if (CZK.IsRevoked(cozeKey)) {
+		throw new Error("Coze: Cannot sign with revoked key.");
+	}
+
+	coze.pay.alg = cozeKey.alg;
+	coze.pay.iat = Math.round((Date.now() / 1000)); // Javascript's Date converted to Unix time.
+	coze.pay.tmb = await CZK.Thumbprint(cozeKey);
+
+
+	if (!isEmpty(canon)) {
+		coze.pay = await Can.Canonical(coze.pay, canon);
+	}
+	let pay = await JSON.stringify(coze.pay);
+	console.log(pay);
+	coze.sig = await Sign(pay, cozeKey);
+	return coze;
+}
+
+
+
 
 /**
- * Verify verifies a `head` with `sig` and returns a boolean.
+ * Verify verifies a `pay` with `sig` and returns a boolean.
  *
- * @param  {head}     head       head
- * @param  {CozeKey}  cozekey    CozeKey to use to validate the coze message. 
- * @param  {Sig}      sig        Hex sig.   
+ * @param  {String}   message    Message
+ * @param  {CozeKey}  cozekey    Coze key for message validation. 
+ * @param  {Sig}      sig        Signature.   
  * @return {boolean}             invalid key/parse error. 
  * @throws error
  */
-async function Verify(head, cozekey, sig) {
-	return CTK.CryptoKey.VerifyABMsgSig(
-		await CTK.CryptoKey.FromCozeKeyToPublic(cozekey),
-		await BSCNV.SToArrayBuffer(await Can.Canons(head)),
-		await BSCNV.HexToArrayBuffer(sig)
+async function Verify(message, cozekey, sig) {
+	let cryptoKey = await CTK.CryptoKey.FromCozeKey(cozekey, true);
+	// console.log(message, cozekey, sig, cryptoKey);
+	return CTK.CryptoKey.VerifyMsg(
+		cryptoKey,
+		message,
+		sig,
 	);
 };
 
 /**
- * VerifyCy returns a boolean.  Parameter `cy` must have `cy.head` and
- * optionally `cy.sig` and `cy.key`.
+ * VerifyCoze returns a boolean.  Parameter `coze` must have `coze.pay` and
+ * optionally `coze.sig` and `coze.key`.
  *
  * If parameters `pubkey` or `sig` are set they will respectively overwrite
- * `cy.key` and `cy.sig`.
- * @param  {cy}       cy           `cy` with optional `key` and/or `sig` set.  
- * @param  {CozeKey}  [cozekey]    CozeKey to use to validate the coze message. 
+ * `coze.key` and `coze.sig`.
+ * @param  {Coze}     coze         `coze` with optional `key` and/or `sig` set.  
+ * @param  {CozeKey}  [cozeKey]    CozeKey to use to validate the coze message. 
  * @param  {Sig}      [sig]        String.  Hex sig.   
  * @return {boolean}               Valid or not
  * @throws error
  */
-async function VerifyCy(cy, pubkey, sig) {
-	let p = await GetCyParts(cy, pubkey, sig);
-
-	if (p.head.tmb !== p.key.tmb) {
-		throw new Error("Coze.VerifyCy: head.tmb does not match key.tmb.");
+async function VerifyCoze(coze, cozeKey) {
+	if (coze.pay.tmb !== cozeKey.tmb) {
+		throw new Error("Coze.VerifyCoze: pay.tmb does not match key.tmb.");
 	}
+	let pay = await JSON.stringify(coze.pay);
+	return Verify(pay, cozeKey, coze.sig);
+}
 
-	return CTK.CryptoKey.VerifyABMsgSig(
-		await CTK.CryptoKey.FromCozeKeyToPublic(p.key),
-		await BSCNV.SToArrayBuffer(await Can.Canons(p.head, p.can)),
-		await BSCNV.HexToArrayBuffer(p.sig));
-};
 
-/**
- * @typedef  {object}  VerifiedArray
- * @property {boolean} VerifiedAll   - Indicates if whole array was verified.  False if anything was not verified or on error.
- * @property {number}  VerifiedCount - Number of objects verified.  
- * @property {number}  FailedCount   - Number of objects that failed verification.  
- * @property {cy[]}    FailedObjs    - Objects that failed verification.
- */
+
+
 
 /**
- * VerifyCyArray verifies an array of `cy`s and returns a single "VerifiedArray" object.
+ * VerifyCozeArray verifies an array of `coze`s and returns a single "VerifiedArray" object.
  *
- * @param  {cy[]}           cy       - Javascript object.  Coze Javascript Object or string.   
+ * @param  {coze[]}           coze       - Javascript object.  Coze Javascript Object or string.   
  * @param  {CozeKey}        [pubkey] - Javascript object.  CozeKey.   
  * @return {VerifiedArray}
  * @throws error
  */
-async function VerifyCyArray(cy, CozeKeyPublic) {
-	if (!Array.isArray(cy)) {
-		return VerifyCy(cy, CozeKeyPublic)
+async function VerifyCozeArray(coze, CozeKeyPublic) {
+	if (!Array.isArray(coze)) {
+		return VerifyCoze(coze, CozeKeyPublic)
 	}
 
+	/** @type {VerifiedArray} verifiedObj */
 	var verifiedObj = {
 		VerifiedAll: false,
 		VerifiedCount: 0,
 		FailedCount: 0,
-		FailedObjs: [],
+		FailedCoze: [],
 	};
 
-	let copy = [...cy]; // Array copy so original isn't modified. 
+	let copy = [...coze]; // Copy so original isn't modified. 
 
 	for (let i = 0; i < copy.length; i++) {
 		let c = copy[i];
-		if (!isEmpty(c.cy)) { // Is message "cy" encapsulated?
-			c = c.cy;
+		if (!isEmpty(c.coze)) { // "coze" encapsulated?
+			c = c.coze;
 		}
 
-		let valid = await VerifyCy(c, CozeKeyPublic);
+		let valid = await VerifyCoze(c, CozeKeyPublic);
 		if (valid) {
 			verifiedObj.VerifiedCount++;
 		} else {
 			verifiedObj.FailedCount++;
-			verifiedObj.FailedObjs.push(copy);
+			verifiedObj.FailedCoze.push(copy);
 		}
 	}
 
@@ -231,133 +199,94 @@ async function VerifyCyArray(cy, CozeKeyPublic) {
 	return verifiedObj;
 };
 
-/**
- * signObj canonicalizes, signs the object, and returns a Hex signature.It may
- * produce invalid Coze that's cryptographically valid.  Performs canon,
- * signing, and returns the Hex of the signature.  The hashing algorithm is
- * defined by the CozeKey.
- *
- * Formerly CHSH, (Canonical Hash Sign Hex).
- *
- * Don't use this function unless you know what you are doing. 
- *
- * @param   {Object|string}  obj       Object to be canonicalized and signed.
- * @param   {CozeKey}        cozeKey   CozeKey object used for signing *and hashing* the Array Buffer. 
- * @param   {Array}          [canon]   Array for canonical keys. [Optional]
- * @returns {Hex}                      Hex of the digest.
- * @throws  {SyntaxError}              JSON parse exception.
- */
-async function signObj(obj, cozeKey, canon) {
-	if (typeof obj == "string") {
-		obj = JSON.parse(obj); // May throw error
-	}
-	return CTK.CryptoKey.SignBufferToHex(
-		await CTK.CryptoKey.FromCozeKey(cozeKey),
-		await BSCNV.SToArrayBuffer(await Can.Canons(obj, canon))
-	);
-};
+
 
 
 
 /**
- * CyParts 
- * 
- * @typedef  {Object}  CyParts
- * @property {head}    head - Coze `head` with `alg`, `iat`, and `tmb` set. 
- * @property {CozeKey} key  - CozeKey.
- * @property {sig}     sig  - Hex sig.  
- * @property {Array}   can  - Array Canon.  e.g. ["alg","x"]
- * @property {Hex}     cad  - "Canon digest" 
- * @property {Hex}     cyd  - "Cy digest" 
- */
-
-/**
- * GetCyParts accepts a `cy`, calculates `cad`, `can`, `cyd` and `tmb`, and
- * returns a CyParts object.
+Meta recalculates [can, cad, czd], for a given `coze`. Coze.Pay,
+Coze.Pay.Alg, and Coze.Sig must be set.  Meta does no cryptographic
+verification.
  *
- * The input `cy` must always have the field `head` set.
- * 
- * `cy` may or may not be encapsulated in a `cy` key.  If the field `cy` does
- * not appear in the first level of input `cy` object it is assume that
- * parameter `cy` is a cy object.
- * 
- * The input must also have `cy.key` or parameter "pubkey" and `cy.sig` or
- * parameter "sig".  If both the parameter and the respective cy component is
- * populated (`cy.key` and `pubkey` or `cy.sig` and `sig`) the parameters
- * (pubkey, sig) will overwrite cy components (`cy.key`, `cy.sig`).  If neither
- * are given an error is thrown. 
+ * The input `coze` must always have the field `pay` set.
  *
- * @param  {(cy|string)} cy        Object or string. May be cy or cy.head.   
- * @param  {CozeKey}     [pubkey]  CozeKey that was used to sign the coze message.  
- * @param  {sig}         [sig]     Hex sig.
- * @throws {Error}                 JSON parse exception or other Error.  
- * @return {CyParts}               {head, key, iat, can, cad, cyd, tmb, sig}
+ * Input variable `coze` may or may not be encapsulated in a `coze` JSON name.
+ * If the field `coze` does not appear in the first level of input `coze` object
+ * it is assume that parameter `coze` is a coze object.
+ *
+ * The input must also have `coze.key` or parameter "pubkey" and `coze.sig` or
+ * parameter "sig".  If both the parameter and the respective coze component is
+ * populated (`coze.key` and `pubkey` or `coze.sig` and `sig`) the parameters
+ * (pubkey, sig) will overwrite coze components (`coze.key`, `coze.sig`).  If
+ * neither are given an error is thrown. 
+ *
+ * @param  {coze} coze               coze.   
+ * @throws {Error}                   JSON parse exception or other Error.  
+ * @return {Meta}                    {pay, key, iat, can, cad, czd, tmb, sig}
  * 
  */
-async function GetCyParts(cy, pubkey, sig) {
-	// console.log(cy, pubkey, sig); // debugging
-	if (Array.isArray(cy)) { // Don't attempt for arrays.
-		throw new Error("Coze.GetCyParts: Cy cannot be array.");
-	}
-	let c = {};
-	if (typeof cy == "string") {
-		c = JSON.parse(cy); // May throw error
-	} else {
-		c = {
-			...cy
-		}; // Copy of original.
-	}
+async function Meta(coze) {
+	// console.log(coze, pubkey, sig); // debugging
+	// Old, probably move to the sign verify page.
+	// 	if (Array.isArray(coze)) { // Don't attempt for arrays.
+	// 		throw new Error("Coze.Meta: Coze cannot be array.");
+	// 	}
+	// 	let c = {};
+	// 	if (typeof coze == "string") {
+	// 		c = JSON.parse(coze); // May throw error
+	// 	} else {
+	// 		c = {
+	// 			...coze
+	// 		}; // Copy of original.
+	// 	}
 
-	// Is `cy` encapsulated?  If so, unencapsulate.
-	if (!isEmpty(c.cy)) {
-		c = c.cy;
-	}
+	// 	// Is `coze` "coze" encapsulated?  If so, unencapsulate.
+	// 	if (!isEmpty(c.coze)) {
+	// 		c = c.coze;
+	// 	}
 
-	/** @type {CyParts} cyp */
-	var cyp = {};
-	cyp.head = c.head;
-	if (isEmpty(cyp.head)) {
-		throw new Error("Coze.GetCyParts: A head is not set.");
-	}
+	// 	/** @type {Meta} meta */
+	// 	var meta = {};
+	// 	meta.pay = c.pay;
+	// 	if (isEmpty(meta.pay)) {
+	// 		throw new Error("Coze.Meta: A pay is not set.");
+	// 	}
 
-	// if set, pubkey overwrites key. 
-	if (!isEmpty(pubkey)) {
-		cyp.key = await CZK.ToPublicCozeKey(pubkey); // sanitizes and recalcs tmb
-	} else {
-		cyp.key = await CZK.ToPublicCozeKey(c.key); // sanitizes and recalcs tmb
-	}
-	if (isEmpty(cyp.key)) {
-		throw new Error("Coze.GetCyParts: A public key is not set.");
-	}
-	if (cyp.head.tmb !== cyp.key.tmb) {
-		throw new Error("Coze.GetCyParts: `head.tmb` does not match `key.tmb`.");
-	}
+	// 	// If set, pubkey overwrites key. 
+	// 	if (!isEmpty(pubkey)) {
+	// 		meta.key = await CZK.ToPublicCozeKey(pubkey); // sanitizes and recalcs tmb
+	// 	} else {
+	// 		meta.key = await CZK.ToPublicCozeKey(c.key); // sanitizes and recalcs tmb
+	// 	}
+	// 	if (isEmpty(meta.key)) {
+	// 		throw new Error("Coze.Meta: A public key is not set.");
+	// 	}
+	// console.log(meta.pay.tmb !== meta.key.tmb);
 
-	if (!isEmpty(sig)) {
-		cyp.sig = sig;
-	}else{
-		cyp.sig = c.sig;
-	}
-	if (isEmpty(cyp.sig)) {
-		throw new Error("Coze.GetCyParts: A sig is not set.");
-	}
+	// 	if (meta.pay.tmb !== meta.key.tmb) {
+	// 		throw new Error("Coze.Meta: `pay.tmb` does not match `key.tmb`.");
+	// 	}
 
-	// If can is empty, recalculate `can` based on current head. 
-	if (isEmpty(c.can)) {
-		cyp.can = await Can.GenCanon(cyp.head);
-	} else {
-		cyp.can = c.can;
-	}
+	// 	if (!isEmpty(sig)) {
+	// 		meta.sig = sig;
+	// 	} else {
+	// 		meta.sig = c.sig;
+	// 	}
+	// 	if (isEmpty(meta.sig)) {
+	// 		throw new Error("Coze.Meta: A sig is not set.");
+	// 	}
 
+
+	coze.can = await Can.Canon(coze.pay);
+
+	// TODO serialize don't call cannon hash
 	// Calculate cad
-	cyp.cad = await BSCNV.ArrayBufferToHex(await Can.CH(c.head, Enum.HashAlg(c.head.alg), c.can));
+	coze.cad = await BSCNV.ArrayBufferTo64ut(await Can.CanonHash(coze.pay, Enum.HashAlg(coze.pay.alg)));
 
-	// Calculate cyd
-	let cydIn = '{"cad":"' + cyp.cad + '","sig":"' + cyp.sig + '"}';
-	let cydab = await crypto.subtle.digest(Enum.HashAlg(cyp.head.alg), await BSCNV.SToArrayBuffer(cydIn));
-	cyp.cyd = await BSCNV.ArrayBufferToHex(cydab);
-
-	return cyp;
+	// Calculate czd
+	let czdIn = await BSCNV.SToArrayBuffer('{"cad":"' + coze.cad + '","sig":"' + coze.sig + '"}');
+	coze.czd = await BSCNV.ArrayBufferTo64ut(await crypto.subtle.digest(Enum.HashAlg(coze.pay.alg), czdIn));
+	return coze;
 }
 
 

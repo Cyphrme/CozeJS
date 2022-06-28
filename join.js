@@ -24,10 +24,10 @@
 //
 // Only select functions from `base_convert.js` are exported.  
 // See note in `base_convert.js` for more.  
-export {SToArrayBuffer,HexToArrayBuffer,ArrayBufferToHex} from './base_convert.js'
+export {SToArrayBuffer,B64utToArrayBuffer,B64utToUint8Array,ArrayBufferTo64ut} from './base_convert.js'
 export * from './canon.js';
-export * from './coze_enum.js';
-export * from './coze_key.js';
+export * from './alg.js';
 export * from './coze.js';
+export * from './cozekey.js';
 export * from './cryptokey.js';
 

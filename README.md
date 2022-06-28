@@ -32,7 +32,7 @@ Paul will implement it soon:
 https://github.com/paulmillr/noble-ed25519/issues/63
 
 # TODOS:
-- `iat`, `alg`, and common parts for `GetCyParts` on arrays ([]cy).
+- `iat`, `alg`, and common `Meta` for arrays ([]cy).
   - If a field is different in any array, it becomes blank.  Fields that are the
    same for every element are populated.
 

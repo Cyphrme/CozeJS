@@ -13,14 +13,10 @@
 
 // Needed in Coze:
 export {
-	// Hex
-	ArrayBufferToHex,
-	HexToArrayBuffer,
+	ArrayBufferTo64ut,
+	B64utToArrayBuffer,
+	B64utToUint8Array,
 	SToArrayBuffer,
-
-	// RFC base 64s
-	HexTob64ut,
-	B64ToHex,
 }
 
 /**
@@ -192,6 +188,30 @@ function ArrayBufferTo64ut(buffer) {
 	var string = String.fromCharCode.apply(null, new Uint8Array(buffer));
 	return base64t(URIUnsafeToSafe(btoa(string)));
 }
+
+/**
+ * B64utToArrayBuffer takes a b64ut string and decodes it back into a string.
+ * 
+ * @param   {B64} string 
+ * @returns {ArrayBuffer}
+ */
+ function B64utToArrayBuffer(string) {
+	// atob doesn't care about the padding character '='
+	return Uint8Array.from(atob(string.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)).buffer;
+};
+
+
+
+/**
+ * B64utToUint8Array takes a b64ut string and decodes it back into a string.
+ * 
+ * @param   {B64} string 
+ * @returns {ArrayBuffer}
+ */
+ function B64utToUint8Array(string) {
+	// atob doesn't care about the padding character '='
+	return Uint8Array.from(atob(string.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+};
 
 /**
  * URIUnsafeToSafe converts any URI unsafe string to URI safe.  

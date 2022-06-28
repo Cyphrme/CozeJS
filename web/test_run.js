@@ -10,11 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /** @type {tests} **/
 let testsToRun = [
+	tests.t_Param,
 	tests.t_Canon,
 	tests.t_Sign,
-	tests.t_SignCy,
+	tests.t_SignCoze,
 	tests.t_Valid,
 	tests.t_Revoke,
 	tests.t_CryptoKeySign,
-	tests.t_AlgParams,
 ];
