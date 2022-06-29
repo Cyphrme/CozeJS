@@ -1,6 +1,6 @@
 "use strict";
 
-import * as BSCNV from './base_convert.js';
+import * as Coze from './coze.js';
 import * as Alg from './alg.js';
 import * as CozeKey from './cozekey.js';
 import {
@@ -44,9 +44,9 @@ var CryptoKey = {
 	 * FromCozeKey takes a Coze Key and returns a Javascript CryptoKey.  Only
 	 * supports ECDSA since Crypto.subtle only supports ECDSA. 
 	 * https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#JSON_Web_Key 
-	 * @param   {CozeKey}    cozeKey     Coze key.
+	 * @param   {CozeKey}    cozeKey           Coze key.
 	 * @param   {Boolean}    [public=false]    Return only a public key.
-	 * @returns {CryptoKey}              Javascript CryptoKey
+	 * @returns {CryptoKey}                    Javascript CryptoKey
 	 * @throws
 	 */
 	FromCozeKey: async function(cozeKey, onlyPublic) {
@@ -61,11 +61,11 @@ var CryptoKey = {
 		jwk.kty = "EC";
 
 		let half = Alg.XSize(cozeKey.alg) / 2;
-		let xyab = await BSCNV.B64utToUint8Array(cozeKey.x);
+		let xyab = await Coze.B64utToUint8Array(cozeKey.x);
 		let xab = xyab.slice(0, half)
 		let yab = xyab.slice(half)
-		jwk.x = await BSCNV.ArrayBufferTo64ut(xab);
-		jwk.y = await BSCNV.ArrayBufferTo64ut(yab);
+		jwk.x = await Coze.ArrayBufferTo64ut(xab);
+		jwk.y = await Coze.ArrayBufferTo64ut(yab);
 		
 		// Public CryptoKey "crypto.subtle.importKey" needs key use to be "verify"
 		// even though this doesn't exist in JWK RFC or IANA registry. (2021/05/12)
@@ -180,13 +180,13 @@ Why are we exporting to JWK?
 		czk.alg = await CryptoKey.algFromCrv(exported.crv);
 		// Concatenate x and y, but concatenation is done at the byte level, so:
 		// unencode, concatenated, and encoded. 
-		let xui8 = BSCNV.B64utToUint8Array(exported.x);
-		let yui8 = BSCNV.B64utToUint8Array(exported.y);
+		let xui8 = Coze.B64utToUint8Array(exported.x);
+		let yui8 = Coze.B64utToUint8Array(exported.y);
 		var xyui8 = new Uint8Array([
 			...xui8,
 			...yui8,
 		]);
-		czk.x = BSCNV.ArrayBufferTo64ut(xyui8.buffer);
+		czk.x = Coze.ArrayBufferTo64ut(xyui8.buffer);
 
 		// Only private ECDSA keys have `d`.
 		if (exported.hasOwnProperty('d')) {
@@ -239,7 +239,7 @@ Why are we exporting to JWK?
 	 * @returns {string}      B64             B64
 	 */
 	SignBufferB64: async function(cryptoKey, arrayBuffer) {
-		return await BSCNV.ArrayBufferTo64ut(await CryptoKey.SignBuffer(cryptoKey, arrayBuffer));
+		return await Coze.ArrayBufferTo64ut(await CryptoKey.SignBuffer(cryptoKey, arrayBuffer));
 	},
 
 	/**
@@ -250,7 +250,7 @@ Why are we exporting to JWK?
 	 * @returns {string}  hex.           String. Hex as string.
 	 */
 	SignString: async function(cryptoKey, utf8) {
-		return await CryptoKey.SignBufferB64(cryptoKey, await BSCNV.SToArrayBuffer(utf8));
+		return await CryptoKey.SignBufferB64(cryptoKey, await Coze.SToArrayBuffer(utf8));
 	},
 
 	/**
@@ -286,8 +286,8 @@ Why are we exporting to JWK?
 	 * @returns {boolean}                      Boolean. If signature is valid.  
 	 */
 	VerifyMsg: async function(cryptoKey, msg, sig) {
-		let msgab = await BSCNV.SToArrayBuffer(msg);
-		let sigab = await BSCNV.B64utToArrayBuffer(sig);
+		let msgab = await Coze.SToArrayBuffer(msg);
+		let sigab = await Coze.B64uToArrayBuffer(sig);
 		return CryptoKey.VerifyArrayBuffer(cryptoKey, msgab, sigab);
 	},
 

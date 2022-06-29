@@ -4,16 +4,22 @@ import * as Can from './canon.js'; // import as "Can" since func "Canon" will co
 import * as Enum from './alg.js';
 import * as CZK from './cozekey.js';
 import * as CTK from './cryptokey.js';
-import * as BSCNV from './base_convert.js';
+import * as Coze from './coze.js';
 
 export {
+	PayCanon,
 	Sign,
 	SignCoze,
 	Verify,
 	VerifyCoze,
 	VerifyCozeArray,
 	Meta,
-	PayCanon,
+	
+	// Base conversion
+	SToArrayBuffer,
+	B64uToArrayBuffer,
+	B64utToUint8Array,
+	ArrayBufferTo64ut,
 
 	// Helpers
 	isEmpty,
@@ -70,7 +76,7 @@ async function Sign(message, cozeKey) {
 	let cryptokey = await CTK.CryptoKey.FromCozeKey(cozeKey);
 	return CTK.CryptoKey.SignBufferB64(
 		cryptokey,
-		await BSCNV.SToArrayBuffer(message)
+		await SToArrayBuffer(message)
 	);
 }
 
@@ -281,12 +287,62 @@ async function Meta(coze) {
 
 	// TODO serialize don't call cannon hash
 	// Calculate cad
-	coze.cad = await BSCNV.ArrayBufferTo64ut(await Can.CanonHash(coze.pay, Enum.HashAlg(coze.pay.alg)));
+	coze.cad = await Coze.ArrayBufferTo64ut(await Can.CanonHash(coze.pay, Enum.HashAlg(coze.pay.alg)));
 
 	// Calculate czd
-	let czdIn = await BSCNV.SToArrayBuffer('{"cad":"' + coze.cad + '","sig":"' + coze.sig + '"}');
-	coze.czd = await BSCNV.ArrayBufferTo64ut(await crypto.subtle.digest(Enum.HashAlg(coze.pay.alg), czdIn));
+	let czdIn = await Coze.SToArrayBuffer('{"cad":"' + coze.cad + '","sig":"' + coze.sig + '"}');
+	coze.czd = await Coze.ArrayBufferTo64ut(await crypto.subtle.digest(Enum.HashAlg(coze.pay.alg), czdIn));
 	return coze;
+}
+
+
+
+///////////////////////////////////
+// Base Conversion
+///////////////////////////////////
+/**
+ * Converts a string to an ArrayBuffer.   
+ *
+ * @param  {string}        String.
+ * @return {ArrayBuffer}
+ */
+ async function SToArrayBuffer(string) {
+	var enc = new TextEncoder(); // Suppose to be always in UTF-8
+	return enc.encode(string).buffer;
+}
+
+/**
+ * B64uToArrayBuffer takes a b64u (truncated or not truncated) string and decodes it to an ArrayBuffer. 
+ * 
+ * @param   {B64} string 
+ * @returns {ArrayBuffer}
+ */
+ function B64uToArrayBuffer(string) {
+	// atob doesn't care about the padding character '='
+	return Uint8Array.from(atob(string.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)).buffer;
+};
+
+/**
+ * B64utToUint8Array takes a b64ut string and decodes it back into a string.
+ * 
+ * @param   {B64} string 
+ * @returns {Uint8Array}
+ */
+ function B64utToUint8Array(string) {
+	// atob doesn't care about the padding character '='
+	return Uint8Array.from(atob(string.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+};
+
+
+/**
+ * ArrayBufferTo64ut Array buffer to base64url.
+ * 
+ * @param   {ArrayBuffer} buffer  ArrayBuffer. Arbitrary bytes. UTF-16 is Javascript native.
+ * @returns {b64ut}               String. b64ut encoded string.
+ */
+ function ArrayBufferTo64ut(buffer) {
+	var string = String.fromCharCode.apply(null, new Uint8Array(buffer));
+	return btoa(string).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
 

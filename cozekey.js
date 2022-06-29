@@ -1,9 +1,8 @@
 "use strict";
 
 import * as CTK from './cryptokey.js';
-import * as Coze from './coze.js';
 import * as Can from './canon.js';
-import * as BSCNV from './base_convert.js';
+import * as Coze from './coze.js';
 import * as Enum from './alg.js';
 import {
 	isEmpty
@@ -189,7 +188,7 @@ async function Correct(cozeKey) {
 		// console.log("Signing for private key. ");
 		let mld = "Test Signing";
 		let cryptoKey = await CTK.CryptoKey.FromCozeKey(cozeKey);
-		let mldBuffer = await BSCNV.SToArrayBuffer(mld)
+		let mldBuffer = await Coze.SToArrayBuffer(mld)
 		let sig = await CTK.CryptoKey.SignBuffer(cryptoKey, mldBuffer);
 		let pubKey = await CTK.CryptoKey.FromCozeKey(cozeKey, true);
 		let result = await CTK.CryptoKey.VerifyArrayBuffer(pubKey, mldBuffer, sig);

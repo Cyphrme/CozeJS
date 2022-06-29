@@ -24,7 +24,6 @@
 //
 // Only select functions from `base_convert.js` are exported.  
 // See note in `base_convert.js` for more.  
-export {SToArrayBuffer,B64utToArrayBuffer,B64utToUint8Array,ArrayBufferTo64ut} from './base_convert.js'
 export * from './canon.js';
 export * from './alg.js';
 export * from './coze.js';

@@ -1,6 +1,6 @@
 "use strict";
 
-import * as BSCNV from './base_convert.js';
+import * as Coze from './coze.js';
 import {
 	isEmpty
 } from './coze.js';
@@ -88,7 +88,7 @@ async function CanonHash(input, digest, can) {
 		input = JSON.parse(input);
 	}
 
-	let ab = await BSCNV.SToArrayBuffer(await CanonicalS(input, can))
+	let ab = await Coze.SToArrayBuffer(await CanonicalS(input, can))
 	return await crypto.subtle.digest(digest, ab);
 }
 
@@ -102,5 +102,5 @@ async function CanonHash(input, digest, can) {
  */
 async function CanonHash64(obj, digest, can) {
 	let ab = await CanonHash(obj, digest, can);
-	return await BSCNV.ArrayBufferTo64ut(ab);
+	return await Coze.ArrayBufferTo64ut(ab);
 }
