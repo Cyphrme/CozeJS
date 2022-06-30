@@ -9,8 +9,8 @@ export {
 	Canon,
 	Canonical,
 	CanonicalS,
-	CanonHash,
-	CanonHash64,
+	CanonicalHash,
+	CanonicalHash64,
 }
 
 /**
@@ -37,7 +37,7 @@ function Canon(obj) {
  * canon.
  * 
  * @param   {Object}         object    Object to be canonicalized.   
- * @param   {Array|Object}   [can]     Array|Object. Array|Object canon. 
+ * @param   {Canon}          [can]     Array|Object. Array|Object canon. 
  * @returns {Object}                   Object. Canonicalized object.
  */
 async function Canonical(object, can) {
@@ -65,7 +65,7 @@ async function Canonical(object, can) {
  * Canonical canonicalizes obj and returns a JSON string. 
  *
  * @param   {Object}   obj         Object being canonicalized.
- * @param   {Array}    [canon]     Array.  Optional canon.[Optional]
+ * @param   {Canon}    [canon]     Array.  Optional canon.[Optional]
  * @returns {string}               String.
  */
 async function CanonicalS(obj, can) {
@@ -73,14 +73,14 @@ async function CanonicalS(obj, can) {
 };
 
 /**
- * CanonHash, returns hashes.  See docs on Canons.
+ * CanonicalHash put input into canonical form and returns digest.
  *
  * @param   {Object|String} input              Object being canonicalized.
  * @param   {HashAlg}       [digest=SHA-256]   String. Must be SubtleCrypto.digest() compatible.  (i.e. 'SHA-256') [Optional]
  * @param   {Canon}         [canon]            Array. for canonical keys. [Optional]
  * @returns {ArrayBuffer}                      ArrayBuffer. of the digest.  
  */
-async function CanonHash(input, digest, can) {
+async function CanonicalHash(input, digest, can) {
 	if (isEmpty(digest)) {
 		digest = 'SHA-256';
 	}
@@ -93,14 +93,14 @@ async function CanonHash(input, digest, can) {
 }
 
 /**
- * CanonHash64 returns the b64ut of the digest.  See docs on Canonical.
+ * CanonicalHash64 returns the b64ut of the digest.  See docs on Canonical.
  *
  * @param {Object|String} obj           Object being canonicalized.
  * @param {String}        [digest]      Subtle crypto compatible digest that's being used.  (i.e. 'SHA-256') [Optional]
- * @param {Array}         [canon]       Array for canonical keys. [Optional]
+ * @param {Canon}         [canon]       Array for canonical keys. [Optional]
  * @param {String}                      Hex (string) of the digest.  
  */
-async function CanonHash64(obj, digest, can) {
-	let ab = await CanonHash(obj, digest, can);
+async function CanonicalHash64(obj, digest, can) {
+	let ab = await CanonicalHash(obj, digest, can);
 	return await Coze.ArrayBufferTo64ut(ab);
 }

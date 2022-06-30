@@ -226,7 +226,7 @@ verification.
  * (pubkey, sig) will overwrite coze components (`coze.key`, `coze.sig`).  If
  * neither are given an error is thrown. 
  *
- * @param  {coze} coze               coze.   
+ * @param  {coze}      coze          coze.   
  * @throws {Error}                   JSON parse exception or other Error.  
  * @return {Meta}                    {pay, key, iat, can, cad, czd, tmb, sig}
  * 
@@ -287,7 +287,7 @@ async function Meta(coze) {
 
 	// TODO serialize don't call cannon hash
 	// Calculate cad
-	coze.cad = await Coze.ArrayBufferTo64ut(await Can.CanonHash(coze.pay, Enum.HashAlg(coze.pay.alg)));
+	coze.cad = await Coze.ArrayBufferTo64ut(await Can.CanonicalHash(coze.pay, Enum.HashAlg(coze.pay.alg)));
 
 	// Calculate czd
 	let czdIn = await Coze.SToArrayBuffer('{"cad":"' + coze.cad + '","sig":"' + coze.sig + '"}');

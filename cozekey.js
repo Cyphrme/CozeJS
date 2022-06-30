@@ -81,7 +81,7 @@ async function Thumbprint(cozeKey) {
 	if (isEmpty(cozeKey.alg) || isEmpty(cozeKey.x)) {
 		throw new Error("CozeKey.Thumbprint: alg or x  is empty.");
 	}
-	return Can.CanonHash64(cozeKey, await Enum.HashAlg(cozeKey.alg), TmbCanon);
+	return Can.CanonicalHash64(cozeKey, await Enum.HashAlg(cozeKey.alg), TmbCanon);
 };
 
 /**
