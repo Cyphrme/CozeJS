@@ -25,8 +25,26 @@ export {
 let t_Param = {
 	"name": "Param",
 	"func": test_Param,
-	"golden": '{"Name":"ES224","Genus":"ECDSA","Family":"EC","Hash":"SHA-224","HashSize":28,"Curve":"P-224","Use":"sig","SigSize":56,"XSize":56,"DSize":28},{"Name":"ES256","Genus":"ECDSA","Family":"EC","Hash":"SHA-256","HashSize":32,"Curve":"P-256","Use":"sig","SigSize":64,"XSize":64,"DSize":32},{"Name":"ES384","Genus":"ECDSA","Family":"EC","Hash":"SHA-384","HashSize":48,"Curve":"P-384","Use":"sig","SigSize":96,"XSize":96,"DSize":48},{"Name":"ES512","Genus":"ECDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Curve":"P-521","Use":"sig","SigSize":132,"XSize":132,"DSize":66},{"Name":"Ed25519","Genus":"EdDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Curve":"Curve25519","Use":"sig","SigSize":64,"XSize":32,"DSize":32},{"Name":"Ed25519ph","Genus":"EdDSA","Family":"EC","Hash":"SHA-512","HashSize":64},{"Name":"Ed448","Genus":"EdDSA","Family":"EC","Hash":"SHAKE256","HashSize":64,"Curve":"Curve448","Use":"sig","SigSize":114,"XSize":57,"DSize":57},{"Name":"SHA-224","Genus":"SHA2","Family":"SHA","Hash":"SHA-224","HashSize":28},{"Name":"SHA-256","Genus":"SHA2","Family":"SHA","Hash":"SHA-256","HashSize":32},{"Name":"SHA-384","Genus":"SHA2","Family":"SHA","Hash":"SHA-384","HashSize":48},{"Name":"SHA-512","Genus":"SHA2","Family":"SHA","Hash":"SHA-512","HashSize":64},{"Name":"SHA3-224","Genus":"SHA3","Family":"SHA","Hash":"SHA3-224","HashSize":28},{"Name":"SHA3-256","Genus":"SHA3","Family":"SHA","Hash":"SHA3-256","HashSize":32},{"Name":"SHA3-384","Genus":"SHA3","Family":"SHA","Hash":"SHA3-384","HashSize":48},{"Name":"SHA3-512","Genus":"SHA3","Family":"SHA","Hash":"SHA3-512","HashSize":64},{"Name":"SHAKE128","Genus":"SHA3","Family":"SHA","Hash":"SHAKE128","HashSize":32},{"Name":"SHAKE256","Genus":"SHA3","Family":"SHA","Hash":"SHAKE256","HashSize":64}'
-};
+	"golden": `
+{"Name":"ES224","Genus":"ECDSA","Family":"EC","Hash":"SHA-224","HashSize":28,"Curve":"P-224","Use":"sig","SigSize":56,"XSize":56,"DSize":28}
+{"Name":"ES256","Genus":"ECDSA","Family":"EC","Hash":"SHA-256","HashSize":32,"Curve":"P-256","Use":"sig","SigSize":64,"XSize":64,"DSize":32}
+{"Name":"ES384","Genus":"ECDSA","Family":"EC","Hash":"SHA-384","HashSize":48,"Curve":"P-384","Use":"sig","SigSize":96,"XSize":96,"DSize":48}
+{"Name":"ES512","Genus":"ECDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Curve":"P-521","Use":"sig","SigSize":132,"XSize":132,"DSize":66}
+{"Name":"Ed25519","Genus":"EdDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Curve":"Curve25519","Use":"sig","SigSize":64,"XSize":32,"DSize":32}
+{"Name":"Ed25519ph","Genus":"EdDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Curve":"Curve25519","Use":"sig","SigSize":64,"XSize":32,"DSize":32}
+{"Name":"Ed448","Genus":"EdDSA","Family":"EC","Hash":"SHAKE256","HashSize":64,"Curve":"Curve448","Use":"sig","SigSize":114,"XSize":57,"DSize":57}
+{"Name":"SHA-224","Genus":"SHA2","Family":"SHA","Hash":"SHA-224","HashSize":28}
+{"Name":"SHA-256","Genus":"SHA2","Family":"SHA","Hash":"SHA-256","HashSize":32}
+{"Name":"SHA-384","Genus":"SHA2","Family":"SHA","Hash":"SHA-384","HashSize":48}
+{"Name":"SHA-512","Genus":"SHA2","Family":"SHA","Hash":"SHA-512","HashSize":64}
+{"Name":"SHA3-224","Genus":"SHA3","Family":"SHA","Hash":"SHA3-224","HashSize":28}
+{"Name":"SHA3-256","Genus":"SHA3","Family":"SHA","Hash":"SHA3-256","HashSize":32}
+{"Name":"SHA3-384","Genus":"SHA3","Family":"SHA","Hash":"SHA3-384","HashSize":48}
+{"Name":"SHA3-512","Genus":"SHA3","Family":"SHA","Hash":"SHA3-512","HashSize":64}
+{"Name":"SHAKE128","Genus":"SHA3","Family":"SHA","Hash":"SHAKE128","HashSize":32}
+{"Name":"SHAKE256","Genus":"SHA3","Family":"SHA","Hash":"SHAKE256","HashSize":64}
+`};
+
 let t_Canon = {
 	"name": "Canon",
 	"func": test_Canon,
@@ -48,7 +66,7 @@ let t_Valid = {
 	"golden": true,
 };
 let t_Revoke = {
-	"name": "Revoking a key",
+	"name": "Revoke",
 	"func": test_Revoke,
 	"golden": true,
 };
@@ -92,12 +110,14 @@ let Algs = ["ES256", "ES384", "ES512"];
 // Tests "Alg.Param".
 async function test_Param() {
 	let algs = ["ES224", "ES256", "ES384", "ES512", "Ed25519", "Ed25519ph", "Ed448", "SHA-224", "SHA-256", "SHA-384", "SHA-512", "SHA3-224", "SHA3-256", "SHA3-384", "SHA3-512", "SHAKE128", "SHAKE256"];
-	let results = [];
+	let results = "";
 	for (let i = 0; i < algs.length; i++) {
-		results.push(JSON.stringify(Coze.Params(algs[i])));
+		results += JSON.stringify(Coze.Params(algs[i])) + "\n";
 	}
 	return results;
 };
+
+
 
 
 // test_Canon tests CanonicalS(). Checks for utf-8 order, removal of

@@ -124,7 +124,7 @@ async function Valid(privateCozeKey) {
  * @returns {boolean}             Boolean. Always returns true unless error.   
  * @throws                        
  */
-async function Correct(cozeKey) {
+async function Correct(ck) {
 	let required = [
 		'alg',
 		'tmb',

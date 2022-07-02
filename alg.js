@@ -331,6 +331,7 @@ function Curve(alg) {
 		case "ES512": // P-521 is not ES512/SHA-512.  The curve != the alg/hash. 
 			return "P-521";
 		case "Ed25519":
+		case "Ed25519ph":
 			return "Curve25519";
 		case "Ed448":
 			return "Curve448";

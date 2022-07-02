@@ -1,8 +1,10 @@
 "use strict";
 
-export{
+export {
 	Run,
 }
+
+// Test will call .trim() on string's golden and returned values.  
 
 /**
  * test defines a test to be run.  
@@ -79,7 +81,15 @@ async function stats() {
 function appendResult(obj) {
 	let clone = jsResultTemplate.content.cloneNode(true);
 	let test = "" + obj.name + "\: ";
-	if (obj.result != obj.golden) {
+	// console.log(obj.result == obj.golden, "\n", obj.result, obj.golden, typeof obj.result, typeof obj.golden);
+
+	if (typeof obj.golden == "string") {
+		// Trim outer strings making tests easier to write.  
+		var failed = (obj.result.trim() != obj.golden.trim())
+	} else {
+		failed = obj.result != obj.golden
+	}
+	if (failed) {
 		console.error("❌ Failed.  Got: " + obj.result + " Expected: " + obj.golden);
 		test += "❌ Failed";
 		clone.querySelector('div').classList.add("text-danger")
