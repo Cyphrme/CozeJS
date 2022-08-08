@@ -16,9 +16,12 @@ func serveFiles(w http.ResponseWriter, r *http.Request) {
 
 	var filePath = r.URL.Path[1:] //remove slash
 	if filePath == "" {
-		// On empty path display `test.html`
+		// On empty path display home/index (`test.html`)
 		filePath = "test.html"
-	} else if filePath == "coze.min.js" || filePath == "coze.min.js.map" {
+	} else if filePath == "test_run.js" || filePath == "test.js" ||
+		filePath == "browsertestjs.png" || filePath == "cyphrme_bootstrap.min.css" {
+		// Do nothing, serve filepath unmodified.
+	} else {
 		filePath = "../" + filePath
 	}
 

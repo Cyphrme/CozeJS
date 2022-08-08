@@ -1,12 +1,12 @@
 
 ![Coze](coze_logo_zami_white_450x273.png)
 # Coze js Test Readme
-
+Coze uses BrowserTestJS for running unit tests in the browser.
 
 ## Go server
 
 ```sh
-cd $CYPHRME/web/dist/js/coze/web
+cd $CYPHRME/web/dist/js/coze/browsertestjs
 go run server.go
 ```
 

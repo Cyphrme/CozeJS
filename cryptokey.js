@@ -3,24 +3,23 @@
 import * as Coze from './coze.js';
 import * as Alg from './alg.js';
 import * as CozeKey from './cozekey.js';
-import {
-	isEmpty
-} from './coze.js';
 
 export {
 	CryptoKey,
 };
 
 var CryptoKey = {
+
 	/**
 	 * New returns a ECDSA CryptoKeyPair. 
 	 * https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair
-	 * @param  {Alg}           [alg=ES256] - Alg of the key to generate.  (e.g. "ES256")
+	 * 
+	 * @param  {Alg}           [alg=ES256] - Alg of the key to generate. (e.g. "ES256")
 	 * @return {CryptoKeyPair}             - CryptoKeyPair
 	 * @throws 
 	 */
-	New: async function(alg) {
-		if (isEmpty(alg)) {
+	New: async function (alg) {
+		if (Coze.isEmpty(alg)) {
 			alg = "ES256"
 		}
 		// Javascript only supports ECDSA, and doesn't support ES192 or ES224.  See
@@ -39,17 +38,17 @@ var CryptoKey = {
 		return keyPair;
 	},
 
-
 	/**
 	 * FromCozeKey takes a Coze Key and returns a Javascript CryptoKey.  Only
 	 * supports ECDSA since Crypto.subtle only supports ECDSA. 
-	 * https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#JSON_Web_Key 
+	 * https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#JSON_Web_Key
+	 * 
 	 * @param   {CozeKey}    cozeKey           Coze key.
 	 * @param   {Boolean}    [public=false]    Return only a public key.
 	 * @returns {CryptoKey}                    Javascript CryptoKey
 	 * @throws
 	 */
-	FromCozeKey: async function(cozeKey, onlyPublic) {
+	FromCozeKey: async function (cozeKey, onlyPublic) {
 		if (Alg.Genus(cozeKey.alg) != "ECDSA") {
 			throw new Error("CryptoKey.FromCozeKey: unsupported CryptoKey algorithm: " + cozeKey.alg);
 		}
@@ -66,11 +65,11 @@ var CryptoKey = {
 		let yab = xyab.slice(half)
 		jwk.x = await Coze.ArrayBufferTo64ut(xab);
 		jwk.y = await Coze.ArrayBufferTo64ut(yab);
-		
+
 		// Public CryptoKey "crypto.subtle.importKey" needs key use to be "verify"
 		// even though this doesn't exist in JWK RFC or IANA registry. (2021/05/12)
 		// Gawd help us.  Private CryptoKey needs key `use` to be "sign".
-		if (isEmpty(cozeKey.d) || onlyPublic) {
+		if (Coze.isEmpty(cozeKey.d) || onlyPublic) {
 			var signOrVerify = "verify";
 		} else {
 			signOrVerify = "sign";
@@ -90,7 +89,6 @@ var CryptoKey = {
 		return cryptoKey;
 	},
 
-
 	/**
 	 * ToPublic accepts a Javascript CryptoKey and returns a public
 	 * Javascript CryptoKey.  
@@ -98,79 +96,79 @@ var CryptoKey = {
 	 * @param   {CryptoKey} cryptoKey   CryptoKey
 	 * @returns {CryptoKey}             Public Javascript CryptoKey
 	 */
-	ToPublic: async function(cryptoKey) {
-		delete cryptoKey.d; // Remove private `d` from the key.  
+	ToPublic: async function (cryptoKey) {
+		delete cryptoKey.d; // Remove private `d` from the key.
 		// Only ["verify"] is a valid `key_ops` value for a public CryptoKey.
 		// `key_ops` must be an array.
 		cryptoKey.key_ops = ["verify"];
 	},
 
 	/**
- CryptoKeyToCozeKey returns a Coze Key from Javascript's "CryptoKey" type.
- (https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey) Coze keys are
- similiar to JOSE JWK's but has a few significant differences. See the Coze docs
- for more on these differences.  
-
- - Coze Byte-to-string values are always b64ut, "RFC 4648 base64 URI Safe
-    Truncated".
- - Coze keys also use the field `alg` to denote everything about the key:
-    it's use, hashing algorithm, curve, family, signature size, private
-    component size, public component size, etc...
- - A Coze key's Thumbprint's hashing algorithm must always be in alignment
-    with the alg.  This is unlike JOSE which appears to use SHA-256 even for
-    keys that don't use that algorithm.  
- 
- This function currently only supports ECDSA (ES256. ES384, ES512) as
- crypto.subtle only supports these ECDSA algorithms. From Cryptokey, `exported`
- key output should is in the following form.  
-
-{
-	"crv": "P-256",
-	"d": "GwJgQIcbB29IfWO46QZwansE5XVVOg_CfafcpGk3K9I",
-	"key_ops": [
-		"sign",
-		"verify"
-	],
-	"kty": "EC",
-	"x": "bMgUwXPLFR5WPERFIdUR8f6J9znFlM4fL-TaYr7YNSo",
-	"y": "vuU0bE-JafF1zEW_MbL-oaO0eGltDeMHIfc_bxkdCHU",
-	"use": "sig"
-}
-		
-Some aspects of the Javascript exported key are in conflict with JOSE.  The
-`delete`s below are for reference of how out of alignment the Javascript
-representation is from JOSE.  If for some reason a JOSE representation is
-required, the deletes are suggested.  
-
-`delete exported.key_ops;`
-
-According to RFC 7517 Section 4.3, "use" is mutually exclusive with
-key_ops. 
-
-`delete exported["ext"];`
-
-`ext` is define by the Web Cryptography API and does not appear in the
-core JOSE RFC's.  It stands for "extractable".  Since the key is already
-"extracted" we don't care, and we're not going to burden downstream with
-it.  However, this may need to be added again later if the key is further
-manipulated by SubtleCrypto. 
-
-Coze does not use "crv", "kty", or "use" and instead relies solely on
-"alg". Since alg is not given, it's assumed from `crv` while `kty`is
-ignored.
-
-Why are we exporting to JWK?
-
-1. There's no access to the key fields without exporting.  (The
-		browser hides the information from Javascript.)
-2. The exporting formats are limited.  
-3. Can't export to "raw" because "raw" appears to only work on public
-		keys.  This may be a private key. 
+	 * CryptoKeyToCozeKey returns a Coze Key from Javascript's "CryptoKey" type.
+	 * (https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey) Coze keys are
+	 * similiar to JOSE JWK's but has a few significant differences. See the Coze docs
+	 * for more on these differences.
+	 * 
+	 * - Coze Byte-to-string values are always b64ut, "RFC 4648 base64 URI Safe
+	 * Truncated".
+	 * - Coze keys also use the field `alg` to denote everything about the key:
+	 * it's use, hashing algorithm, curve, family, signature size, private
+	 * component size, public component size, etc...
+	 * - A Coze key's Thumbprint's hashing algorithm must always be in alignment
+	 * with the alg.  This is unlike JOSE which appears to use SHA-256 even for
+	 * keys that don't use that algorithm.
+	 * 
+	 * This function currently only supports ECDSA (ES256. ES384, ES512) as
+	 * crypto.subtle only supports these ECDSA algorithms. From Cryptokey, `exported`
+	 * key output should is in the following form.
+	 * 
+	 * {
+	 * "crv": "P-256",
+	 * "d": "GwJgQIcbB29IfWO46QZwansE5XVVOg_CfafcpGk3K9I",
+	 * "key_ops": [
+	 * "sign",
+	 * "verify"
+	 * ],
+	 * "kty": "EC",
+	 * "x": "bMgUwXPLFR5WPERFIdUR8f6J9znFlM4fL-TaYr7YNSo",
+	 * "y": "vuU0bE-JafF1zEW_MbL-oaO0eGltDeMHIfc_bxkdCHU",
+	 * "use": "sig"
+	 * }
+	 * 
+	 * Some aspects of the Javascript exported key are in conflict with JOSE. The
+	 * `delete`s below are for reference of how out of alignment the Javascript
+	 * representation is from JOSE.  If for some reason a JOSE representation is
+	 * required, the deletes are suggested.
+	 * 
+	 * `delete exported.key_ops;`
+	 * 
+	 * According to RFC 7517 Section 4.3, "use" is mutually exclusive with
+	 * key_ops.
+	 * 
+	 * `delete exported["ext"];`
+	 * 
+	 * `ext` is define by the Web Cryptography API and does not appear in the
+	 * core JOSE RFC's.  It stands for "extractable".  Since the key is already
+	 * "extracted" we don't care, and we're not going to burden downstream with
+	 * it.  However, this may need to be added again later if the key is further
+	 * manipulated by SubtleCrypto. 
+	 * 
+	 * Coze does not use "crv", "kty", or "use" and instead relies solely on
+	 * "alg". Since alg is not given, it's assumed from `crv` while `kty`is
+	 * ignored.
+	 * 
+	 * Why are we exporting to JWK?
+	 * 1. There's no access to the key fields without exporting. (The
+	 * browser hides the information from Javascript.)
+	 * 2. The exporting formats are limited.  
+	 * 3. Can't export to "raw" because "raw" appears to only work on public
+	 * keys.  This may be a private key.
+	 * 
 	 * @param   {CryptoKey}   cryptoKey 
 	 * @returns {CozeKey}     Coze key.
 	 * @throws 
 	 */
-	ToCozeKey: async function(cryptoKey) {
+	ToCozeKey: async function (cryptoKey) {
 		let exported = await window.crypto.subtle.exportKey(
 			"jwk",
 			cryptoKey
@@ -210,11 +208,11 @@ Why are we exporting to JWK?
 	 * https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#JSON_Web_Key
 	 * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
 	 * 
-	 * @param   {CryptoKey}      cryptoKey          
-	 * @param   {ArrayBuffer}    payloadBuffer     
+	 * @param   {CryptoKey}      cryptoKey
+	 * @param   {ArrayBuffer}    payloadBuffer
 	 * @returns {ArrayBuffer}    ArrayBuffer of sig
 	 */
-	SignBuffer: async function(cryptoKey, arrayBuffer) {
+	SignBuffer: async function (cryptoKey, arrayBuffer) {
 		let hashAlg = await CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey);
 
 		let signature = await window.crypto.subtle.sign({
@@ -238,38 +236,38 @@ Why are we exporting to JWK?
 	 * @param   {ArrayBuffer} arrayBuffer     ArrayBuffer to sign. 
 	 * @returns {string}      B64             B64
 	 */
-	SignBufferB64: async function(cryptoKey, arrayBuffer) {
+	SignBufferB64: async function (cryptoKey, arrayBuffer) {
 		return await Coze.ArrayBufferTo64ut(await CryptoKey.SignBuffer(cryptoKey, arrayBuffer));
 	},
 
 	/**
-	 * SignString signs a string and returns Hex of
-	 *  the signature.  Coze uses UTF8 bytes for strings.  
+	 * SignString signs a string and returns Hex of the signature.  Coze uses UTF8
+	 * bytes for strings.
+	 * 
 	 * @param {CryptoKey} cryptoKey      CryptoKey. Private key used for signing.
 	 * @param {string}    utf8           String. String to sign. 
 	 * @returns {string}  hex.           String. Hex as string.
 	 */
-	SignString: async function(cryptoKey, utf8) {
+	SignString: async function (cryptoKey, utf8) {
 		return await CryptoKey.SignBufferB64(cryptoKey, await Coze.SToArrayBuffer(utf8));
 	},
 
 	/**
 	 * VerifyArrayBuffer verifies an ArrayBuffer msg with an ArrayBuffer sig and
 	 * Javascript CryptoKey.
+	 * 
 	 * @param   {CryptoKey}   cryptoKey           Javascript CryptoKey.
 	 * @param   {ArrayBuffer} sig                 ArrayBuffer. Signature.
 	 * @param   {ArrayBuffer} msg                 ArrayBuffer. Message.
 	 * @returns {boolean}                         Boolean. Verified or not.
 	 */
-	VerifyArrayBuffer: async function(cryptoKey, msg, sig) {
-		// Guarantee key is not private to appease Javascript:		
+	VerifyArrayBuffer: async function (cryptoKey, msg, sig) {
+		// Guarantee key is not private to appease Javascript:
 		await CryptoKey.ToPublic(cryptoKey);
-		let hash = await CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey);
-		// console.log(cryptoKey, sig, msg, hash);
 		return await window.crypto.subtle.verify({
 				name: "ECDSA",
 				hash: {
-					name: hash
+					name: await CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey)
 				},
 			},
 			cryptoKey,
@@ -280,49 +278,49 @@ Why are we exporting to JWK?
 	/**
 	 * VerifyMsg uses a public key to verify a string msg with a b64ut sig.
 	 * 
-	 * @param   {CryptoKey}  cryptoKey         Javascript CryptoKey. 
-	 * @param   {string}     msg               String that was signed.  
-	 * @param   {Sig}        sig               B64 signature.  
-	 * @returns {boolean}                      Boolean. If signature is valid.  
+	 * @param   {CryptoKey}  cryptoKey         Javascript CryptoKey.
+	 * @param   {string}     msg               String that was signed.
+	 * @param   {Sig}        sig               B64 signature.
+	 * @returns {boolean}                      Boolean. If signature is valid.
 	 */
-	VerifyMsg: async function(cryptoKey, msg, sig) {
-		let msgab = await Coze.SToArrayBuffer(msg);
-		let sigab = await Coze.B64uToArrayBuffer(sig);
-		return CryptoKey.VerifyArrayBuffer(cryptoKey, msgab, sigab);
+	VerifyMsg: async function (cryptoKey, msg, sig) {
+		return CryptoKey.VerifyArrayBuffer(cryptoKey, await Coze.SToArrayBuffer(msg), await Coze.B64uToArrayBuffer(sig));
 	},
 
 	/**
 	 * GetSignHashAlgoFromCryptoKey gets the signing hashing algorithm from the
-	 * CryptoKey.  
+	 * CryptoKey.
 	 *
 	 * Javascript's CryptoKey explicitly requires a signing hashing algorithm, but
 	 * the CryptoKey itself may not explicitly contain that information. For
 	 * example, a ES256 key will have the curve (P-256) and the general key type
 	 * (ECDSA), but the hashing algo is not explicitly stated (SHA-256), nor is
-	 * the algorithm explicitly stated (ES256)
+	 * the algorithm explicitly stated (ES256).
 	 *
 	 * However, for some CryptoKeys, the hashing algorithm is explicitly stated.
 	 * For example, "RsaHashedKeyGenParams" has the field "hash" which explicitly
 	 * denotes what hashing algorithm was used.  As of 2021/05/26,
 	 * "EcKeyGenParams" has no such field, so it must be assumed that certain
-	 * hashing algorithms are paired with certain curves.  
+	 * hashing algorithms are paired with certain curves.
 	 *
 	 * The purpose of this function is to return the correct hashing digest for
-	 * all CryptoKeys regardless of their form.  
-	 * @param   {CryptoKey} CryptoKey          
+	 * all CryptoKeys regardless of their form.
+	 * 
+	 * @param   {CryptoKey} CryptoKey  Object. CryptoKey Javascript object.
 	 * @returns {String}    Hash       String. Name of hashing algorithm e.g. "SHA-256".
 	 */
-	GetSignHashAlgoFromCryptoKey: async function(cryptoKey) {
-		// let exported = await window.crypto.subtle.exportKey(
-		// 	"jwk",
-		// 	cryptoKey
-		// );
-		// console.log(cryptoKey.algorithm.namedCurve);
+	GetSignHashAlgoFromCryptoKey: async function (cryptoKey) {
 		return Alg.HashAlg(await CryptoKey.algFromCrv(cryptoKey.algorithm.namedCurve));
 	},
 
-
-	algFromCrv: async function(crv) {
+	/**
+	 * algFromCrv returns a signing alg from the given curve.
+	 * 
+	 * @param   {crv}     src    String. Curve type. E.g. "P-256".
+	 * @returns {Alg}     alg    String. SEALG for the given curve.
+	 * @throws  {Error}          Fails when the curve is not supported or recognized.
+	 */
+	algFromCrv: async function (crv) {
 		switch (crv) {
 			case "P-224":
 				var alg = "ES224";

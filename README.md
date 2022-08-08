@@ -32,13 +32,17 @@ Paul will implement it soon:
 https://github.com/paulmillr/noble-ed25519/issues/63
 
 # TODOS:
-- `iat`, `alg`, and common `Meta` for arrays ([]cy).
+- `iat`, `alg`, and common `Meta` for arrays ([]coze).
   - If a field is different in any array, it becomes blank.  Fields that are the
    same for every element are populated.
 
 - Single page "offline" verifier:
 		Probably just use: 
 		https://github.com/gildas-lormeau/SingleFile
+
+- Support other hash algos that are supported in Go. Go has API support for more
+		algos that are not natively supported in JS right now, such as: SHA-224,
+		SHA3-224, SHA3-256, SHA3-384, SHA3-512, SHAKE128, SHAKE256.
 
 # Developing Coze js
 ## How to Build
@@ -65,3 +69,11 @@ When developing we find the human readable join file useful.
 esbuild join.js --bundle --format=esm --outfile=coze.join.js
 ```
 
+
+
+----------------------------------------------------------------------
+# Attribution, Trademark notice, and License
+Coze and Coze js is released under The 3-Clause BSD License. 
+
+"Cyphr.me" is a trademark of Cypherpunk, LLC. The Cyphr.me logo is all rights
+reserved Cypherpunk, LLC and may not be used without permission.

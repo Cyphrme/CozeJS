@@ -14,14 +14,16 @@ export {
 }
 
 /**
- * @typedef  {Array|Object} Canon - An array or object representing a canon.  If object, only the first level keys are used as canon.  
+ * @typedef  {Array|Object} Canon - An array or object representing a canon.  If object, only the first level keys are used as canon. 
+ * @typedef  {import('./coze.js').Digest} Digest
+ * @typedef  {import('./alg.js').Hash}    Hash
  */
 
 
 /**
  * Canon returns the canon from first level object keys.  
  * 
- * @param   {Object}          obj      Object to create the canon from.   
+ * @param   {Object}          obj      Object to create the canon from.
  * @returns {Array<String>}            Array. 
  */
 function Canon(obj) {
@@ -29,40 +31,50 @@ function Canon(obj) {
 }
 
 /**
- * // TODO logic for optional canon.
- * Canon canonicalizes the first level of "object" into the form of "can". If
- * "can" is empty, the canon is generated from "object"'s first level fields.
+ * Canon canonicalizes the first level of "object" into the form of "can".
  *
- * If input "can" is an object the first level object keys will be used as the
- * canon.
- * 
- * @param   {Object}         object    Object to be canonicalized.   
- * @param   {Canon}          [can]     Array|Object. Array|Object canon. 
- * @returns {Object}                   Object. Canonicalized object.
+ * @param   {Object}  object    Object to be canonicalized.
+ * @param   {Canon}   [can]     Array|Object. Array|Object canon.
+ * @returns {Object}            Object. Canonicalized object.
+ * @throws  {Error}             Error. Fails on invalid Canons.
  */
 async function Canonical(object, can) {
-	let c = [];
-	if (typeof can === 'object') {
-		c = Object.keys(can);
+	if (isEmpty(can)) {
+		return;
 	}
 
-	// Is canon empty?  Use current object keys. 
-	if (!can || can.length === 0) {
-		c = Object.keys(object);
-	} else {
-		c = can;
-	}
+	// TODO come back to this
+	// if (HasDuplicates(can)) {
+	// 	throw new Error("Canonical: Canon cannot have duplicate fields.");
+	// }
 
 	let obj = {};
-	for (const e of c) {
+	for (const e of can) {
 		obj[e] = object[e];
 	}
-
-	return obj
+	return obj;
 };
 
+
 /**
- * Canonical canonicalizes obj and returns a JSON string. 
+ * Returns whether or not the Canon has duplicate fields.
+ *
+ * @param   {Canon}    can     Array|Object. Array|Object canon.
+ * @returns {Boolean}          Boolean. Whether or not there are duplicates.
+ */
+function HasDuplicates(can) {
+	let result = [];
+	for (let v of can) {
+		if (result.includes(v)) {
+			return true;
+		}
+		result.push(v);
+	}
+	return false;
+}
+
+/**
+ * Canonical canonicalizes obj and returns a JSON string.
  *
  * @param   {Object}   obj         Object being canonicalized.
  * @param   {Canon}    [canon]     Array.  Optional canon.[Optional]
@@ -76,31 +88,29 @@ async function CanonicalS(obj, can) {
  * CanonicalHash put input into canonical form and returns digest.
  *
  * @param   {Object|String} input              Object being canonicalized.
- * @param   {HashAlg}       [digest=SHA-256]   String. Must be SubtleCrypto.digest() compatible.  (i.e. 'SHA-256') [Optional]
+ * @param   {Hash}          [hash=SHA-256]     String. Must be SubtleCrypto.digest() compatible. (i.e. 'SHA-256') [Optional]
  * @param   {Canon}         [canon]            Array. for canonical keys. [Optional]
- * @returns {ArrayBuffer}                      ArrayBuffer. of the digest.  
+ * @returns {ArrayBuffer}                      ArrayBuffer. of the digest.
+ * @throws  {Error}                            Error if hash is not given.
  */
-async function CanonicalHash(input, digest, can) {
-	if (isEmpty(digest)) {
-		digest = 'SHA-256';
+async function CanonicalHash(input, hash, can) {
+	if (isEmpty(hash)) {
+		throw "Hash is not given";
 	}
 	if (typeof input == "string") {
 		input = JSON.parse(input);
 	}
-
-	let ab = await Coze.SToArrayBuffer(await CanonicalS(input, can))
-	return await crypto.subtle.digest(digest, ab);
+	return await crypto.subtle.digest(hash, await Coze.SToArrayBuffer(await CanonicalS(input, can)));
 }
 
 /**
- * CanonicalHash64 returns the b64ut of the digest.  See docs on Canonical.
+ * CanonicalHash64 returns the b64ut of the digest. See docs on Canonical.
  *
- * @param {Object|String} obj           Object being canonicalized.
- * @param {String}        [digest]      Subtle crypto compatible digest that's being used.  (i.e. 'SHA-256') [Optional]
- * @param {Canon}         [canon]       Array for canonical keys. [Optional]
- * @param {String}                      Hex (string) of the digest.  
+ * @param   {Object|String}  obj         Object being canonicalized.
+ * @param   {Hash}           [hash]      Subtle crypto compatible digest that's being used.  (i.e. 'SHA-256') [Optional]
+ * @param   {Canon}          [canon]     Array for canonical keys. [Optional]
+ * @returns {Digest}                     B64 Digest.  
  */
-async function CanonicalHash64(obj, digest, can) {
-	let ab = await CanonicalHash(obj, digest, can);
-	return await Coze.ArrayBufferTo64ut(ab);
+async function CanonicalHash64(obj, hash, can) {
+	return await Coze.ArrayBufferTo64ut(await CanonicalHash(obj, hash, can));
 }

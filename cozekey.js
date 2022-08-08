@@ -3,44 +3,64 @@
 import * as CTK from './cryptokey.js';
 import * as Can from './canon.js';
 import * as Coze from './coze.js';
-import * as Enum from './alg.js';
+import * as Alg from './alg.js';
 import {
 	isEmpty
 } from './coze.js';
 
 export {
 	NewCozeKey,
-	ToPublicCozeKey,
 	Correct,
 	Valid,
 	Thumbprint,
 	Revoke,
 	IsRevoked,
 
+	// RecalcX,
+
 	TmbCanon,
 }
 
-
 /**
-@typedef {import('./coze.js').Hex}  Hex
-@typedef {import('./coze.js').Alg}  Alg
-@typedef {import('./coze.js').Use}  Use
-@typedef {import('./coze.js').Sig}  Sig
-@typedef {import('./coze.js').Time} Time
-
-Coze key
-@typedef  {Object} CozeKey
-@property {Alg}    alg - Cryptographic signing or encryption algorithm - e.g. "ES256"
-@property {String} kid - Human readable, non programmatic, key identifier - e.g. "Test Key"
-@property {Time}   iat - Unix time key was created. e.g. 1624472390
-@property {Hex}    tmb - Key thumbprint e.g. "0148F4CD9093C9CBE3E8BF78D3E6C9B824F11DD2F29E2B1A630DD1CE1E176CDD"
-@property {Hex}    [d] - ECDSA private "d" component in Hex.  Required for ECDSA private Coze keys.  e.g. "30C76C9EC4286DADEB0E1EBFF546A1B4A57DB4571412F953E053FB689D286C3C"
-@property {Hex}    [x] - ECDSA public "x" component in Hex.  Required for ECDSA public Coze keys.    e.g. "827ECBA80BE7421DD71A6C2819ABC1D988450EBB802B972AE22292FA0D538B6B"
-@property {Hex}    [y] - ECDSA public "y" component in Hex.  Required for ECDSA public Coze keys.    e.g. "8D45880FC2C9FD1DBBF28ED4CB973CD8D1CB4F93F422B1B90AC1DA4ED13CA9EC"
-
-@typedef  {CozeKey} PrivateCozeKey - A Coze key containing any private components.  
-@typedef  {CozeKey} PublicCozeKey  - A Coze key containing no private components and required public components.  
- */
+ * //// Imports
+ * @typedef {import('./coze.js').Hex}  Hex
+ * @typedef {import('./coze.js').Alg}  Alg
+ * @typedef {import('./coze.js').Use}  Use
+ * @typedef {import('./coze.js').Sig}  Sig
+ * @typedef {import('./coze.js').Time} Time
+ * 
+ * 
+ * Coze Key holds a cryptographic key, with the minimum required fields for the 
+ * given `alg`.
+ *
+ * -alg: Cryptographic signing or encryption algorithm - e.g. "ES256"
+ * 
+ * -kid: Human readable, non programmatic, key identifier - e.g. "Test Key"
+ * 
+ * -iat: Unix time key was created. e.g. 1624472390
+ * 
+ * -tmb: Key thumbprint e.g. "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk"
+ * 
+ * -d:   ECDSA private "d" component in b64ut. Required for ECDSA private Coze keys.
+ * e.g. "bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA"
+ * 
+ * -x:   ECDSA public "x" component in b64ut. Required for ECDSA public Coze keys.
+ * e.g. "2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
+ * @typedef  {Object} CozeKey
+ * @property {Alg}    alg
+ * @property {String} kid
+ * @property {Time}   iat
+ * @property {Hex}    tmb
+ * @property {Hex}    [d]
+ * @property {Hex}    [x]
+ * 
+ * PrivateCozeKey is a Coze key containing any private components.
+ * @typedef  {CozeKey} PrivateCozeKey
+ * 
+ * PublicCozeKey is a Coze key containing no private components and required public components.
+ * @typedef  {CozeKey} PublicCozeKey
+ *
+ **/
 
 // Coze key Thumbprint Canons.
 const TmbCanon = ["alg", "x"];
@@ -55,15 +75,14 @@ async function NewCozeKey(alg) {
 	if (isEmpty(alg)) {
 		alg = "ES256"
 	}
-	if (Enum.Genus(alg) == "ECDSA") {
+	if (Alg.Genus(alg) == "ECDSA") {
 		var keyPair = await CTK.CryptoKey.New(alg);
 	} else {
 		throw new Error("CozeKey.NewCozeKey: only ECDSA algs are currently supported.");
 	}
 
-	let CozeKey = await CTK.CryptoKey.ToCozeKey(keyPair.privateKey)
-
-	CozeKey.iat = Math.floor(Date.now() / 1000); // To get Unix from js, divide by 1000.  
+	let CozeKey = await CTK.CryptoKey.ToCozeKey(keyPair.privateKey);
+	CozeKey.iat = Math.floor(Date.now() / 1000); // To get Unix from js, divide by 1000.
 	CozeKey.tmb = await Thumbprint(CozeKey);
 	CozeKey.kid = "My Cyphr.me Key.";
 
@@ -71,24 +90,24 @@ async function NewCozeKey(alg) {
 }
 
 /**
- * Thumbprint generates Coze key thumbprint. 
+ * Thumbprint generates Coze key thumbprint.
  *
- * @param   {CozeKey} cozeKey - Javascript object Coze key. 
+ * @param   {CozeKey} cozeKey - Javascript object Coze key.
  * @returns {tmb}             - B64 thumbprint.
- * @throws 
+ * @throws  {Error}           - Fails on empty alg or x.
  */
 async function Thumbprint(cozeKey) {
 	if (isEmpty(cozeKey.alg) || isEmpty(cozeKey.x)) {
-		throw new Error("CozeKey.Thumbprint: alg or x  is empty.");
+		throw new Error("CozeKey.Thumbprint: alg or x is empty.");
 	}
-	return Can.CanonicalHash64(cozeKey, await Enum.HashAlg(cozeKey.alg), TmbCanon);
+	return Can.CanonicalHash64(cozeKey, await Alg.HashAlg(cozeKey.alg), TmbCanon);
 };
 
 /**
  * Valid validates a private Coze key.  See notes on `Correct`.
  *
- * @param   {CozeKey}    privateCozeKey  Private Coze key. 
- * @returns {boolean}                    Valid.   
+ * @param   {CozeKey} privateCozeKey  Private Coze key.
+ * @returns {boolean}                 Valid.
  */
 async function Valid(privateCozeKey) {
 	if (isEmpty(privateCozeKey.d)) {
@@ -106,137 +125,126 @@ async function Valid(privateCozeKey) {
 }
 
 /**
- * Correct checks for the correct construction of a Coze key.  Always returns
- * true if no error.
-
- * Correct:
- * 1. Ensures required headers exist.
- * 2. Checks if the length of public components are correct.
- * 3. If the key is private (containing private components) generates and verifies a
- *    signature, thus verifying the private key.
- *
- * Correct may return "true" on cryptographically invalid public keys since
- * public keys cannot (necessarily) be validated without verifying a signed
- * message. Use function "Verify" for public keys with a signed message.  Use
- * function "Correct" to check for the correct construction of a public key.  
+ * Correct checks for the correct construction of a Coze key, but may return
+ * true on cryptographically invalid public keys.  Key must have `alg` and at
+ * least one of `tmb`, `x`, and `d`. Using input information, if it is possible
+ * to definitively know the given key is incorrect, Correct returns false, but
+ * if it's plausible it's correct, Correct returns true. Correct answers the
+ * question: "Is the given Coze key reasonable using the information provided?".
+ * Correct is useful for sanity checking public keys without signed messages,
+ * sanity checking `tmb` only keys, and validating private keys. Use function
+ * "Verify" instead for verifying public keys when a signed message is
+ * available. Correct is considered an advanced function. Please understand it
+ * thoroughly before use.
  * 
- * @param   {CozeKey}    cozeKey  Object. Coze key. 
- * @returns {boolean}             Boolean. Always returns true unless error.   
- * @throws                        
+ * Correct:
+ * 
+ * 1. Checks the length of `x` and/or `tmb` against `alg`.
+ * 2. If `x` and `tmb` are present, verifies correct `tmb`.
+ * 3. If `d` is present, verifies correct `tmb` and `x` if present, and verifies
+ * the key by verifying a generated signature.
+ * 
+ * @param   {CozeKey} ck         Object. Coze key. 
+ * @returns {boolean} isCorrect  Boolean.Whether or not the Coze Key is assumed to be correct.
  */
 async function Correct(ck) {
-	let required = [
-		'alg',
-		'tmb',
-	]
-
-	if (isEmpty(ck) || typeof ck !== "object") {
-		false;
-	}
-	if (Object.keys(ck).length >= 2 && !isEmpty(ck.alg) && !isEmpty(ck.tmb) && (isEmpty(ck.x) || isEmpty(ck.iat))) {
-		return true;
-	}
-	// return false;
-
-
-	let tmbOnly = IsTmbOnly(cozeKey);
-	if (!tmbOnly) {
-		console.debug('not a tmb only key');
-		required.push(["iat", "x"]);
+	if (typeof ck !== "object") {
+		console.error("Correct: CozeKey must be passed in as an object.");
+		return false;
 	}
 
-	for (let element of required) {
-		if (!(element in cozeKey)) {
-			throw new Error("CozeKey.Correct: No '" + element + "' in Coze key");
+	if (isEmpty(ck.alg)) {
+		console.error("Correct: Alg must be set");
+		return false;
+	}
+
+	let p = Alg.Params(ck.alg);
+
+	let isTmbEmpty = isEmpty(ck.tmb);
+	let isXEmpty = isEmpty(ck.x);
+	let isDEmpty = isEmpty(ck.d);
+
+	if (isTmbEmpty && isXEmpty && isDEmpty) {
+		console.error("Correct: At least one of [x, tmb, d] must be set");
+		return false;
+	}
+
+	// tmb only key
+	if (isXEmpty && isDEmpty) {
+		if (isTmbEmpty || ck.tmb.length !== p.B64.HashSize) {
+			console.error("Correct: Incorrect `tmb` size: ", ck.tmb.length);
+			return false;
 		}
-	}
-
-	if (cozeKey.alg == "Ed25519") {
-		if (cozeKey.x.length < 64) { // Ed25519's public key is 32 bytes (64 in Hex)
-			throw new Error("CozeKey.Correct: x is too short.  Has length: " + cozeKey.x.length);
-		}
-	}
-
-	if (tmbOnly) {
 		return true;
 	}
 
-	// Sanity check - No keys from the future allowed.
-	if (cozeKey.iat > Math.round((Date.now() / 1000))) {
-		throw new Error("CozeKey.Correct: cannot have iat greater than present time");
+	// d is not set
+	if (!isXEmpty && ck.x.length !== p.B64.XSize) {
+		console.error("Correct: Incorrect x size: ", ck.x.length);
+		return false;
 	}
 
-	if (Enum.Genus(cozeKey.alg) == "ECDSA") {
-		// Hex is twice the size of bytes.  
-		let size = (Enum.HashSize(Enum.HashAlg(cozeKey.alg))) * 2;
-		if (cozeKey.x.length < size) {
-			throw new Error("CozeKey.Correct: x is too short.  Has length: " + cozeKey.x.length);
-		}
-		if (cozeKey.y.length < size) { // y is required for ECDSA
-			throw new Error("CozeKey.Correct: y is too short.  Has length: " + cozeKey.y.length);
+	// We currently do not support recalculating `x`, as subtle does not provide
+	// the necessary API for computing the points from the private component.
+	// https://developer.mozilla.org/en-US/docs/Web/API/Crypto/subtle
+	//
+	// See RecalcX docs below
+	//
+	// If d and (x and/or tmb) is given, recompute from d and compare:
+	// let x = RecalcX(ck);
+
+	// If tmb is set, recompute and compare.
+	if (!isTmbEmpty && !isXEmpty) {
+		let t = await Thumbprint(ck);
+		if (ck.tmb !== t) {
+			console.error("Correct: Incorrect given `tmb`: ", ck.tmb);
+			return false;
 		}
 	}
 
-	// Recalculate the tmb and compare
-	let tmb = await Thumbprint(cozeKey);
-	if (tmb != cozeKey.tmb) {
-		throw new Error("CozeKey.Correct: tmb does not match: " + tmb);
-	}
+	// // Sanity check - No keys from the future allowed.
+	// if (ck.iat > Math.round((Date.now() / 1000))) {
+	// 	console.error("Correct: cannot have iat greater than present time");
+	// }
+
 
 	// If private key, validate by signing and verifying.
-	if (!isEmpty(cozeKey.d)) {
-		// console.log("Signing for private key. ");
-		let mld = "Test Signing";
-		let cryptoKey = await CTK.CryptoKey.FromCozeKey(cozeKey);
-		let mldBuffer = await Coze.SToArrayBuffer(mld)
+	// `x` must also be populated, for cryptokey, since we do not have RecalcX().
+	if (!isDEmpty && !isXEmpty) {
+		let cryptoKey = await CTK.CryptoKey.FromCozeKey(ck);
+		let mldBuffer = await Coze.SToArrayBuffer("Test Signing")
 		let sig = await CTK.CryptoKey.SignBuffer(cryptoKey, mldBuffer);
-		let pubKey = await CTK.CryptoKey.FromCozeKey(cozeKey, true);
+		let pubKey = await CTK.CryptoKey.FromCozeKey(ck, true);
 		let result = await CTK.CryptoKey.VerifyArrayBuffer(pubKey, mldBuffer, sig);
 
-		if (result !== true) {
-			throw new Error("CozeKey.Correct: private key invalid.");
+		if (!result) {
+			console.error("Correct: private key invalid.");
+			return false;
 		}
 	}
 
 	return true;
 };
 
-/**
- * ToPublicCozeKey takes a public or private Coze key and returns a normalized
- * public Coze key. Since this takes a "public or private" Coze key, this
- * function can act as "public key sanitization".
- *
- * Only supports ECDSA/EdDSA at the moment.  
- * 
- * @param   {CozeKey} cozeKey  - Javascript object Coze key (public or private). 
- * @returns {PublicCozeKey}    - Coze key that contains no private components.  
- * @throws
- */
-async function ToPublicCozeKey(cozeKey) {
-	let nck = {};
-	nck.alg = cozeKey.alg;
-	nck.iat = cozeKey.iat;
-	if (!isEmpty(cozeKey.kid)) {
-		nck.kid = cozeKey.kid;
-	}
-	nck.x = cozeKey.x;
 
-	switch (Enum.Genus(nck.alg)) {
-		case "ECDSA":
-			nck.y = cozeKey.y;
-			break;
-		case "EdDSA":
-			break;
-		default:
-			throw new Error("CozeKey.ToPublicCozeKey: Unsupported key algorithm (alg):" + nck.alg);
-	}
+// TODO Support RecalcX if crypto.subtle provides necessary API for computing
+// https://stackoverflow.com/questions/72151096/how-to-derive-public-key-from-private-key-using-webcryptoapi/72153942#72153942
+//
+// scalar/jacobian/affinity from private component.
+// Alternatively, use noble.
+// function RecalcX(ck) {
+// 	let x;
+// 	switch (ck.alg) {
+// 		case "ES256":
+// 		case "ES384":
+// 		case "ES512":
+// 			break;
+// 		default:
+// 			x = null;
+// 	}
 
-	nck.tmb = await Thumbprint(nck);
-
-	// Return object in order.  
-	nck = await Can.Canon(nck);
-	return nck;
-}
+// 	return x;
+// }
 
 
 /**
@@ -245,7 +253,7 @@ async function ToPublicCozeKey(cozeKey) {
  * @param   {CozeKey}   cozeKey            Private Coze key.
  * @param   {String}    [msg]              Optional, human readable non programmatic reason for revoking the key.
  * @returns {coze}                         coze returned from signing the message.
- * @throws  error                          if cryptoKeyPrivate is nil or invalid.
+ * @throws  {Error}                        Fails if cryptoKeyPrivate is nil or invalid.
  */
 async function Revoke(cozeKey, msg) {
 	if (isEmpty(cozeKey)) {
@@ -266,7 +274,7 @@ async function Revoke(cozeKey, msg) {
 	coze = await Coze.SignCoze(coze, cozeKey);
 	if (prevRvk !== undefined) {
 		cozeKey.rvk = prevRvk;
-	}else{
+	} else {
 		cozeKey.rvk = coze.pay.rvk;
 	}
 
@@ -286,7 +294,7 @@ async function Revoke(cozeKey, msg) {
  * @returns {boolean}                 Revoked or not. 
  */
 function IsRevoked(cozeKey) {
-	if (isEmpty(cozeKey.rvk) || !(parseInt(cozeKey.rvk) > 0 )) {
+	if (isEmpty(cozeKey.rvk) || !(parseInt(cozeKey.rvk) > 0)) {
 		return false;
 	}
 	return true;
