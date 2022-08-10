@@ -9,6 +9,8 @@ For your project use `coze.min.js`.
 # Testing:
 Coze uses BrowserTestJS for running unit tests in the browser.
 
+The test also runs as a [Github pages](https://cyphrme.github.io/Cozejs/browsertestjs/test.html)
+
 ## Go server
 
 ```sh

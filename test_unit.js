@@ -4,7 +4,7 @@
 // (dumbly) executes code that isn't imported by other modules, meaning
 // `document.addEventListener` is executed despite not being imported.  
 
-import * as Coze from '../coze.min.js';
+import * as Coze from './coze.min.js';
 
 export {
 	TestBrowserJS
