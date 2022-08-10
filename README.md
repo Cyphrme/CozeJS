@@ -26,14 +26,20 @@ The Go server runs over HTTPS on port 8082.  HTTPS is vital since some
 Javascript, in our case especially cryptographic functions, are only available
 over HTTPS ("secure contexts").  
 
+If the git submodule is causing issues, use `--force`:
 
-## Huh?
+```
+git submodule add --force git@github.com:Cyphrme/BrowserTestJS.git browsertestjs
+```
+
+
+## Why use a Go server?
 Static HTML files cannot call external Javascript modules when loading static
-files.  That's what we have to work with.  
+files (arbitrary browser/standard limitation):
 
-> ES6 modules are subject to same-origin policy. This means that you cannot import
-them from the file system or cross-origin without a CORS header (which cannot be
-set for local files).
+> ES6 modules are subject to same-origin policy. This means that you cannot
+import them from the file system or cross-origin without a CORS header (which
+cannot be set for local files).
 
 See https://stackoverflow.com/questions/46992463/es6-module-support-in-chrome-62-chrome-canary-64-does-not-work-locally-cors-er?rq=1
 
@@ -42,13 +48,13 @@ That leaves two options:
 1. Run a HTTPS server.
 2. Inline all Javascript modules into a single file.  
 
-For Go the server option requires only a few lines of code and only Go as a
-dependency.  Since main Coze is in Go, that's a reasonable tradeoff.
+A Go server requires only a few lines of code and adds a single dependency (Go
+itself).  Since main Coze is in Go, that's a reasonable tradeoff.
 
 
-## No Go, inline Javascript modules.  
 Alternatively, inlining all Javascript into a single `js.min` file might be
-feasible in a single page, static HTML file.  
+feasible in a single page, static HTML file.  This isn't implemented, but this
+is how it would be done using esbuild:
 
 ```sh
 esbuild join_test.js --bundle --format=esm --minify --sourcemap=inline  --outfile=test.coze.min.js
@@ -56,7 +62,6 @@ esbuild join_test.js --bundle --format=esm  --outfile=test.coze.min.js
 ```
 
 Then dump the results in a `<script>` section of `browsertestjs/test.html`
-
 
 
 # Javascript Gotchas
@@ -117,6 +122,9 @@ When developing we find the human readable join file useful.
 ```
 esbuild join.js --bundle --format=esm --outfile=coze.join.js
 ```
+
+
+
 
 
 
