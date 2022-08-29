@@ -22,15 +22,15 @@ export {
 }
 
 /**
- * //// Imports
- * @typedef {import('./coze.js').Hex}  Hex
+ * @typedef {import('./coze.js').B64}  B64
  * @typedef {import('./coze.js').Alg}  Alg
  * @typedef {import('./coze.js').Use}  Use
  * @typedef {import('./coze.js').Sig}  Sig
  * @typedef {import('./coze.js').Time} Time
- * 
- * 
- * Coze Key holds a cryptographic key, with the minimum required fields for the 
+ */
+
+/**
+ * CozeKey holds a cryptographic key, with the minimum required fields for the 
  * given `alg`.
  *
  * -alg: Cryptographic signing or encryption algorithm - e.g. "ES256"
@@ -50,16 +50,19 @@ export {
  * @property {Alg}    alg
  * @property {String} kid
  * @property {Time}   iat
- * @property {Hex}    tmb
- * @property {Hex}    [d]
- * @property {Hex}    [x]
- * 
+ * @property {B64}    tmb
+ * @property {B64}    [d]
+ * @property {B64}    [x]
+ */
+
+/**
  * PrivateCozeKey is a Coze key containing any private components.
  * @typedef  {CozeKey} PrivateCozeKey
- * 
+ */
+
+/**
  * PublicCozeKey is a Coze key containing no private components and required public components.
  * @typedef  {CozeKey} PublicCozeKey
- *
  **/
 
 // Coze key Thumbprint Canons.
@@ -107,7 +110,7 @@ async function Thumbprint(cozeKey) {
  * Valid validates a private Coze key.  See notes on `Correct`.
  *
  * @param   {CozeKey} privateCozeKey  Private Coze key.
- * @returns {boolean}                 Valid.
+ * @returns {Boolean}                 Valid.
  */
 async function Valid(privateCozeKey) {
 	if (isEmpty(privateCozeKey.d)) {
@@ -145,7 +148,7 @@ async function Valid(privateCozeKey) {
  * the key by verifying a generated signature.
  * 
  * @param   {CozeKey} ck         Object. Coze key. 
- * @returns {boolean} isCorrect  Boolean.Whether or not the Coze Key is assumed to be correct.
+ * @returns {Boolean}
  */
 async function Correct(ck) {
 	if (typeof ck !== "object") {
@@ -248,12 +251,14 @@ async function Correct(ck) {
 
 
 /**
- * Revoke generates a self revoke message and sets the input key as revoked.  
- *
- * @param   {CozeKey}   cozeKey            Private Coze key.
- * @param   {String}    [msg]              Optional, human readable non programmatic reason for revoking the key.
- * @returns {coze}                         coze returned from signing the message.
- * @throws  {Error}                        Fails if cryptoKeyPrivate is nil or invalid.
+ * Revoke generates a self revoke message and sets the input key as revoked.
+ * Returns the signed Coze.
+ * Fails if cryptoKeyPrivate is nil or invalid.
+ * 
+ * @param   {CozeKey}   cozeKey  Private Coze key.
+ * @param   {String}    [msg]    Optional, human readable non programmatic reason for revoking the key.
+ * @returns {Coze}
+ * @throws  {Error}
  */
 async function Revoke(cozeKey, msg) {
 	if (isEmpty(cozeKey)) {

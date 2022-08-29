@@ -1,13 +1,12 @@
 "use strict";
 
-// Tests are run from `test_run.js` so that module imports don't run. Javascript
-// (dumbly) executes code that isn't imported by other modules, meaning
-// `document.addEventListener` is executed despite not being imported.  
+// Unit tests are ran using the `browsertestjs` directory/package.
 
 import * as Coze from './coze.min.js';
 
 export {
-	TestBrowserJS
+	// For `browsertestjs`
+	TestBrowserJS,
 };
 
 /**
@@ -93,8 +92,6 @@ let t_Thumbprint = {
 	"func": test_Thumbprint,
 	"golden": true
 };
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////    Testing Variables    /////////////////////////////////
