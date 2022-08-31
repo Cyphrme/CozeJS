@@ -109,7 +109,7 @@ async function CanonicalHash(input, hash, can) {
  * @param   {Object|String}  obj         Object being canonicalized.
  * @param   {Hash}           [hash]      Subtle crypto compatible digest that's being used.  (i.e. 'SHA-256') [Optional]
  * @param   {Canon}          [canon]     Array for canonical keys. [Optional]
- * @returns {Digest}                     B64 Digest.  
+ * @returns {Digest}                     B64 Digest.
  */
 async function CanonicalHash64(obj, hash, can) {
 	return await Coze.ArrayBufferTo64ut(await CanonicalHash(obj, hash, can));
