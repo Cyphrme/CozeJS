@@ -6,6 +6,36 @@ Please see the README in the [Go project.](https://github.com/Cyphrme/Coze)
 
 For your project use `coze.min.js`.
 
+
+# Coze Javascript Gotchas
+- Javascript is not constant time.  Until there's something available with
+  constant time guarantees, like [constant time
+  WASM](https://cseweb.ucsd.edu/~dstefan/pubs/renner:2018:ct-wasm.pdf), this
+  library will be vulnerable to timing attacks.
+
+- Duplicate detection is outside the scope of Cozejs because Cozejs uses
+  Javascript objects which always have unique fields.  Also, no JSON parsing is
+  done inside of Cozejs, which uses last-value-wins. 
+	- Objects in ES6 defined with duplicate fields uses last-value-wins.  
+	- See notes on `test_Duplicate`.
+
+- ES224 is not supported.  Even though [FIPS
+  186](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf) defines
+  curves P-224, the [W3C recommendation omits
+  it](https://www.w3.org/TR/WebCryptoAPI/#dfn-EcKeyGenParams) and thus is not
+  implemented in Javascript.  The Javascript version of Coze will probably only
+  support ES256, ES384, and ES512.  
+
+- The W3C Web Cryptography API recommendation also omits Ed25519, so an external
+  package that implements the Ed25519 primitive is used.  The upcoming update
+  FIPS 186-5 specifies Ed25519 support.
+  (https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5-draft.pdf, section
+  7.8) Hopefully this will motivate Javascript to include Ed25519.  Also, we're
+  hoping Paul will implement it soon:
+  https://github.com/paulmillr/noble-ed25519/issues/63
+
+
+
 # Testing:
 Coze uses BrowserTestJS for running unit tests in the browser.
 
@@ -35,7 +65,7 @@ git submodule add --force git@github.com:Cyphrme/BrowserTestJS.git browsertestjs
 ```
 
 
-## Why use a Go server?
+### Why use a Go server?
 Static HTML files cannot call external Javascript modules when loading static
 files (arbitrary browser/standard limitation):
 
@@ -66,26 +96,6 @@ esbuild join_test.js --bundle --format=esm  --outfile=test.coze.min.js
 Then dump the results in a `<script>` section of `browsertestjs/test.html`
 
 
-# Javascript Gotchas
-- Javascript is not constant time.  Until there's something available with
-constant time guarantees, like [constant time
-WASM](https://cseweb.ucsd.edu/~dstefan/pubs/renner:2018:ct-wasm.pdf), this
-library will be vulnerable to timing attacks.
-
-- Even though [FIPS
-186](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf) defines curves
-P-224, the [W3C recommendation omits
-it](https://www.w3.org/TR/WebCryptoAPI/#dfn-EcKeyGenParams) and thus is not
-implemented in Javascript.  The Javascript version of Coze will
-probably only support ES256, ES384, and ES512 and not support ES224.  
-
-- The W3C Web Cryptography API recommendation also omits Ed25519, so an external
-package that implements the Ed25519 primitive is used.  The upcoming
-update FIPS 186-5 specifies Ed25519 support.
-(https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5-draft.pdf, section 7.8)
-Hopefully this will motivate Javascript to include Ed25519.  Also, we're hoping
-Paul will implement it soon:
-https://github.com/paulmillr/noble-ed25519/issues/63
 
 # TODOS:
 - `iat`, `alg`, and common `Meta` for arrays ([]coze).

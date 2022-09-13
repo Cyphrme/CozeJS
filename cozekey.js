@@ -108,6 +108,7 @@ async function Thumbprint(cozeKey) {
 
 /**
  * Valid validates a private Coze key.  See notes on `Correct`.
+ * If the key is invalid, Valid may log an error.  
  *
  * @param   {CozeKey} privateCozeKey  Private Coze key.
  * @returns {Boolean}                 Valid.
@@ -120,11 +121,12 @@ async function Valid(privateCozeKey) {
 	try {
 		let msg = `7AtyaCHO2BAG06z0W1tOQlZFWbhxGgqej4k9-HWP3DE-zshRbrE-69DIfgY704_FDYez7h_rEI1WQVKhv5Hd5Q`;
 		let sig = await Coze.Sign(msg, privateCozeKey);
-		return await Coze.Verify(msg, privateCozeKey, sig);
+		return Coze.Verify(msg, privateCozeKey, sig);
 	} catch (e) {
-		console.error(e);
+		// Don't throw error, but still log it for debugging.  
+		console.log("Valid:" + e);
+		return false;
 	}
-	return false;
 }
 
 /**

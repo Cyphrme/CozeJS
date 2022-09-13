@@ -3,10 +3,14 @@
 # Coze js Test Readme
 Coze uses BrowserTestJS for running unit tests in the browser.
 
+The Go server runs over HTTPS on :8082.  HTTPS is vital since some Javascript
+functions , especially cryptographic, are only available over HTTPS ("secure
+contexts").  
+
 ## Go server
 
 ```sh
-cd $CYPHRME/web/dist/js/coze/browsertestjs
+cd $CYPHRME/web/dist/js/pkg/cozejs/browsertestjs
 go run server.go
 ```
 
@@ -16,9 +20,6 @@ Then go to:
 https://localhost:8082/
 ```
 
-The Go server runs over HTTPS on port 8082.  HTTPS is vital since some
-Javascript, in our case especially cryptographic functions, are only available
-over HTTPS ("secure contexts").  
 
 
 ## Huh?
@@ -38,7 +39,6 @@ That leaves two options:
 
 For Go the server option requires only a few lines of code and only Go as a
 dependency.  Since main Coze is in Go, that's a reasonable tradeoff.
-
 
 
 

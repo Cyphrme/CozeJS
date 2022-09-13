@@ -93,6 +93,12 @@ let t_Thumbprint = {
 	"golden": true
 };
 
+let t_Duplicate = {
+	"name": "Duplicate",
+	"func": test_Duplicate,
+	"golden": true
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////    Testing Variables    /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -265,6 +271,43 @@ async function test_Thumbprint() {
 	return true;
 }
 
+
+// test_Duplicate tests duplicate object names in `coze` and `pay`.
+async function test_Duplicate() {
+	// In ES5, should fail since it's in strict mode.  In ES6, it seems to be
+	// last-value-wins.
+	// https://github.com/json5/json5-spec/issues/38#issuecomment-1224158640
+	// https://262.ecma-international.org/5.1/#sec-C
+	// > It is a SyntaxError if strict mode code contains an ObjectLiteral with more
+	// > than one definition of any data property (11.1.5).
+	//
+	// Solution via minification:
+	// https://www.anycodings.com/1questions/3635977/js-check-json-for-duplicate-keys-prior-to-loading
+
+	// Prints if in strict mode.  
+	var mode = (eval("var __temp = null"), (typeof __temp === "undefined")) ? "strict" : "non-strict";
+	if (mode !== "strict") {
+		return false;
+	};
+
+	let tc = {
+		"bob": "bob",
+		"bob": "bob2"
+	};
+	if (JSON.stringify(tc) !== `{"bob":"bob2"}`) {
+		return false;
+	}
+
+	// JSON parsing uses last-value-wins.  Will not fail. 
+	tc = JSON.parse(`{"bob":"bob","bob":"bob2"}`);
+	if (JSON.stringify(tc) !== `{"bob":"bob2"}`) {
+		return false;
+	}
+
+	return true;
+}
+
+
 // Tests Tests "Coze.Thumbprint" and "Coze.Valid"
 async function test_Valid() {
 	if (!await Coze.Valid(GoldenGoodCozeKey)) {
@@ -427,6 +470,7 @@ let TestsToRun = [
 	t_Revoke,
 	t_CanonicalHash,
 	t_Thumbprint,
+	t_Duplicate,
 	t_Correct,
 	t_CryptoKeySign,
 ];

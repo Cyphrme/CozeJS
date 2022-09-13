@@ -43,11 +43,6 @@ async function Canonical(object, can) {
 		return;
 	}
 
-	// TODO come back to this
-	// if (HasDuplicates(can)) {
-	// 	throw new Error("Canonical: Canon cannot have duplicate fields.");
-	// }
-
 	let obj = {};
 	for (const e of can) {
 		obj[e] = object[e];
@@ -87,19 +82,17 @@ async function CanonicalS(obj, can) {
 /**
  * CanonicalHash put input into canonical form and returns digest.
  *
- * @param   {Object|String} input              Object being canonicalized.
- * @param   {Hash}          [hash=SHA-256]     String. Must be SubtleCrypto.digest() compatible. (i.e. 'SHA-256') [Optional]
- * @param   {Canon}         [canon]            Array. for canonical keys. [Optional]
- * @returns {ArrayBuffer}                      ArrayBuffer. of the digest.
- * @throws  {Error}                            Error if hash is not given.
+ * @param   {Object}        input     Object being canonicalized.
+ * @param   {Hash}          hash      String. Must be SubtleCrypto.digest() compatible. (i.e. 'SHA-256') [Optional]
+ * @param   {Canon}         [canon]   Array. for canonical keys. [Optional]
+ * @returns {ArrayBuffer}             ArrayBuffer. of the digest.
+ * @throws  {Error}                   Error if hash is not given.
  */
 async function CanonicalHash(input, hash, can) {
 	if (isEmpty(hash)) {
 		throw "Hash is not given";
 	}
-	if (typeof input == "string") {
-		input = JSON.parse(input);
-	}
+
 	return await crypto.subtle.digest(hash, await Coze.SToArrayBuffer(await CanonicalS(input, can)));
 }
 
