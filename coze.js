@@ -4,7 +4,6 @@ import * as Can from './canon.js'; // import as "Can" since func "Canon" will co
 import * as Enum from './alg.js';
 import * as CZK from './key.js';
 import * as CTK from './cryptokey.js';
-import * as Coze from './coze.js';
 
 export {
 	PayCanon,
@@ -28,84 +27,14 @@ export {
 }
 
 /**
- * @typedef {import('./key.js').Key}      Key
- * @typedef {import('./alg.js').Alg}      Alg
- * @typedef {import('./canon.js').Canon}  Canon
- */
-
-////  Basic Coze Types
-
-/**
- * Coze b64ut (RFC 4648 base64 url truncated)
- * @typedef  {String} B64
- */
-
-/**
- * A not-hashed message to be signed.
- @typedef  {String} Message
- */
-
-/**
- * A digest.
- @typedef  {B64}    Digest
- */
-
-/**
- * A signature.
- @typedef  {B64}    Sig
- */
-
-/**
- * Unix time.
- @typedef  {Number} Time
- */
-
-
-/**
- * Pay contains the standard `Coze.Pay` fields.
- * 
- * - alg:    Algorithm.            E.g. "ES256".
- * - iat:    Unix time of signing. E.g. 1623132000.
- * - tmb:    Signing thumbprint    E.g. cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk
- * - typ:    Type.                 E.g. "cyphr.me/msg/create".
- * @typedef  {Object} Pay
- * @property {Alg}    alg
- * @property {Time}   iat
- * @property {B64}    tmb
- * @property {String} typ
- */
-
-/**
- * Coze is a signed coze object.  See docs for more about `coze`.
- * 
- * - pay:   The `pay`.  See docs on Pay for more.
- * - sig:   The B64 signature.
- * - cad:   Canonical digest of `pay`.  E.g.  LSgWE4vEfyxJZUTFaRaB2JdEclORdZcm4UVH9D8vVto
- * - can:   The canon fields of pay.    E.g.  ["alg", "iat", "msg", "tmb", "typ"]
- * - czd:   "Coze digest" over `{"cad":...,"sig":...}`.
- * - key:   Coze Key used to sign `coze`.
- * @typedef  {Object}  Coze
- * @property {Pay}     pay
- * @property {Sig}     sig
- * @property {Digest}  [cad]
- * @property {Array}   [can]
- * @property {Digest}  [czd]
- * @property {Key}     [key]
- */
-
-/**
- * VerifiedArray - Used when verifying array of cozies.
- * 
- * - VerifiedAll:    Indicates if whole array was verified. False on error or if
- *                   anything was not verified.
- * - VerifiedCount:  Number of objects verified.
- * - FailedCount:    Number of objects that failed verification.
- * - FailedCoze:     Objects that failed verification.
- * @typedef  {Object}  VerifiedArray
- * @property {Boolean} VerifiedAll
- * @property {Number}  VerifiedCount
- * @property {Number}  FailedCount
- * @property {Coze[]}  FailedCoze
+ * @typedef {import('./typedefs.js').Key}            Key
+ * @typedef {import('./typedefs.js').Alg}            Alg
+ * @typedef {import('./typedefs.js').Canon}          Canon
+ * @typedef {import('./typedefs.js').Message}        Message
+ * @typedef {import('./typedefs.js').Coze}           Coze
+ * @typedef {import('./typedefs.js').Sig}            Sig
+ * @typedef {import('./typedefs.js').Meta}           Meta
+ * @typedef {import('./typedefs.js').VerifiedArray}  VerifiedArray
  */
 
 // PayCanon is the standard coze.pay fields.
@@ -291,12 +220,12 @@ async function VerifyCozeArray(coze, cozeKey) {
  * Coze.Sig must be set, and either Coze.Pay.Alg or parameter alg must be set.
  * Meta does no cryptographic verification.
  * Fails on JSON parse exception.
- * Returns {pay, key, iat, can, cad, czd, tmb, sig}.
+ * Returns a Meta Coze (has fields [pay, key, iat, can, cad, czd, tmb, sig] ).
  *
  * @param  {Coze}      coze     coze.
  * @param  {Alg}       [alg]    coze.pay.alg takes precedence.
+ * @return {Meta}
  * @throws {Error} 
- * @return {Coze}
  */
 async function Meta(coze, alg) {
 	if (!isEmpty(coze.pay.alg)) {
@@ -355,10 +284,10 @@ function B64utToUint8Array(string) {
 
 
 /**
- * ArrayBufferTo64ut Array buffer to base64url.
+ * ArrayBufferTo64ut returns a b64 string from an Array buffer.
  * 
  * @param   {ArrayBuffer} buffer  Arbitrary bytes. UTF-16 is Javascript native.
- * @returns {B64}                 b64ut encoded string.
+ * @returns {B64}
  */
 function ArrayBufferTo64ut(buffer) {
 	var string = String.fromCharCode.apply(null, new Uint8Array(buffer));

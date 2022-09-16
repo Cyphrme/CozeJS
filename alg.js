@@ -1,5 +1,7 @@
 "use strict";
 
+// For more documentation and notes, see the main Coze README.
+
 export {
 	Params,
 	Curve,
@@ -14,76 +16,13 @@ export {
 }
 
 /**
- * For more documentation and notes on Alg, Coze, Genus, Family, HashAlg,
- * CurveAlg, and Use, see notes on the Go implementation:
- * https://github.com/Cyphrme/Coze/blob/master/alg.go
- */
-
-/** 
- * Alg is a declarative abstraction for cryptographic functions for Coze.
- * For more on Alg, see the main Coze README:
- * https://github.com/Cyphrme/Coze#readme
- * Alg is the algorithm being used. E.g. "ES256".
- * @typedef  {String} Alg
- */
-
-/**
- * Genus is the genus for an Alg (Level 1). E.g. "SHA2", "ECDSA".
- * @typedef  {String} Genus
- */
-
-/**
- * Family is the family for an Alg (Level 2). E.g. "SHA", "EC".
- * @typedef  {String} Family
- */
-
-/**
- * Hash is the hashing algorithm. E.g. "SHA-256".
- * @typedef  {String} Hash
- */
-
-/**
- * Curve is the (elliptic) curve used for Alg. E.g. "P-256".
- * @typedef  {String} Curve
- */
-
-/**
- * Use is the use for Alg. E.g. "sig", "enc", "dig".
- * @typedef  {String} Use
- */
-
-/** 
- * Params holds all relevant values for an `alg`. If values are not applicable
- * for a particular `alg`, values may be populated with the zero value, e.g.
- * for the hash alg "SHA-256" Curve's value is 0.
- * 
- * -Name:     Alg string Name.
- * -Genus:    Genus                              E.g. "SHA2", "ECDSA".
- * -Family:   Family                             E.g. "SHA", "EC".
- * -Hash:     Hash is the hashing algorithm.     E.g. "SHA-256".
- * -HashSize: Size in bytes of the digest.       E.g. 32 for "SHA-256".
- * -SigSize:  Size in bytes of the signature.    E.g. 64 for "ES256".
- * -XSize:    Size in bytes of `x`.              E.g. "64" for ES256
- * -DSize:    Size in bytes of `d`.              E.g. "32" for ES256
- * -Curve:    Curve is the elliptic curve.       E.g. "P-256".
- * -Use:      Algorithm use.                     E.g. "sig".
-* @typedef  {Object}  Params
-* @property {string}  Name 
-* @property {Genus}   Genus
-* @property {Family}  Family
-* @property {Hash}    Hash 
-* @property {Number}  HashSize
-* @property {Number}  SigSize
-* @property {Number}  XSize
-* @property {Number}  DSize
-* @property {Curve}   Curve
-* @property {Use}     Use
-* @property {B64P}    B64
-/*
-
-/**
- * B64 is a Params object for Base64ut encoding.
- * @typedef {Params} B64P
+ * @typedef {import('./typedefs.js').Alg}     Alg
+ * @typedef {import('./typedefs.js').Params}  Params
+ * @typedef {import('./typedefs.js').Params}  Genus
+ * @typedef {import('./typedefs.js').Family}  Family
+ * @typedef {import('./typedefs.js').Hash}    Hash
+ * @typedef {import('./typedefs.js').Curve}   Curve
+ * @typedef {import('./typedefs.js').Use}     Use
  */
 
 /**

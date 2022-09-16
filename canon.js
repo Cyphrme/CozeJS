@@ -1,6 +1,10 @@
 "use strict";
 
-import * as Coze from './coze.js';
+import {
+	isEmpty,
+	SToArrayBuffer,
+	ArrayBufferTo64ut
+} from './coze.js';
 
 export {
 	Canon,
@@ -11,14 +15,9 @@ export {
 }
 
 /**
- * @typedef {import('./coze.js').Digest} Digest
- * @typedef {import('./alg.js').Hash} Hash
- */
-
-/**
- * An array or object representing a canon.
- * If object, only the first level keys are used as canon.
- * @typedef  {Array|Object} Canon
+ * @typedef {import('./typedefs.js').Digest}  Digest
+ * @typedef {import('./typedefs.js').Hash}    Hash
+ * @typedef {import('./typedefs.js').Canon}   Canon
  */
 
 /**
@@ -42,7 +41,7 @@ function Canon(obj) {
  * @throws  {Error}
  */
 async function Canonical(object, can) {
-	if (Coze.isEmpty(can)) {
+	if (isEmpty(can)) {
 		return;
 	}
 
@@ -93,10 +92,10 @@ async function CanonicalS(obj, can) {
  * @throws  {Error}
  */
 async function CanonicalHash(input, hash, can) {
-	if (Coze.isEmpty(hash)) {
+	if (isEmpty(hash)) {
 		throw "Hash is not given";
 	}
-	return await crypto.subtle.digest(hash, await Coze.SToArrayBuffer(await CanonicalS(input, can)));
+	return await crypto.subtle.digest(hash, await SToArrayBuffer(await CanonicalS(input, can)));
 }
 
 /**
@@ -108,5 +107,5 @@ async function CanonicalHash(input, hash, can) {
  * @returns {Digest}
  */
 async function CanonicalHash64(obj, hash, can) {
-	return await Coze.ArrayBufferTo64ut(await CanonicalHash(obj, hash, can));
+	return await ArrayBufferTo64ut(await CanonicalHash(obj, hash, can));
 }

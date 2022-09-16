@@ -3,18 +3,21 @@
 import * as Coze from './coze.js';
 import * as Alg from './alg.js';
 import * as CZK from './key.js';
+import {
+	isEmpty
+} from './coze.js';
 
 export {
 	CryptoKey,
 };
 
 /**
- * @typedef {import('./coze.js').B64} B64
- * @typedef {import('./coze.js').Alg} Alg
- * @typedef {import('./coze.js').Sig} Sig
- * @typedef {import('./key.js').Key} Key
- * @typedef {import('./alg.js').Curve} Crv
- * @typedef {import('./coze.js').Message} Msg
+ * @typedef {import('./typedefs.js').B64}      B64
+ * @typedef {import('./typedefs.js').Alg}      Alg
+ * @typedef {import('./typedefs.js').Sig}      Sig
+ * @typedef {import('./typedefs.js').Key}      Key
+ * @typedef {import('./typedefs.js').Curve}    Crv
+ * @typedef {import('./typedefs.js').Message}  Msg
  */
 
 var CryptoKey = {
@@ -24,11 +27,11 @@ var CryptoKey = {
 	 * https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair
 	 * 
 	 * @param  {Alg}           [alg=ES256] - Alg of the key to generate. (e.g. "ES256")
-	 * @return {CryptoKeyPair}             - CryptoKeyPair
+	 * @return {CryptoKeyPair}
 	 * @throws 
 	 */
 	New: async function (alg) {
-		if (Coze.isEmpty(alg)) {
+		if (isEmpty(alg)) {
 			alg = "ES256"
 		}
 		// Javascript only supports ECDSA, and doesn't support ES192 or ES224.  See
@@ -36,15 +39,13 @@ var CryptoKey = {
 		if (Alg.Genus(alg) !== "ECDSA" || alg == "ES224" || alg == "ES192") {
 			throw new Error("CryptoKey.New: Unsupported key algorithm:" + alg);
 		}
-
-		let keyPair = await window.crypto.subtle.generateKey({
+		return await window.crypto.subtle.generateKey({
 				name: "ECDSA",
 				namedCurve: Alg.Curve(alg)
 			},
 			true,
 			["sign", "verify"]
 		);
-		return keyPair;
 	},
 
 	/**
@@ -54,7 +55,7 @@ var CryptoKey = {
 	 * 
 	 * @param   {Key}         cozeKey          Coze key.
 	 * @param   {Boolean}    [public=false]    Return only a public key.
-	 * @returns {CryptoKey}                    Javascript CryptoKey
+	 * @returns {CryptoKey}
 	 * @throws
 	 */
 	FromCozeKey: async function (cozeKey, onlyPublic) {
@@ -76,7 +77,7 @@ var CryptoKey = {
 		// Public CryptoKey "crypto.subtle.importKey" needs key use to be "verify"
 		// even though this doesn't exist in JWK RFC or IANA registry. (2021/05/12)
 		// Gawd help us.  Private CryptoKey needs key `use` to be "sign".
-		if (Coze.isEmpty(cozeKey.d) || onlyPublic) {
+		if (isEmpty(cozeKey.d) || onlyPublic) {
 			var signOrVerify = "verify";
 		} else {
 			signOrVerify = "sign";
@@ -95,11 +96,11 @@ var CryptoKey = {
 	},
 
 	/**
-	 * ToPublic accepts a Javascript CryptoKey and returns a public
-	 * Javascript CryptoKey.  
+	 * ToPublic accepts a Javascript CryptoKey and modifies the key to remove
+	 * any private components.
 	 *
-	 * @param   {CryptoKey} cryptoKey   CryptoKey
-	 * @returns {CryptoKey}             Public Javascript CryptoKey
+	 * @param   {CryptoKey} cryptoKey
+	 * @returns {void}
 	 */
 	ToPublic: async function (cryptoKey) {
 		delete cryptoKey.d; // Remove private `d` from the key.

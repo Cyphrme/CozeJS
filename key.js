@@ -4,6 +4,9 @@ import * as CTK from './cryptokey.js';
 import * as Can from './canon.js';
 import * as Coze from './coze.js';
 import * as Alg from './alg.js';
+import {
+	isEmpty
+} from './coze.js';
 
 export {
 	NewKey,
@@ -19,48 +22,13 @@ export {
 }
 
 /**
- * @typedef {import('./coze.js').B64}  B64
- * @typedef {import('./coze.js').Alg}  Alg
- * @typedef {import('./coze.js').Use}  Use
- * @typedef {import('./coze.js').Sig}  Sig
- * @typedef {import('./coze.js').Time} Time
+ * @typedef {import('./typedefs.js').B64}  B64
+ * @typedef {import('./typedefs.js').Alg}  Alg
+ * @typedef {import('./typedefs.js').Use}  Use
+ * @typedef {import('./typedefs.js').Sig}  Sig
+ * @typedef {import('./typedefs.js').Time} Time
+ * @typedef {import('./typedefs.js').Key}  Key
  */
-
-/**
- * Key holds a cryptographic key, with the minimum required fields for the 
- * given `alg`.
- *
- * -alg: Cryptographic signing or encryption algorithm - e.g. "ES256"
- * 
- * -kid: Human readable, non programmatic, key identifier - e.g. "Test Key"
- * 
- * -iat: Unix time key was created. e.g. 1624472390
- * 
- * -tmb: Key thumbprint e.g. "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk"
- * 
- * -d:   ECDSA private "d" component in b64ut. Required for ECDSA private Coze keys.
- * e.g. "bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA"
- * 
- * -x:   ECDSA public "x" component in b64ut. Required for ECDSA public Coze keys.
- * e.g. "2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
- * @typedef  {Object} Key
- * @property {Alg}    alg
- * @property {String} kid
- * @property {Time}   iat
- * @property {B64}    tmb
- * @property {B64}    [d]
- * @property {B64}    [x]
- */
-
-/**
- * PrivateCozeKey is a Coze key containing any private components.
- * @typedef  {Key} PrivateCozeKey
- */
-
-/**
- * PublicCozeKey is a Coze key containing no private components and required public components.
- * @typedef  {Key} PublicCozeKey
- **/
 
 // Coze key Thumbprint Canons.
 const TmbCanon = ["alg", "x"];
@@ -73,7 +41,7 @@ const TmbCanon = ["alg", "x"];
  * @returns {Key}
  */
 async function NewKey(alg) {
-	if (Coze.isEmpty(alg)) {
+	if (isEmpty(alg)) {
 		alg = "ES256"
 	}
 	if (Alg.Genus(alg) == "ECDSA") {
@@ -99,7 +67,7 @@ async function NewKey(alg) {
  * @throws  {Error}
  */
 async function Thumbprint(cozeKey) {
-	if (Coze.isEmpty(cozeKey.alg) || Coze.isEmpty(cozeKey.x)) {
+	if (isEmpty(cozeKey.alg) || isEmpty(cozeKey.x)) {
 		throw new Error("Coze.Thumbprint: alg or x is empty.");
 	}
 	return Can.CanonicalHash64(cozeKey, await Alg.HashAlg(cozeKey.alg), TmbCanon);
@@ -114,7 +82,7 @@ async function Thumbprint(cozeKey) {
  * @returns {Boolean}
  */
 async function Valid(privateCozeKey) {
-	if (Coze.isEmpty(privateCozeKey.d)) {
+	if (isEmpty(privateCozeKey.d)) {
 		console.error("Coze key missing `d`");
 		return false;
 	}
@@ -158,16 +126,16 @@ async function Correct(ck) {
 		return false;
 	}
 
-	if (Coze.isEmpty(ck.alg)) {
+	if (isEmpty(ck.alg)) {
 		console.error("Correct: Alg must be set");
 		return false;
 	}
 
 	let p = Alg.Params(ck.alg);
 
-	let isTmbEmpty = Coze.isEmpty(ck.tmb);
-	let isXEmpty = Coze.isEmpty(ck.x);
-	let isDEmpty = Coze.isEmpty(ck.d);
+	let isTmbEmpty = isEmpty(ck.tmb);
+	let isXEmpty = isEmpty(ck.x);
+	let isDEmpty = isEmpty(ck.d);
 
 	if (isTmbEmpty && isXEmpty && isDEmpty) {
 		console.error("Correct: At least one of [x, tmb, d] must be set");
@@ -263,13 +231,13 @@ async function Correct(ck) {
  * @throws  {Error}
  */
 async function Revoke(cozeKey, msg) {
-	if (Coze.isEmpty(cozeKey)) {
+	if (isEmpty(cozeKey)) {
 		throw new Error("CozeKey.Revoke: Private key not set.  Cannot sign message");
 	}
 
 	var coze = {};
 	coze.pay = {};
-	if (!Coze.isEmpty(msg)) { // Optional revoke message. 
+	if (!isEmpty(msg)) { // Optional revoke message. 
 		coze.pay.msg = msg;
 	}
 	coze.pay.rvk = Math.round((Date.now() / 1000)); // Javascript's Date converted to Unix time.
@@ -301,7 +269,7 @@ async function Revoke(cozeKey, msg) {
  * @returns {Boolean}
  */
 function IsRevoked(cozeKey) {
-	if (Coze.isEmpty(cozeKey.rvk) || !(parseInt(cozeKey.rvk) > 0)) {
+	if (isEmpty(cozeKey.rvk) || !(parseInt(cozeKey.rvk) > 0)) {
 		return false;
 	}
 	return true;
