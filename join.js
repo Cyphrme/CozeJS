@@ -27,6 +27,5 @@
 export * from './canon.js';
 export * from './alg.js';
 export * from './coze.js';
-export * from './cozekey.js';
+export * from './key.js';
 export * from './cryptokey.js';
-

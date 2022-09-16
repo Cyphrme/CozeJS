@@ -10,11 +10,11 @@ export {
 };
 
 /**
- * @typedef {import('./test.js').Test} Test
- * @typedef {import('./test.js').Tests} Tests
- * @typedef {import('./test.js').TestsToRun} TestsToRun
- * @typedef {import('./test.js').TestGUIOptions} TestGUIOptions
- * @typedef {import('./test.js').TestBrowserJS} TestBrowserJS
+ * @typedef {import('./browsertestjs/test.js').Test} Test
+ * @typedef {import('./browsertestjs/test.js').Tests} Tests
+ * @typedef {import('./browsertestjs/test.js').TestsToRun} TestsToRun
+ * @typedef {import('./browsertestjs/test.js').TestGUIOptions} TestGUIOptions
+ * @typedef {import('./browsertestjs/test.js').TestBrowserJS} TestBrowserJS
  */
 
 /**@type {Test} */
@@ -22,23 +22,23 @@ let t_Param = {
 	"name": "Param",
 	"func": test_Param,
 	"golden": `
-{"Name":"ES224","B64":{"HashSize":38,"SigSize":75,"XSize":75,"DSize":38},"Genus":"ECDSA","Family":"EC","Hash":"SHA-224","HashSize":28,"Curve":"P-224","Use":"sig","SigSize":56,"XSize":56,"DSize":28}
-{"Name":"ES256","B64":{"HashSize":43,"SigSize":86,"XSize":86,"DSize":43},"Genus":"ECDSA","Family":"EC","Hash":"SHA-256","HashSize":32,"Curve":"P-256","Use":"sig","SigSize":64,"XSize":64,"DSize":32}
-{"Name":"ES384","B64":{"HashSize":64,"SigSize":128,"XSize":128,"DSize":64},"Genus":"ECDSA","Family":"EC","Hash":"SHA-384","HashSize":48,"Curve":"P-384","Use":"sig","SigSize":96,"XSize":96,"DSize":48}
-{"Name":"ES512","B64":{"HashSize":86,"SigSize":176,"XSize":176,"DSize":88},"Genus":"ECDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Curve":"P-521","Use":"sig","SigSize":132,"XSize":132,"DSize":66}
-{"Name":"Ed25519","B64":{"HashSize":86,"SigSize":86,"XSize":43,"DSize":43},"Genus":"EdDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Curve":"Curve25519","Use":"sig","SigSize":64,"XSize":32,"DSize":32}
-{"Name":"Ed25519ph","B64":{"HashSize":86,"SigSize":86,"XSize":43,"DSize":43},"Genus":"EdDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Curve":"Curve25519","Use":"sig","SigSize":64,"XSize":32,"DSize":32}
-{"Name":"Ed448","B64":{"HashSize":86,"SigSize":152,"XSize":76,"DSize":76},"Genus":"EdDSA","Family":"EC","Hash":"SHAKE256","HashSize":64,"Curve":"Curve448","Use":"sig","SigSize":114,"XSize":57,"DSize":57}
-{"Name":"SHA-224","B64":{"HashSize":38},"Genus":"SHA2","Family":"SHA","Hash":"SHA-224","HashSize":28}
-{"Name":"SHA-256","B64":{"HashSize":43},"Genus":"SHA2","Family":"SHA","Hash":"SHA-256","HashSize":32}
-{"Name":"SHA-384","B64":{"HashSize":64},"Genus":"SHA2","Family":"SHA","Hash":"SHA-384","HashSize":48}
-{"Name":"SHA-512","B64":{"HashSize":86},"Genus":"SHA2","Family":"SHA","Hash":"SHA-512","HashSize":64}
-{"Name":"SHA3-224","B64":{"HashSize":38},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-224","HashSize":28}
-{"Name":"SHA3-256","B64":{"HashSize":43},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-256","HashSize":32}
-{"Name":"SHA3-384","B64":{"HashSize":64},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-384","HashSize":48}
-{"Name":"SHA3-512","B64":{"HashSize":86},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-512","HashSize":64}
-{"Name":"SHAKE128","B64":{"HashSize":43},"Genus":"SHA3","Family":"SHA","Hash":"SHAKE128","HashSize":32}
-{"Name":"SHAKE256","B64":{"HashSize":86},"Genus":"SHA3","Family":"SHA","Hash":"SHAKE256","HashSize":64}
+{"Name":"ES224","B64":{"HashSize":38,"SigSize":75,"XSize":75,"DSize":38},"Genus":"ECDSA","Family":"EC","Hash":"SHA-224","HashSize":28,"Use":"sig","SigSize":56,"XSize":56,"DSize":28,"Curve":"P-224"}
+{"Name":"ES256","B64":{"HashSize":43,"SigSize":86,"XSize":86,"DSize":43},"Genus":"ECDSA","Family":"EC","Hash":"SHA-256","HashSize":32,"Use":"sig","SigSize":64,"XSize":64,"DSize":32,"Curve":"P-256"}
+{"Name":"ES384","B64":{"HashSize":64,"SigSize":128,"XSize":128,"DSize":64},"Genus":"ECDSA","Family":"EC","Hash":"SHA-384","HashSize":48,"Use":"sig","SigSize":96,"XSize":96,"DSize":48,"Curve":"P-384"}
+{"Name":"ES512","B64":{"HashSize":86,"SigSize":176,"XSize":176,"DSize":88},"Genus":"ECDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Use":"sig","SigSize":132,"XSize":132,"DSize":66,"Curve":"P-521"}
+{"Name":"Ed25519","B64":{"HashSize":86,"SigSize":86,"XSize":43,"DSize":43},"Genus":"EdDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Use":"sig","SigSize":64,"XSize":32,"DSize":32,"Curve":"Curve25519"}
+{"Name":"Ed25519ph","B64":{"HashSize":86,"SigSize":86,"XSize":43,"DSize":43},"Genus":"EdDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Use":"sig","SigSize":64,"XSize":32,"DSize":32,"Curve":"Curve25519"}
+{"Name":"Ed448","B64":{"HashSize":86,"SigSize":152,"XSize":76,"DSize":76},"Genus":"EdDSA","Family":"EC","Hash":"SHAKE256","HashSize":64,"Use":"sig","SigSize":114,"XSize":57,"DSize":57,"Curve":"Curve448"}
+{"Name":"SHA-224","B64":{"HashSize":38},"Genus":"SHA2","Family":"SHA","Hash":"SHA-224","HashSize":28,"Use":"dig"}
+{"Name":"SHA-256","B64":{"HashSize":43},"Genus":"SHA2","Family":"SHA","Hash":"SHA-256","HashSize":32,"Use":"dig"}
+{"Name":"SHA-384","B64":{"HashSize":64},"Genus":"SHA2","Family":"SHA","Hash":"SHA-384","HashSize":48,"Use":"dig"}
+{"Name":"SHA-512","B64":{"HashSize":86},"Genus":"SHA2","Family":"SHA","Hash":"SHA-512","HashSize":64,"Use":"dig"}
+{"Name":"SHA3-224","B64":{"HashSize":38},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-224","HashSize":28,"Use":"dig"}
+{"Name":"SHA3-256","B64":{"HashSize":43},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-256","HashSize":32,"Use":"dig"}
+{"Name":"SHA3-384","B64":{"HashSize":64},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-384","HashSize":48,"Use":"dig"}
+{"Name":"SHA3-512","B64":{"HashSize":86},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-512","HashSize":64,"Use":"dig"}
+{"Name":"SHAKE128","B64":{"HashSize":43},"Genus":"SHA3","Family":"SHA","Hash":"SHAKE128","HashSize":32,"Use":"dig"}
+{"Name":"SHAKE256","B64":{"HashSize":86},"Genus":"SHA3","Family":"SHA","Hash":"SHAKE256","HashSize":64,"Use":"dig"}
 `
 };
 
@@ -134,8 +134,8 @@ let Algs = ["ES256", "ES384", "ES512"];
 async function test_Param() {
 	let algs = ["ES224", "ES256", "ES384", "ES512", "Ed25519", "Ed25519ph", "Ed448", "SHA-224", "SHA-256", "SHA-384", "SHA-512", "SHA3-224", "SHA3-256", "SHA3-384", "SHA3-512", "SHAKE128", "SHAKE256"];
 	let results = "";
-	for (let i = 0; i < algs.length; i++) {
-		results += JSON.stringify(Coze.Params(algs[i])) + "\n";
+	for (let alg of algs) {
+		results += JSON.stringify(Coze.Params(alg)) + "\n";
 	}
 	return results;
 };
@@ -221,12 +221,12 @@ async function test_CanonicalHashB64() {
 
 // test_Sign
 // Tests each support alg.
-// 1.) Coze.NewCozeKey
+// 1.) Coze.NewKey
 // 2.) Coze.Sign
 // 3.) Coze.Verify
 async function test_Sign() {
 	for (const alg of Algs) {
-		let cozeKey = await Coze.NewCozeKey(alg);
+		let cozeKey = await Coze.NewKey(alg);
 		let pay = `{"msg":"Test Message"}`;
 		let sig = await Coze.Sign(pay, cozeKey);
 
@@ -239,13 +239,13 @@ async function test_Sign() {
 };
 
 // test_SignCoze
-// Tests each support alg.  
-// 1.) Coze.NewCozeKey
+// Tests each support alg.
+// 1.) Coze.NewKey
 // 2.) Coze.SignCoze
 // 3.) Coze.VerifyCoze
 async function test_SignCoze() {
 	for (const alg of Algs) {
-		let cozeKey = await Coze.NewCozeKey(alg);
+		let cozeKey = await Coze.NewKey(alg);
 		let coze = await Coze.SignCoze({
 				"pay": {
 					"msg": "Test Message",
@@ -345,7 +345,7 @@ async function test_CozeKeyCorrect() {
 	];
 	let keys = [GoldenBadCozeKey, GoldenGoodCozeKey];
 	for (let alg of Algs) {
-		keys.push(await Coze.NewCozeKey(alg));
+		keys.push(await Coze.NewKey(alg));
 	}
 
 	// On failure, correct is throwing errors, so instead of having to wrap each
@@ -414,19 +414,23 @@ async function test_CozeKeyCorrect() {
 // CryptoKey Tests
 /////////////////////////////////////
 
-// test_CryptoKeySign() {
+// test_CryptoKeySign contains tests for `cryptokey.js`.
 // Tests
-// 1.) New Coze Key
-// 2.) Coze Key to Cryptokey.
-// 3.) CryptoKey.SignString
-// 4.) CryptoKey.FromCozeKey 
-// 5.) CryptoKey.VerifyMsgHexSig
+// 1.) Coze.NewKey
+// 2.) CryptoKey.New (called from new coze key)
+// 3.) CryptoKey.FromCozeKey
+// 4.) CryptoKey.SignString
+// 5.) CryptoKey.VerifyMsg
+// 6.) CryptoKey.SignBuffer
+// 7.) CryptoKey.VerifyArrayBuffer
+// 8.) CryptoKey.GetSignHashAlgoFromCryptoKey (calls `algFromCrv`)
 async function test_CryptoKeySign() {
 	let msg = "Test Message";
 	let abMsg = await Coze.SToArrayBuffer(msg);
+	let results = [];
 
 	for (const alg of Algs) {
-		let cozeKey = await Coze.NewCozeKey(alg);
+		let cozeKey = await Coze.NewKey(alg);
 		let cryptoKey = await Coze.CryptoKey.FromCozeKey(cozeKey);
 
 		// Sign string
@@ -443,6 +447,10 @@ async function test_CryptoKeySign() {
 		if (result !== true) {
 			return false
 		}
+		results.push(await Coze.CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey));
+	}
+	if (JSON.stringify(results) !== JSON.stringify(["SHA-256", "SHA-384", "SHA-512"])) {
+		return false;
 	}
 	return true;
 };

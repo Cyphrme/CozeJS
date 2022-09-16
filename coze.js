@@ -2,7 +2,7 @@
 
 import * as Can from './canon.js'; // import as "Can" since func "Canon" will conflict in `coze.join.js`.
 import * as Enum from './alg.js';
-import * as CZK from './cozekey.js';
+import * as CZK from './key.js';
 import * as CTK from './cryptokey.js';
 import * as Coze from './coze.js';
 
@@ -28,51 +28,97 @@ export {
 }
 
 /**
-@typedef {import('./cozekey.js').CozeKey} CozeKey
-@typedef {import('./alg.js').Alg}         Alg
-@typedef {import('./canon.js').Canon}     Canon
+ * @typedef {import('./key.js').Key}      Key
+ * @typedef {import('./alg.js').Alg}      Alg
+ * @typedef {import('./canon.js').Canon}  Canon
+ */
 
-Basic Coze Types
-@typedef  {String} B64       - Coze b64ut (RFC 4648 base64 url truncated)
-@typedef  {String} Message   - A not-hashed message to be signed.
-@typedef  {B64}    Digest    - A digest.
-@typedef  {B64}    Sig       - A signature.
-@typedef  {Number} Time      - Unix time.
+////  Basic Coze Types
 
-Pay contains the standard `Coze.Pay` fields.
-@typedef  {Object} Pay
-@property {Alg}    alg  - Algorithm             e.g. "ES256".
-@property {Time}   iat  - Unix time of signing. e.g. 1623132000.
-@property {B64}    tmb  - Signing thumbprint    e.g. cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk
-@property {String} typ  - Type.                 e.g. "cyphr.me/msg/create".
+/**
+ * Coze b64ut (RFC 4648 base64 url truncated)
+ * @typedef  {String} B64
+ */
 
-Coze is a signed coze object.  See docs for more about `coze`.
-@typedef  {Object}  Coze
-@property {Pay}     pay    - The `pay`.  See Pay.
-@property {Sig}     sig    - The B64 signature.
-@property {Digest}  [cad]  - Canonical digest of `pay`.     e.g.  LSgWE4vEfyxJZUTFaRaB2JdEclORdZcm4UVH9D8vVto
-@property {Array}   [can]  - The canon fields of pay.       e.g.  ["alg", "iat", "msg", "tmb", "typ"]
-@property {Digest}  [czd]  - "Coze digest".                 Have over `{"cad":...,"sig":...}`
-@property {CozeKey} [key]  - Coze Key used to sign `coze`.
+/**
+ * A not-hashed message to be signed.
+ @typedef  {String} Message
+ */
 
-VerifiedArray - Used when verifying array of cozies.  
-@typedef  {Object}  VerifiedArray
-@property {boolean} VerifiedAll   - Indicates if whole array was verified.  False on error or if anything was not verified.
-@property {number}  VerifiedCount - Number of objects verified.
-@property {number}  FailedCount   - Number of objects that failed verification.
-@property {Coze[]}  FailedCoze    - Objects that failed verification.
-*/
+/**
+ * A digest.
+ @typedef  {B64}    Digest
+ */
+
+/**
+ * A signature.
+ @typedef  {B64}    Sig
+ */
+
+/**
+ * Unix time.
+ @typedef  {Number} Time
+ */
+
+
+/**
+ * Pay contains the standard `Coze.Pay` fields.
+ * 
+ * - alg:    Algorithm.            E.g. "ES256".
+ * - iat:    Unix time of signing. E.g. 1623132000.
+ * - tmb:    Signing thumbprint    E.g. cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk
+ * - typ:    Type.                 E.g. "cyphr.me/msg/create".
+ * @typedef  {Object} Pay
+ * @property {Alg}    alg
+ * @property {Time}   iat
+ * @property {B64}    tmb
+ * @property {String} typ
+ */
+
+/**
+ * Coze is a signed coze object.  See docs for more about `coze`.
+ * 
+ * - pay:   The `pay`.  See docs on Pay for more.
+ * - sig:   The B64 signature.
+ * - cad:   Canonical digest of `pay`.  E.g.  LSgWE4vEfyxJZUTFaRaB2JdEclORdZcm4UVH9D8vVto
+ * - can:   The canon fields of pay.    E.g.  ["alg", "iat", "msg", "tmb", "typ"]
+ * - czd:   "Coze digest" over `{"cad":...,"sig":...}`.
+ * - key:   Coze Key used to sign `coze`.
+ * @typedef  {Object}  Coze
+ * @property {Pay}     pay
+ * @property {Sig}     sig
+ * @property {Digest}  [cad]
+ * @property {Array}   [can]
+ * @property {Digest}  [czd]
+ * @property {Key}     [key]
+ */
+
+/**
+ * VerifiedArray - Used when verifying array of cozies.
+ * 
+ * - VerifiedAll:    Indicates if whole array was verified. False on error or if
+ *                   anything was not verified.
+ * - VerifiedCount:  Number of objects verified.
+ * - FailedCount:    Number of objects that failed verification.
+ * - FailedCoze:     Objects that failed verification.
+ * @typedef  {Object}  VerifiedArray
+ * @property {Boolean} VerifiedAll
+ * @property {Number}  VerifiedCount
+ * @property {Number}  FailedCount
+ * @property {Coze[]}  FailedCoze
+ */
 
 // PayCanon is the standard coze.pay fields.
 const PayCanon = ["alg", "iat", "tmb", "typ"];
 
 /**
  * Sign signs message with private Coze key and returns b64ut sig.
+ * Returns empty on invalid.
  * 
  * @param   {Message}       message    Message string.
- * @param   {CozeKey}       cozeKey    Private coze key.
- * @returns {Sig}                      b64ut `sig`.  Empty on invalid.
- * @throws  {Error}                    Invalid key/parse error.
+ * @param   {Key}           cozeKey    Private coze key.
+ * @returns {Sig}
+ * @throws  {Error}
  */
 async function Sign(message, cozeKey) {
 	return CTK.CryptoKey.SignBufferB64(
@@ -87,12 +133,17 @@ async function Sign(message, cozeKey) {
  * `tmb` are populated. `iat` set to current time.
  *
  * SignCoze, SignCozeRaw, VerifyCoze, and VerifyCozeArray assumes that object
- * has no duplicate fields since this is disallowed in Javascript. 
+ * has no duplicate fields since this is disallowed in Javascript.
+ * 
+ * Returns the same coze that was given.
+ * 
+ * Fails on invalid key, parse error, mismatch fields.
+ * 
  * @param   {Coze}      coze       Object coze.
- * @param   {CozeKey}   cozeKey    A private coze key.
- * @param   {Canon}     [canon]    Array for canonical keys. [Optional]
- * @returns {Coze}                 The same coze as input.
- * @throws  {Error}                Invalid key, parse error, mismatch fields.
+ * @param   {Key}       cozeKey    A private coze key.
+ * @param   {Canon}     [canon]    Array for canonical keys.
+ * @returns {Coze}
+ * @throws  {Error}
  */
 async function SignCoze(coze, cozeKey, canon) {
 	if (CZK.IsRevoked(cozeKey)) {
@@ -128,10 +179,10 @@ async function SignCoze(coze, cozeKey, canon) {
  * coze. Errors on mismatch `alg` or `tmb`.
  *
  * @param   {Coze}      coze       Object coze.
- * @param   {CozeKey}   cozeKey    A private coze key.
- * @param   {Canon}     [canon]    Array for canonical keys. [Optional]
- * @returns {Coze}                 The same coze as input.
- * @throws  {Error}                Invalid key, parse error, mismatch fields.
+ * @param   {Key}       cozeKey    A private coze key.
+ * @param   {Canon}     [canon]    Array for canonical keys.
+ * @returns {Coze}
+ * @throws  {Error}
  */
 async function SignCozeRaw(coze, cozeKey, canon) {
 	if (CZK.IsRevoked(cozeKey)) {
@@ -152,14 +203,15 @@ async function SignCozeRaw(coze, cozeKey, canon) {
 }
 
 /**
- * Verify verifies a `pay` with `sig` and returns a boolean.  Verify does no
- * Coze checks.  If checks are needed, use VerifyCoze();
+ * Verify verifies a `pay` with `sig` and returns whether or not the message is
+ * verified. Verify does no Coze checks.  If checks are needed, use
+ * VerifyCoze();
  *
  * @param  {Message}   message    Message string.
- * @param  {CozeKey}   cozekey    Coze key for validation.
+ * @param  {Key}       cozekey    Coze key for validation.
  * @param  {Sig}       sig        Signature.
- * @return {boolean}              Whether or not message is verified.
- * @throws {Error}                Invalid key/parse error.
+ * @return {Boolean}
+ * @throws {Error}
  */
 async function Verify(message, cozekey, sig) {
 	return CTK.CryptoKey.VerifyMsg(
@@ -170,13 +222,13 @@ async function Verify(message, cozekey, sig) {
 };
 
 /**
- * VerifyCoze returns a boolean.  coze.sig must be set.  If set, pay.alg and
- * pay.tmb must match with cozeKey.
+ * VerifyCoze returns a whether or not the Coze is valid. coze.sig must be set.
+ * If set, pay.alg and pay.tmb must match with cozeKey.
  * 
- * @param  {Coze}     coze         Coze.
- * @param  {CozeKey}  [cozeKey]    Coze key for validation.
- * @param  {Sig}      [sig]        String.
- * @return {boolean}               Valid or not
+ * @param  {Coze}     coze         Coze with signed pay.
+ * @param  {Key}      [cozeKey]    Public Coze key for verification.
+ * @param  {Sig}      [sig]        Signature.
+ * @return {Boolean}
  * @throws {Error}
  */
 async function VerifyCoze(coze, cozeKey) {
@@ -190,10 +242,11 @@ async function VerifyCoze(coze, cozeKey) {
 }
 
 /**
- * VerifyCozeArray verifies an array of `coze`s and returns a single "VerifiedArray" object.
+ * VerifyCozeArray verifies an array of `coze`s and returns a single
+ * "VerifiedArray" object.
  *
  * @param  {coze[]}           coze       - Array of Coze objects.
- * @param  {CozeKey}          cozeKey    - Javascript object.  CozeKey.
+ * @param  {Key}              cozeKey    - Javascript object.  Coze Key.
  * @return {VerifiedArray}
  * @throws {Error}
  */
@@ -202,7 +255,7 @@ async function VerifyCozeArray(coze, cozeKey) {
 		return VerifyCoze(coze, cozeKey)
 	}
 
-	/** @type {VerifiedArray} verifiedObj */
+	/** @type {VerifiedArray} */
 	var verifiedObj = {
 		VerifiedAll: false,
 		VerifiedCount: 0,
@@ -211,9 +264,7 @@ async function VerifyCozeArray(coze, cozeKey) {
 	};
 
 	let copy = [...coze]; // Copy so original isn't modified.
-
-	for (let i = 0; i < copy.length; i++) {
-		let c = copy[i];
+	for (let c of copy) {
 		if (!isEmpty(c.coze)) { // "coze" encapsulated?
 			c = c.coze;
 		}
@@ -223,7 +274,7 @@ async function VerifyCozeArray(coze, cozeKey) {
 			verifiedObj.VerifiedCount++;
 		} else {
 			verifiedObj.FailedCount++;
-			verifiedObj.FailedCoze.push(copy);
+			verifiedObj.FailedCoze.push(c);
 		}
 	}
 
@@ -239,12 +290,13 @@ async function VerifyCozeArray(coze, cozeKey) {
  * Meta recalculates and sets [can, cad, czd] for given `coze`. Coze.Pay, and
  * Coze.Sig must be set, and either Coze.Pay.Alg or parameter alg must be set.
  * Meta does no cryptographic verification.
+ * Fails on JSON parse exception.
+ * Returns {pay, key, iat, can, cad, czd, tmb, sig}.
  *
- * @param  {Coze}      coze          coze.
- * @param  {alg}       [alg]         Optional alg.  pay.alg takes precedence over parameter.   
- * @throws {Error}                   JSON parse exception or other Error.  
- * @return {Coze}                    {pay, key, iat, can, cad, czd, tmb, sig}
- * 
+ * @param  {Coze}      coze     coze.
+ * @param  {Alg}       [alg]    coze.pay.alg takes precedence.
+ * @throws {Error} 
+ * @return {Coze}
  */
 async function Meta(coze, alg) {
 	if (!isEmpty(coze.pay.alg)) {
@@ -270,7 +322,7 @@ async function Meta(coze, alg) {
 /**
  * Converts a string to an ArrayBuffer.
  *
- * @param  {string}        string
+ * @param  {String}        string
  * @return {ArrayBuffer}
  */
 async function SToArrayBuffer(string) {
@@ -305,8 +357,8 @@ function B64utToUint8Array(string) {
 /**
  * ArrayBufferTo64ut Array buffer to base64url.
  * 
- * @param   {ArrayBuffer} buffer  ArrayBuffer. Arbitrary bytes. UTF-16 is Javascript native.
- * @returns {b64ut}               String. b64ut encoded string.
+ * @param   {ArrayBuffer} buffer  Arbitrary bytes. UTF-16 is Javascript native.
+ * @returns {B64}                 b64ut encoded string.
  */
 function ArrayBufferTo64ut(buffer) {
 	var string = String.fromCharCode.apply(null, new Uint8Array(buffer));
@@ -334,7 +386,7 @@ function ArrayBufferTo64ut(buffer) {
  * Cannot use CryptoKey with this function since (len === 0) always. 
  *
  * @param   {any}     thing    Thing you wish was empty.
- * @returns {boolean}          Boolean.
+ * @returns {Boolean}
  */
 function isEmpty(thing) {
 	if (typeof thing === 'function') {
@@ -364,7 +416,7 @@ function isEmpty(thing) {
  * considered false unless true. 
  *
  * @param   {any}      bool   Thing that you wish was a boolean.  
- * @returns {boolean}         An actual boolean.  
+ * @returns {Boolean}
  */
 function isBool(bool) {
 	if (

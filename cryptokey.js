@@ -2,11 +2,20 @@
 
 import * as Coze from './coze.js';
 import * as Alg from './alg.js';
-import * as CozeKey from './cozekey.js';
+import * as CZK from './key.js';
 
 export {
 	CryptoKey,
 };
+
+/**
+ * @typedef {import('./coze.js').B64} B64
+ * @typedef {import('./coze.js').Alg} Alg
+ * @typedef {import('./coze.js').Sig} Sig
+ * @typedef {import('./key.js').Key} Key
+ * @typedef {import('./alg.js').Curve} Crv
+ * @typedef {import('./coze.js').Message} Msg
+ */
 
 var CryptoKey = {
 
@@ -43,7 +52,7 @@ var CryptoKey = {
 	 * supports ECDSA since Crypto.subtle only supports ECDSA. 
 	 * https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#JSON_Web_Key
 	 * 
-	 * @param   {CozeKey}    cozeKey           Coze key.
+	 * @param   {Key}         cozeKey          Coze key.
 	 * @param   {Boolean}    [public=false]    Return only a public key.
 	 * @returns {CryptoKey}                    Javascript CryptoKey
 	 * @throws
@@ -61,10 +70,8 @@ var CryptoKey = {
 
 		let half = Alg.XSize(cozeKey.alg) / 2;
 		let xyab = await Coze.B64utToUint8Array(cozeKey.x);
-		let xab = xyab.slice(0, half)
-		let yab = xyab.slice(half)
-		jwk.x = await Coze.ArrayBufferTo64ut(xab);
-		jwk.y = await Coze.ArrayBufferTo64ut(yab);
+		jwk.x = await Coze.ArrayBufferTo64ut(xyab.slice(0, half));
+		jwk.y = await Coze.ArrayBufferTo64ut(xyab.slice(half));
 
 		// Public CryptoKey "crypto.subtle.importKey" needs key use to be "verify"
 		// even though this doesn't exist in JWK RFC or IANA registry. (2021/05/12)
@@ -76,7 +83,7 @@ var CryptoKey = {
 			jwk.d = cozeKey.d;
 		}
 
-		var cryptoKey = await crypto.subtle.importKey(
+		return await crypto.subtle.importKey(
 			"jwk",
 			jwk, {
 				name: "ECDSA",
@@ -85,8 +92,6 @@ var CryptoKey = {
 			true,
 			[signOrVerify]
 		);
-
-		return cryptoKey;
 	},
 
 	/**
@@ -106,8 +111,8 @@ var CryptoKey = {
 	/**
 	 * CryptoKeyToCozeKey returns a Coze Key from Javascript's "CryptoKey" type.
 	 * (https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey) Coze keys are
-	 * similiar to JOSE JWK's but has a few significant differences. See the Coze docs
-	 * for more on these differences.
+	 * similiar to JOSE JWK's but has a few significant differences.
+	 * See the Coze docs for more on these differences.
 	 * 
 	 * - Coze Byte-to-string values are always b64ut, "RFC 4648 base64 URI Safe
 	 * Truncated".
@@ -119,8 +124,8 @@ var CryptoKey = {
 	 * keys that don't use that algorithm.
 	 * 
 	 * This function currently only supports ECDSA (ES256. ES384, ES512) as
-	 * crypto.subtle only supports these ECDSA algorithms. From Cryptokey, `exported`
-	 * key output should is in the following form.
+	 * crypto.subtle only supports these ECDSA algorithms. From Cryptokey,
+	 * `exported` key output should is in the following form:
 	 * 
 	 * {
 	 * "crv": "P-256",
@@ -165,8 +170,8 @@ var CryptoKey = {
 	 * keys.  This may be a private key.
 	 * 
 	 * @param   {CryptoKey}   cryptoKey 
-	 * @returns {CozeKey}     Coze key.
-	 * @throws 
+	 * @returns {Key}
+	 * @throws  {Error}
 	 */
 	ToCozeKey: async function (cryptoKey) {
 		let exported = await window.crypto.subtle.exportKey(
@@ -191,14 +196,14 @@ var CryptoKey = {
 			czk.d = exported.d;
 		}
 
-		czk.tmb = await CozeKey.Thumbprint(czk);
+		czk.tmb = await CZK.Thumbprint(czk);
 		// console.log("exported: " + JSON.stringify(exported), "Coze Key: " + JSON.stringify(czk)); // Debugging
 		return czk;
 	},
 
 	/**
 	 * Uses a Javascript `CryptoKey` to sign a array buffer.  Returns array buffer
-	 * bytes.  
+	 * bytes of the signature.
 	 *
 	 * The signing algorithm's hashing algorithm is used for the digest of the
 	 * payload.  
@@ -210,43 +215,39 @@ var CryptoKey = {
 	 * 
 	 * @param   {CryptoKey}      cryptoKey
 	 * @param   {ArrayBuffer}    payloadBuffer
-	 * @returns {ArrayBuffer}    ArrayBuffer of sig
+	 * @returns {ArrayBuffer}
 	 */
 	SignBuffer: async function (cryptoKey, arrayBuffer) {
-		let hashAlg = await CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey);
-
-		let signature = await window.crypto.subtle.sign({
+		return await window.crypto.subtle.sign({
 				name: "ECDSA",
 				hash: {
-					name: hashAlg
+					name: await CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey)
 				},
 			},
 			cryptoKey,
 			arrayBuffer
 		);
-
-		return signature; // Array Buffer
 	},
 
 	/**
-	 * SignBufferB64 signs a buffer with a CryptoKey and returns Hex. The input is
-	 * hashed before it's signed.
+	 * SignBufferB64 signs a buffer with a CryptoKey and returns base64ut.
+	 * The input is hashed before it's signed.
 	 *
 	 * @param   {CryptoKey}   cryptoKey       Private CryptoKey
-	 * @param   {ArrayBuffer} arrayBuffer     ArrayBuffer to sign. 
-	 * @returns {string}      B64             B64
+	 * @param   {ArrayBuffer} arrayBuffer     ArrayBuffer to sign.
+	 * @returns {B64}
 	 */
 	SignBufferB64: async function (cryptoKey, arrayBuffer) {
 		return await Coze.ArrayBufferTo64ut(await CryptoKey.SignBuffer(cryptoKey, arrayBuffer));
 	},
 
 	/**
-	 * SignString signs a string and returns Hex of the signature.  Coze uses UTF8
-	 * bytes for strings.
+	 * SignString signs a string and returns base64ut encoding of the signature.
+	 * Coze uses UTF-8 bytes for strings.
 	 * 
-	 * @param {CryptoKey} cryptoKey      CryptoKey. Private key used for signing.
-	 * @param {string}    utf8           String. String to sign. 
-	 * @returns {string}  hex.           String. Hex as string.
+	 * @param   {CryptoKey} cryptoKey      Private key used for signing.
+	 * @param   {String}    utf8           String to sign.
+	 * @returns {B64}
 	 */
 	SignString: async function (cryptoKey, utf8) {
 		return await CryptoKey.SignBufferB64(cryptoKey, await Coze.SToArrayBuffer(utf8));
@@ -255,11 +256,12 @@ var CryptoKey = {
 	/**
 	 * VerifyArrayBuffer verifies an ArrayBuffer msg with an ArrayBuffer sig and
 	 * Javascript CryptoKey.
+	 * Returns whether or not message is verified by the given key and signature.
 	 * 
 	 * @param   {CryptoKey}   cryptoKey           Javascript CryptoKey.
-	 * @param   {ArrayBuffer} sig                 ArrayBuffer. Signature.
-	 * @param   {ArrayBuffer} msg                 ArrayBuffer. Message.
-	 * @returns {boolean}                         Boolean. Verified or not.
+	 * @param   {ArrayBuffer} sig                 Signature.
+	 * @param   {ArrayBuffer} msg                 Message.
+	 * @returns {Boolean}
 	 */
 	VerifyArrayBuffer: async function (cryptoKey, msg, sig) {
 		// Guarantee key is not private to appease Javascript:
@@ -277,11 +279,12 @@ var CryptoKey = {
 
 	/**
 	 * VerifyMsg uses a public key to verify a string msg with a b64ut sig.
+	 * Returns whether or not the signature is valid.
 	 * 
 	 * @param   {CryptoKey}  cryptoKey         Javascript CryptoKey.
-	 * @param   {string}     msg               String that was signed.
+	 * @param   {Msg}        msg               String that was signed.
 	 * @param   {Sig}        sig               B64 signature.
-	 * @returns {boolean}                      Boolean. If signature is valid.
+	 * @returns {Boolean}
 	 */
 	VerifyMsg: async function (cryptoKey, msg, sig) {
 		return CryptoKey.VerifyArrayBuffer(cryptoKey, await Coze.SToArrayBuffer(msg), await Coze.B64uToArrayBuffer(sig));
@@ -290,6 +293,7 @@ var CryptoKey = {
 	/**
 	 * GetSignHashAlgoFromCryptoKey gets the signing hashing algorithm from the
 	 * CryptoKey.
+	 * Returns the name of the hashing algorithm. E.g. "SHA-256".
 	 *
 	 * Javascript's CryptoKey explicitly requires a signing hashing algorithm, but
 	 * the CryptoKey itself may not explicitly contain that information. For
@@ -306,19 +310,20 @@ var CryptoKey = {
 	 * The purpose of this function is to return the correct hashing digest for
 	 * all CryptoKeys regardless of their form.
 	 * 
-	 * @param   {CryptoKey} CryptoKey  Object. CryptoKey Javascript object.
-	 * @returns {String}    Hash       String. Name of hashing algorithm e.g. "SHA-256".
+	 * @param   {CryptoKey} CryptoKey  CryptoKey Javascript object.
+	 * @returns {Alg}
 	 */
 	GetSignHashAlgoFromCryptoKey: async function (cryptoKey) {
 		return Alg.HashAlg(await CryptoKey.algFromCrv(cryptoKey.algorithm.namedCurve));
 	},
 
 	/**
-	 * algFromCrv returns a signing alg from the given curve.
+	 * algFromCrv returns a SEAlg from the given curve.
+	 * Fails when the curve is not supported or recognized.
 	 * 
-	 * @param   {crv}     src    String. Curve type. E.g. "P-256".
-	 * @returns {Alg}     alg    String. SEALG for the given curve.
-	 * @throws  {Error}          Fails when the curve is not supported or recognized.
+	 * @param   {Crv}     src    Curve type. E.g. "P-256".
+	 * @returns {Alg}
+	 * @throws  {Error}
 	 */
 	algFromCrv: async function (crv) {
 		switch (crv) {

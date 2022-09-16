@@ -13,17 +13,44 @@ export {
 	Use,
 }
 
+/**
+ * For more documentation and notes on Alg, Coze, Genus, Family, HashAlg,
+ * CurveAlg, and Use, see notes on the Go implementation:
+ * https://github.com/Cyphrme/Coze/blob/master/alg.go
+ */
+
 /** 
- * For more on Alg, see notes on the Go implementation of Coze, Genus, Family,
- * HashAlg, CurveAlg, and Use.
- * 
-* @typedef  {String} Alg     - Algorithm             e.g. "ES256" 
-* @typedef  {String} Genus   - Genus.                e.g. "SHA2", "ECDSA".
-* @typedef  {String} Family  - Family.               e.g. "SHA", "EC".
-* @typedef  {String} Hash    - Hashing algorithm.    e.g. "SHA-256".
-* @typedef  {String} Curve   - Elliptic curve.       e.g. "P-256".
-* @typedef  {String} Use     - Algorithm use.        e.g. "sig" or "enc"
-/*
+ * Alg is a declarative abstraction for cryptographic functions for Coze.
+ * For more on Alg, see the main Coze README:
+ * https://github.com/Cyphrme/Coze#readme
+ * Alg is the algorithm being used. E.g. "ES256".
+ * @typedef  {String} Alg
+ */
+
+/**
+ * Genus is the genus for an Alg (Level 1). E.g. "SHA2", "ECDSA".
+ * @typedef  {String} Genus
+ */
+
+/**
+ * Family is the family for an Alg (Level 2). E.g. "SHA", "EC".
+ * @typedef  {String} Family
+ */
+
+/**
+ * Hash is the hashing algorithm. E.g. "SHA-256".
+ * @typedef  {String} Hash
+ */
+
+/**
+ * Curve is the (elliptic) curve used for Alg. E.g. "P-256".
+ * @typedef  {String} Curve
+ */
+
+/**
+ * Use is the use for Alg. E.g. "sig", "enc", "dig".
+ * @typedef  {String} Use
+ */
 
 /** 
  * Params holds all relevant values for an `alg`. If values are not applicable
@@ -31,16 +58,15 @@ export {
  * for the hash alg "SHA-256" Curve's value is 0.
  * 
  * -Name:     Alg string Name.
- * -Genus:    Genus                              e.g. "SHA2", "ECDSA".
- * -Family:   Family                             e.g. "SHA", "EC".
- * -Hash:     Hash is the hashing algorithm.     e.g. "SHA-256".
- * -HashSize: Size in bytes of the digest.       e.g. 32 for "SHA-256".
- * -SigSize:  Size in bytes of the signature.    e.g. 64 for "ES256".
- * -XSize:    Size in bytes of `x`.              e.g. "64" for ES256
- * -DSize:    Size in bytes of `d`.              e.g. "32" for ES256
- * -Curve:    Curve is the elliptic curve.       e.g. "P-256".
- * -Use:      Algorithm use.                     e.g. "sig".
- * 
+ * -Genus:    Genus                              E.g. "SHA2", "ECDSA".
+ * -Family:   Family                             E.g. "SHA", "EC".
+ * -Hash:     Hash is the hashing algorithm.     E.g. "SHA-256".
+ * -HashSize: Size in bytes of the digest.       E.g. 32 for "SHA-256".
+ * -SigSize:  Size in bytes of the signature.    E.g. 64 for "ES256".
+ * -XSize:    Size in bytes of `x`.              E.g. "64" for ES256
+ * -DSize:    Size in bytes of `d`.              E.g. "32" for ES256
+ * -Curve:    Curve is the elliptic curve.       E.g. "P-256".
+ * -Use:      Algorithm use.                     E.g. "sig".
 * @typedef  {Object}  Params
 * @property {string}  Name 
 * @property {Genus}   Genus
@@ -52,14 +78,26 @@ export {
 * @property {Number}  DSize
 * @property {Curve}   Curve
 * @property {Use}     Use
+* @property {B64P}    B64
 /*
 
 /**
+ * B64 is a Params object for Base64ut encoding.
+ * @typedef {Params} B64P
+ */
+
+/**
  * Param reports all relevant values for a given `alg`.
+ * Returns Params object with populated values for relevant fields.
+ * All functions definied in this file will fail/error when given an
+ * unsupported algorithm.
  * 
- * @param   {string} alg  String. Alg is the string representation of a coze.Alg
- * @returns {Params}      Params object with populated values for relevant fields
-*/
+ * Go Coze returns 0 on errors, should cozejs do the same?
+ * 
+ * @param   {Alg}      alg
+ * @returns {Params}
+ * @throws  {Error}
+ */
 function Params(alg) {
 	/** @type {Params} */
 	let p = {
@@ -71,14 +109,14 @@ function Params(alg) {
 	p.Hash = HashAlg(alg);
 	p.HashSize = HashSize(alg);
 	p.B64.HashSize = Math.ceil(4 * p.HashSize / 3);
+	p.Use = Use(alg);
 
 	// SigAlg parameters
 	try {
-		p.Curve = Curve(alg);
-		p.Use = Use(alg);
 		p.SigSize = SigSize(alg);
 		p.XSize = XSize(alg);
 		p.DSize = DSize(alg);
+		p.Curve = Curve(alg);
 
 		p.B64.SigSize = Math.ceil(4 * p.SigSize / 3);
 		p.B64.XSize = Math.ceil(4 * p.XSize / 3);
@@ -94,8 +132,8 @@ function Params(alg) {
  * Genus returns the genus for an alg (ECDSA, EdDSA, SHA-2, SHA-3).
  * See notes on the Go implementation of Coze for more on genus.
  *
- * @param   {Alg} alg 
- * @returns {Use}
+ * @param   {Alg} alg
+ * @returns {Genus}
  * @throws  {Error}
  */
 function Genus(alg) {
@@ -166,7 +204,7 @@ function Family(alg) {
  * See notes on the Go implementation of Coze for more.
  *
  * @param   {Alg}   alg 
- * @returns {Hash}  Hash Alg as a string, e.g. "SHA-256".
+ * @returns {Hash}
  * @throws  {Error}
  */
 function HashAlg(alg) {
@@ -204,25 +242,21 @@ function HashAlg(alg) {
 }
 
 /**
- * HashSize returns the hashing algorithm for the given algorithm.
+ * HashSize returns the hashing algorithm size for the given algorithm in bytes
+ * E.g. 32.
  * 
  * SHAKE128 has 128 bits of pre-collision resistance and a capacity of 256,
  * although it has arbitrary output size. SHAKE256 has 256 bits of pre-collision
  * resistance and a capacity of 512, although it has arbitrary output size.
  * 
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  * 
- * @param   {Alg}     alg - alg string
- * @returns {Number}  size of the hash alg in bytes.  (e.g. 32)
+ * @param   {Alg}     alg
+ * @returns {Number}
  * @throws  {Error}
  */
 function HashSize(alg) {
-	// If given alg that is not a hash, attempt to retrieve the hash alg
-	let ha = HashAlg(alg);
-	if (ha != alg) {
-		alg = ha;
-	}
-	switch (alg) {
+	switch (HashAlg(alg)) {
 		case "SHA-224":
 		case "SHA3-224":
 			return 28;
@@ -243,15 +277,15 @@ function HashSize(alg) {
 }
 
 /**
- * SigSize returns the signature size for the given algorithm.  
+ * SigSize returns the signature size for the given algorithm in bytes.
  * 
  * Curve P-521 uses 521 bits.  This is then padded up the the nearest byte (528)
  * for R and S. 132 = (528*2)/8
  * 
  * See notes on the Go implementation of Coze for more
  * 
- * @param   {Alg}      alg - Sig alg string, e.g. "ES256"
- * @returns {Number}   size of the sig alg in bytes.  (e.g. 64)
+ * @param   {Alg}      alg
+ * @returns {Number}
  * @throws  {Error}
  */
 function SigSize(alg) {
@@ -273,18 +307,17 @@ function SigSize(alg) {
 	}
 }
 
-
-
 /**
- * XSize returns the signature size for the given algorithm.
+ * XSize returns the signature size for the given signature algorithm in bytes.
+ * E.g. 64.
  * 
  * ES512 uses Curve P-521 that's 521 bits is padded up the the nearest byte
  * (528) for R and S. (528*2)/8 = 132.
  *
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  * 
- * @param   {Alg}     alg - Sig alg string, e.g. "ES256"
- * @returns {Number}  size of the sig alg in bytes.  (e.g. 64)
+ * @param   {Alg}     alg
+ * @returns {Number}
  * @throws  {Error}
  */
 function XSize(alg) {
@@ -301,23 +334,23 @@ function XSize(alg) {
 		case "ES384":
 			return 96
 		case "ES512":
-			return 132
+			return 132 // X and Y are 66 bytes (Rounded up for P521)
 		default:
 			throw new Error("alg.XSize: unsupported algorithm: " + alg);
 	}
 }
 
-
 /**
- * DSize returns the signature size for the given algorithm.
+ * DSize returns the signature size for the given signature algorithm in bytes.
+ * E.g. 64.
  * 
  * ES512 uses Curve P-521 that's 521 bits is padded up the the nearest byte
  * (528). (528)/8 = 66.
  *
  * See notes on the Go implementation of Coze for more
  * 
- * @param   {Alg}     alg - Sig alg string, e.g. "ES256"
- * @returns {Number}  size of the sig alg in bytes.  (e.g. 64)
+ * @param   {Alg}     alg
+ * @returns {Number}
  * @throws  {Error}
  */
 function DSize(alg) {
@@ -340,12 +373,13 @@ function DSize(alg) {
 }
 
 /**
- * Curve returns the curve algorithm for the given algorithm.  
+ * Curve returns the curve algorithm for the given signature algorithm.
+ * E.g. "P-256".
  * 
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  *
  * @param   {Alg}    alg 
- * @returns {Curve}  The curve alg as a string, e.g. "SHA-256".
+ * @returns {Curve}
  * @throws  {Error}
  */
 function Curve(alg) {
@@ -369,25 +403,24 @@ function Curve(alg) {
 }
 
 /**
- * Use returns the use for the given algorithm.  Only "sig" or "enc" are
- * currently valid, and Coze currently only uses "sig".
+ * Use returns the use for the given algorithm.  Only "sig", "enc", and "dig"
+ * are currently valid.
+ * Encryption ("enc") is currently not supported in Coze.
  * 
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  * 
  * @param   {Alg}     alg 
- * @returns {Use}     The string "sig" or "enc"
+ * @returns {Use}
  * @throws  {Error}
  */
 function Use(alg) {
-	switch (alg) {
-		case "ES224":
-		case "ES256":
-		case "ES384":
-		case "ES512":
-		case "Ed25519":
-		case "Ed25519ph":
-		case "Ed448":
+	switch (Genus(alg)) {
+		case "EdDSA":
+		case "ECDSA":
 			return "sig";
+		case "SHA2":
+		case "SHA3":
+			return "dig";
 		default:
 			throw new Error("alg.Use: unsupported algorithm: " + alg);
 	}

@@ -1,9 +1,6 @@
 "use strict";
 
 import * as Coze from './coze.js';
-import {
-	isEmpty
-} from './coze.js';
 
 export {
 	Canon,
@@ -14,17 +11,21 @@ export {
 }
 
 /**
- * @typedef  {Array|Object} Canon - An array or object representing a canon.  If object, only the first level keys are used as canon. 
- * @typedef  {import('./coze.js').Digest} Digest
- * @typedef  {import('./alg.js').Hash}    Hash
+ * @typedef {import('./coze.js').Digest} Digest
+ * @typedef {import('./alg.js').Hash} Hash
  */
 
+/**
+ * An array or object representing a canon.
+ * If object, only the first level keys are used as canon.
+ * @typedef  {Array|Object} Canon
+ */
 
 /**
- * Canon returns the canon from first level object keys.  
+ * Canon returns the canon from first level object keys.
  * 
  * @param   {Object}          obj      Object to create the canon from.
- * @returns {Array<String>}            Array. 
+ * @returns {Array<String>}
  */
 function Canon(obj) {
 	return Object.keys(obj);
@@ -32,14 +33,16 @@ function Canon(obj) {
 
 /**
  * Canon canonicalizes the first level of "object" into the form of "can".
+ * Returns the canonicalized object.
+ * Fails on invalid canon.
  *
  * @param   {Object}  object    Object to be canonicalized.
- * @param   {Canon}   [can]     Array|Object. Array|Object canon.
- * @returns {Object}            Object. Canonicalized object.
- * @throws  {Error}             Error. Fails on invalid Canons.
+ * @param   {Canon}   [can]     Array|Object canon.
+ * @returns {Object}
+ * @throws  {Error}
  */
 async function Canonical(object, can) {
-	if (isEmpty(can)) {
+	if (Coze.isEmpty(can)) {
 		return;
 	}
 
@@ -48,14 +51,13 @@ async function Canonical(object, can) {
 		obj[e] = object[e];
 	}
 	return obj;
-};
-
+}
 
 /**
  * Returns whether or not the Canon has duplicate fields.
  *
- * @param   {Canon}    can     Array|Object. Array|Object canon.
- * @returns {Boolean}          Boolean. Whether or not there are duplicates.
+ * @param   {Canon}    can     Array|Object canon.
+ * @returns {Boolean}
  */
 function HasDuplicates(can) {
 	let result = [];
@@ -72,37 +74,38 @@ function HasDuplicates(can) {
  * Canonical canonicalizes obj and returns a JSON string.
  *
  * @param   {Object}   obj         Object being canonicalized.
- * @param   {Canon}    [canon]     Array.  Optional canon.[Optional]
- * @returns {string}               String.
+ * @param   {Canon}    [canon]     Optional canon.
+ * @returns {String}
  */
 async function CanonicalS(obj, can) {
 	return JSON.stringify(await Canonical(obj, can));
-};
+}
 
 /**
- * CanonicalHash put input into canonical form and returns digest.
+ * CanonicalHash put input into canonical form and returns the array buffer of
+ * the digest.
+ * Fails if hash is not given.
  *
  * @param   {Object}        input     Object being canonicalized.
- * @param   {Hash}          hash      String. Must be SubtleCrypto.digest() compatible. (i.e. 'SHA-256') [Optional]
- * @param   {Canon}         [canon]   Array. for canonical keys. [Optional]
- * @returns {ArrayBuffer}             ArrayBuffer. of the digest.
- * @throws  {Error}                   Error if hash is not given.
+ * @param   {Hash}          hash      Must be SubtleCrypto.digest() compatible (i.e. 'SHA-256').
+ * @param   {Canon}         [canon]   Array for canonical keys.
+ * @returns {ArrayBuffer}
+ * @throws  {Error}
  */
 async function CanonicalHash(input, hash, can) {
-	if (isEmpty(hash)) {
+	if (Coze.isEmpty(hash)) {
 		throw "Hash is not given";
 	}
-
 	return await crypto.subtle.digest(hash, await Coze.SToArrayBuffer(await CanonicalS(input, can)));
 }
 
 /**
- * CanonicalHash64 returns the b64ut of the digest. See docs on Canonical.
+ * CanonicalHash64 returns the b64ut digest. See docs on Canonical.
  *
  * @param   {Object|String}  obj         Object being canonicalized.
- * @param   {Hash}           [hash]      Subtle crypto compatible digest that's being used.  (i.e. 'SHA-256') [Optional]
- * @param   {Canon}          [canon]     Array for canonical keys. [Optional]
- * @returns {Digest}                     B64 Digest.
+ * @param   {Hash}           [hash]      Subtle crypto compatible digest that's being used (i.e. 'SHA-256').
+ * @param   {Canon}          [canon]     Array for canonical keys.
+ * @returns {Digest}
  */
 async function CanonicalHash64(obj, hash, can) {
 	return await Coze.ArrayBufferTo64ut(await CanonicalHash(obj, hash, can));
