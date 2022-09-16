@@ -220,12 +220,12 @@ async function VerifyCozeArray(coze, cozeKey) {
  * Coze.Sig must be set, and either Coze.Pay.Alg or parameter alg must be set.
  * Meta does no cryptographic verification.
  * Fails on JSON parse exception.
- * Returns a Meta Coze (has fields [pay, key, iat, can, cad, czd, tmb, sig] ).
+ * Returns a Meta Coze (sets fields [can, cad, czd]).
  *
  * @param  {Coze}      coze     coze.
  * @param  {Alg}       [alg]    coze.pay.alg takes precedence.
  * @return {Meta}
- * @throws {Error} 
+ * @throws {Error}
  */
 async function Meta(coze, alg) {
 	if (!isEmpty(coze.pay.alg)) {
@@ -236,10 +236,16 @@ async function Meta(coze, alg) {
 
 	coze.can = await Can.Canon(coze.pay);
 	coze.cad = await Can.CanonicalHash64(coze.pay, alg);
+	console.debug({
+		...coze
+	})
 	coze.czd = await Can.CanonicalHash64({
-		cad: coze.cad,
-		sig: coze.sig
+		"cad": coze.cad,
+		"sig": coze.sig
 	}, alg);
+	console.debug({
+		...coze
+	})
 	return coze;
 }
 

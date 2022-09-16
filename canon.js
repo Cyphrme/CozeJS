@@ -32,17 +32,15 @@ function Canon(obj) {
 
 /**
  * Canon canonicalizes the first level of "object" into the form of "can".
- * Returns the canonicalized object.
- * Fails on invalid canon.
- *
+ * 
  * @param   {Object}  object    Object to be canonicalized.
  * @param   {Canon}   [can]     Array|Object canon.
- * @returns {Object}
- * @throws  {Error}
+ * @returns {Object}            Canonicalized object.
+ * @throws  {Error}             Fails on invalid canon.
  */
 async function Canonical(object, can) {
 	if (isEmpty(can)) {
-		return;
+		return object;
 	}
 
 	let obj = {};
@@ -93,7 +91,7 @@ async function CanonicalS(obj, can) {
  */
 async function CanonicalHash(input, hash, can) {
 	if (isEmpty(hash)) {
-		throw "Hash is not given";
+		throw new Error("Hash is not given");
 	}
 	return await crypto.subtle.digest(hash, await SToArrayBuffer(await CanonicalS(input, can)));
 }

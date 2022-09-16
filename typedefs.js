@@ -73,7 +73,7 @@ export {}
 /**
  * An array or object representing a canon.
  * If object, only the first level keys are used as canon.
- * @typedef  {Array|Object} Canon
+ * @typedef  {Array<String>|{}} Canon
  */
 
 ////  Basic Coze Types
