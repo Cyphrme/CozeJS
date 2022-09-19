@@ -44,7 +44,7 @@ The test also runs as a [Github pages](https://cyphrme.github.io/Cozejs/browsert
 ## Go server
 
 ```sh
-cd /coze/browsertestjs
+cd /cozejs/browsertestjs
 go run server.go
 ```
 

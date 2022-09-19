@@ -284,7 +284,7 @@ function XSize(alg) {
  * ES512 uses Curve P-521 that's 521 bits is padded up the the nearest byte
  * (528). (528)/8 = 66.
  *
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  * 
  * @param   {Alg}     alg
  * @returns {Number}
