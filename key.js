@@ -92,7 +92,7 @@ async function Valid(privateCozeKey) {
 		return Coze.Verify(msg, privateCozeKey, sig);
 	} catch (e) {
 		// Don't throw error, but still log it for debugging.  
-		console.log("Valid:" + e);
+		console.error("Valid: " + e);
 		return false;
 	}
 }
@@ -222,21 +222,21 @@ async function Correct(ck) {
 
 /**
  * Revoke generates a self revoke message and sets the input key as revoked.
- * Returns the signed Coze.
- * Fails if cryptoKeyPrivate is nil or invalid.
+ * 'rvk' will be set on given cozeKey.
  * 
  * @param   {Key}       cozeKey  Private Coze key.
  * @param   {String}    [msg]    Optional, human readable non programmatic reason for revoking the key.
- * @returns {Coze}
- * @throws  {Error}
+ * @returns {Coze}               Signed revoke Coze.
+ * @throws  {Error}              Fails if cryptoKeyPrivate is nil or invalid.
  */
 async function Revoke(cozeKey, msg) {
 	if (isEmpty(cozeKey)) {
 		throw new Error("CozeKey.Revoke: Private key not set.  Cannot sign message");
 	}
 
-	var coze = {};
-	coze.pay = {};
+	var coze = {
+		pay: {}
+	};
 	if (!isEmpty(msg)) { // Optional revoke message. 
 		coze.pay.msg = msg;
 	}

@@ -164,7 +164,6 @@ async function test_Canon() {
 
 // Tests the behavior of calling Canon with duplicate fields, as well as with
 // non-duplicate fields.
-// TODO FIXME
 async function test_Canon_repeat() {
 	let object = {
 		"c": "c",
@@ -178,19 +177,17 @@ async function test_Canon_repeat() {
 		"A": "a",
 	};
 
-	let badCanon = ["a", "b", "c", "c", "b", "a"];
-	let can;
 	try {
 		// Test for proper failure on Canonical with duplicate fields in Canon.
-		can = await Coze.CanonicalS(object, badCanon);
+		let badCanon = ["a", "b", "c", "c", "b", "a"];
+		await Coze.CanonicalS(object, badCanon);
 	} catch (e) {
 		if (e.message !== "Canonical: Canon cannot have duplicate fields.") {
 			throw new Error(e);
 		}
 	}
 	let goodCanon = ["a", "b", "c"];
-	can = await Coze.CanonicalS(object, goodCanon);
-	return can;
+	return await Coze.CanonicalS(object, goodCanon);
 };
 
 // test_CanonicalHash tests CanonicalHashB64, for all currently supported

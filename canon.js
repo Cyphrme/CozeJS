@@ -23,8 +23,8 @@ export {
 /**
  * Canon returns the canon from first level object keys.
  * 
- * @param   {Object}          obj      Object to create the canon from.
- * @returns {Array<String>}
+ * @param   {Object} obj      Object to create the canon from.
+ * @returns {Canon}
  */
 function Canon(obj) {
 	return Object.keys(obj);
@@ -53,7 +53,7 @@ async function Canonical(object, can) {
 /**
  * Returns whether or not the Canon has duplicate fields.
  *
- * @param   {Canon}    can     Array|Object canon.
+ * @param   {Canon}    can
  * @returns {Boolean}
  */
 function HasDuplicates(can) {
@@ -68,10 +68,10 @@ function HasDuplicates(can) {
 }
 
 /**
- * Canonical canonicalizes obj and returns a JSON string.
+ * CanonicalS canonicalizes obj and returns a JSON string.
  *
- * @param   {Object}   obj         Object being canonicalized.
- * @param   {Canon}    [canon]     Optional canon.
+ * @param   {Object}   obj
+ * @param   {Canon}    [canon]
  * @returns {String}
  */
 async function CanonicalS(obj, can) {
@@ -79,15 +79,14 @@ async function CanonicalS(obj, can) {
 }
 
 /**
- * CanonicalHash put input into canonical form and returns the array buffer of
+ * CanonicalHash puts input into canonical form and returns the array buffer of
  * the digest.
- * Fails if hash is not given.
  *
  * @param   {Object}        input     Object being canonicalized.
  * @param   {Hash}          hash      Must be SubtleCrypto.digest() compatible (i.e. 'SHA-256').
  * @param   {Canon}         [canon]   Array for canonical keys.
- * @returns {ArrayBuffer}
- * @throws  {Error}
+ * @returns {ArrayBuffer}             ArrayBuffer of the digest.
+ * @throws  {Error}                   Fails if hash is not given.
  */
 async function CanonicalHash(input, hash, can) {
 	if (isEmpty(hash)) {
@@ -102,7 +101,7 @@ async function CanonicalHash(input, hash, can) {
  * @param   {Object|String}  obj         Object being canonicalized.
  * @param   {Hash}           [hash]      Subtle crypto compatible digest that's being used (i.e. 'SHA-256').
  * @param   {Canon}          [canon]     Array for canonical keys.
- * @returns {Digest}
+ * @returns {Digest}                     B64 encoded string of digest.
  */
 async function CanonicalHash64(obj, hash, can) {
 	return await ArrayBufferTo64ut(await CanonicalHash(obj, hash, can));

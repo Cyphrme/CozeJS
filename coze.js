@@ -64,15 +64,11 @@ async function Sign(message, cozeKey) {
  * SignCoze, SignCozeRaw, VerifyCoze, and VerifyCozeArray assumes that object
  * has no duplicate fields since this is disallowed in Javascript.
  * 
- * Returns the same coze that was given.
- * 
- * Fails on invalid key, parse error, mismatch fields.
- * 
  * @param   {Coze}      coze       Object coze.
  * @param   {Key}       cozeKey    A private coze key.
  * @param   {Canon}     [canon]    Array for canonical keys.
- * @returns {Coze}
- * @throws  {Error}
+ * @returns {Coze}                 Coze that may have been modified from given.
+ * @throws  {Error}                Fails on invalid key, parse error, mismatch fields.
  */
 async function SignCoze(coze, cozeKey, canon) {
 	if (CZK.IsRevoked(cozeKey)) {
@@ -104,14 +100,13 @@ async function SignCoze(coze, cozeKey, canon) {
 
 /**
  * SignCozeRaw signs in place coze.pay with a private Coze key, but unlike
- * SignCoze, does not set `alg`, `tmb` or `iat`. Returns the same, but updated,
- * coze. Errors on mismatch `alg` or `tmb`.
+ * SignCoze, does not set `alg`, `tmb` or `iat`.
  *
  * @param   {Coze}      coze       Object coze.
  * @param   {Key}       cozeKey    A private coze key.
  * @param   {Canon}     [canon]    Array for canonical keys.
- * @returns {Coze}
- * @throws  {Error}
+ * @returns {Coze}                 Coze with new `sig` and canonicalized `pay`.
+ * @throws  {Error}                Fails on mismatch `alg` or `tmb`.
  */
 async function SignCozeRaw(coze, cozeKey, canon) {
 	if (CZK.IsRevoked(cozeKey)) {
@@ -174,8 +169,8 @@ async function VerifyCoze(coze, cozeKey) {
  * VerifyCozeArray verifies an array of `coze`s and returns a single
  * "VerifiedArray" object.
  *
- * @param  {coze[]}           coze       - Array of Coze objects.
- * @param  {Key}              cozeKey    - Javascript object.  Coze Key.
+ * @param  {coze[]}           coze       Array of Coze objects.
+ * @param  {Key}              cozeKey    Javascript object. Coze Key.
  * @return {VerifiedArray}
  * @throws {Error}
  */
@@ -219,13 +214,11 @@ async function VerifyCozeArray(coze, cozeKey) {
  * Meta recalculates and sets [can, cad, czd] for given `coze`. Coze.Pay, and
  * Coze.Sig must be set, and either Coze.Pay.Alg or parameter alg must be set.
  * Meta does no cryptographic verification.
- * Fails on JSON parse exception.
- * Returns a Meta Coze (sets fields [can, cad, czd]).
  *
  * @param  {Coze}      coze     coze.
  * @param  {Alg}       [alg]    coze.pay.alg takes precedence.
- * @return {Meta}
- * @throws {Error}
+ * @return {Meta}               Meta Coze (sets fields [can, cad, czd]).
+ * @throws {Error}              Fails on JSON parse exception.
  */
 async function Meta(coze, alg) {
 	if (!isEmpty(coze.pay.alg)) {
@@ -233,19 +226,12 @@ async function Meta(coze, alg) {
 	} else {
 		alg = Enum.HashAlg(alg);
 	}
-
 	coze.can = await Can.Canon(coze.pay);
 	coze.cad = await Can.CanonicalHash64(coze.pay, alg);
-	console.debug({
-		...coze
-	})
 	coze.czd = await Can.CanonicalHash64({
 		"cad": coze.cad,
 		"sig": coze.sig
 	}, alg);
-	console.debug({
-		...coze
-	})
 	return coze;
 }
 

@@ -28,10 +28,8 @@ export {
 /**
  * Param reports all relevant values for a given `alg`.
  * Returns Params object with populated values for relevant fields.
- * All functions definied in this file will fail/error when given an
+ * All functions defined in this file will fail/error when given an
  * unsupported algorithm.
- * 
- * Go Coze returns 0 on errors, should cozejs do the same?
  * 
  * @param   {Alg}      alg
  * @returns {Params}
@@ -71,7 +69,7 @@ function Params(alg) {
  * Genus returns the genus for an alg (ECDSA, EdDSA, SHA-2, SHA-3).
  * See notes on the Go implementation of Coze for more on genus.
  *
- * @param   {Alg} alg
+ * @param   {Alg}   alg
  * @returns {Genus}
  * @throws  {Error}
  */
@@ -221,7 +219,7 @@ function HashSize(alg) {
  * Curve P-521 uses 521 bits.  This is then padded up the the nearest byte (528)
  * for R and S. 132 = (528*2)/8
  * 
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  * 
  * @param   {Alg}      alg
  * @returns {Number}
