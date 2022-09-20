@@ -9,7 +9,7 @@ import {
 } from './coze.js';
 
 export {
-	NewCozeKey,
+	NewKey,
 	Correct,
 	Valid,
 	Thumbprint,
@@ -22,96 +22,64 @@ export {
 }
 
 /**
- * @typedef {import('./coze.js').B64}  B64
- * @typedef {import('./coze.js').Alg}  Alg
- * @typedef {import('./coze.js').Use}  Use
- * @typedef {import('./coze.js').Sig}  Sig
- * @typedef {import('./coze.js').Time} Time
+ * @typedef {import('./typedefs.js').B64}  B64
+ * @typedef {import('./typedefs.js').Alg}  Alg
+ * @typedef {import('./typedefs.js').Use}  Use
+ * @typedef {import('./typedefs.js').Sig}  Sig
+ * @typedef {import('./typedefs.js').Key}  Key
+ * @typedef {import('./typedefs.js').Time} Time
  */
-
-/**
- * CozeKey holds a cryptographic key, with the minimum required fields for the 
- * given `alg`.
- *
- * -alg: Cryptographic signing or encryption algorithm - e.g. "ES256"
- * 
- * -kid: Human readable, non programmatic, key identifier - e.g. "Test Key"
- * 
- * -iat: Unix time key was created. e.g. 1624472390
- * 
- * -tmb: Key thumbprint e.g. "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk"
- * 
- * -d:   ECDSA private "d" component in b64ut. Required for ECDSA private Coze keys.
- * e.g. "bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA"
- * 
- * -x:   ECDSA public "x" component in b64ut. Required for ECDSA public Coze keys.
- * e.g. "2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
- * @typedef  {Object} CozeKey
- * @property {Alg}    alg
- * @property {String} kid
- * @property {Time}   iat
- * @property {B64}    tmb
- * @property {B64}    [d]
- * @property {B64}    [x]
- */
-
-/**
- * PrivateCozeKey is a Coze key containing any private components.
- * @typedef  {CozeKey} PrivateCozeKey
- */
-
-/**
- * PublicCozeKey is a Coze key containing no private components and required public components.
- * @typedef  {CozeKey} PublicCozeKey
- **/
 
 // Coze key Thumbprint Canons.
 const TmbCanon = ["alg", "x"];
 
 /**
- * NewCozeKey returns a new Coze key. 
+ * NewKey returns a new Coze key.
+ * If no alg is given, the returned key will be an 'ES256' key.
  * 
  * @param   {Alg}     [alg=ES256] - Alg of the key to generate. (e.g. "ES256")
- * @returns {CozeKey}             - Coze key in Javascript object format
+ * @returns {Key}
  */
-async function NewCozeKey(alg) {
+async function NewKey(alg) {
 	if (isEmpty(alg)) {
-		alg = "ES256"
+		alg = Alg.Algs.ES256;
 	}
-	if (Alg.Genus(alg) == "ECDSA") {
+	if (Alg.Genus(alg) == Alg.GenAlgs.ECDSA) {
 		var keyPair = await CTK.CryptoKey.New(alg);
 	} else {
-		throw new Error("CozeKey.NewCozeKey: only ECDSA algs are currently supported.");
+		throw new Error("Coze.NewKey: only ECDSA algs are currently supported.");
 	}
 
-	let CozeKey = await CTK.CryptoKey.ToCozeKey(keyPair.privateKey);
-	CozeKey.iat = Math.floor(Date.now() / 1000); // To get Unix from js, divide by 1000.
-	CozeKey.tmb = await Thumbprint(CozeKey);
-	CozeKey.kid = "My Cyphr.me Key.";
+	let k = await CTK.CryptoKey.ToCozeKey(keyPair.privateKey);
+	k.iat = Math.floor(Date.now() / 1000); // To get Unix from js, divide by 1000.
+	k.tmb = await Thumbprint(k);
+	k.kid = "My Cyphr.me Key.";
 
-	return CozeKey;
+	return k;
 }
 
 /**
- * Thumbprint generates Coze key thumbprint.
+ * Thumbprint generates and returns a B64 Coze key thumbprint.
+ * Fails on empty 'alg' or 'x'.
  *
- * @param   {CozeKey} cozeKey - Javascript object Coze key.
- * @returns {tmb}             - B64 thumbprint.
- * @throws  {Error}           - Fails on empty alg or x.
+ * @param   {Key} cozeKey
+ * @returns {B64}
+ * @throws  {Error}
  */
 async function Thumbprint(cozeKey) {
 	if (isEmpty(cozeKey.alg) || isEmpty(cozeKey.x)) {
-		throw new Error("CozeKey.Thumbprint: alg or x is empty.");
+		throw new Error("Coze.Thumbprint: alg or x is empty.");
 	}
 	return Can.CanonicalHash64(cozeKey, await Alg.HashAlg(cozeKey.alg), TmbCanon);
 };
 
 /**
  * Valid validates a private Coze key.  See notes on `Correct`.
- * If the key is invalid, Valid may log an error.  
+ * If the key is invalid, Valid may log an error.
+ * Returns whether or not the given key is valid.
  *
- * @param   {CozeKey} privateCozeKey  Private Coze key.
- * @returns {Boolean}                 Valid.
+ * @param   {Key}      privateCozeKey  Private Coze key.
+ * @returns {Boolean}
  */
 async function Valid(privateCozeKey) {
 	if (isEmpty(privateCozeKey.d)) {
@@ -123,8 +91,8 @@ async function Valid(privateCozeKey) {
 		let sig = await Coze.Sign(msg, privateCozeKey);
 		return Coze.Verify(msg, privateCozeKey, sig);
 	} catch (e) {
-		// Don't throw error, but still log it for debugging.  
-		console.log("Valid:" + e);
+		// Don't throw error, but still log it for debugging.
+		console.error("Valid: " + e);
 		return false;
 	}
 }
@@ -149,7 +117,7 @@ async function Valid(privateCozeKey) {
  * 3. If `d` is present, verifies correct `tmb` and `x` if present, and verifies
  * the key by verifying a generated signature.
  * 
- * @param   {CozeKey} ck         Object. Coze key. 
+ * @param   {Key}     ck
  * @returns {Boolean}
  */
 async function Correct(ck) {
@@ -176,7 +144,7 @@ async function Correct(ck) {
 
 	// tmb only key
 	if (isXEmpty && isDEmpty) {
-		if (isTmbEmpty || ck.tmb.length !== p.B64.HashSize) {
+		if (isTmbEmpty || ck.tmb.length !== p.HashSizeB64) {
 			console.error("Correct: Incorrect `tmb` size: ", ck.tmb.length);
 			return false;
 		}
@@ -184,7 +152,7 @@ async function Correct(ck) {
 	}
 
 	// d is not set
-	if (!isXEmpty && ck.x.length !== p.B64.XSize) {
+	if (!isXEmpty && ck.x.length !== p.XSizeB64) {
 		console.error("Correct: Incorrect x size: ", ck.x.length);
 		return false;
 	}
@@ -254,13 +222,12 @@ async function Correct(ck) {
 
 /**
  * Revoke generates a self revoke message and sets the input key as revoked.
- * Returns the signed Coze.
- * Fails if cryptoKeyPrivate is nil or invalid.
+ * 'rvk' will be set on given cozeKey.
  * 
- * @param   {CozeKey}   cozeKey  Private Coze key.
+ * @param   {Key}       cozeKey  Private Coze key.
  * @param   {String}    [msg]    Optional, human readable non programmatic reason for revoking the key.
- * @returns {Coze}
- * @throws  {Error}
+ * @returns {Coze}               Signed revoke Coze.
+ * @throws  {Error}              Fails if cryptoKeyPrivate is nil or invalid.
  */
 async function Revoke(cozeKey, msg) {
 	if (isEmpty(cozeKey)) {
@@ -296,9 +263,9 @@ async function Revoke(cozeKey, msg) {
  * Messages self-revoking keys must have `rvk` with an integer value greater
  * than 0.  
  *
- * @param   {CozeKey|Coze}   cozeKey  Coze key or coze          
- * @param   {String}         [msg]    Optional reason for revoking the key.    
- * @returns {boolean}                 Revoked or not. 
+ * @param   {Key|Coze}       cozeKey  Coze key or coze object.
+ * @param   {String}         [msg]    Optional reason for revoking the key.
+ * @returns {Boolean}
  */
 function IsRevoked(cozeKey) {
 	if (isEmpty(cozeKey.rvk) || !(parseInt(cozeKey.rvk) > 0)) {

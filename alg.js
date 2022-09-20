@@ -1,6 +1,14 @@
 "use strict";
 
+// For more documentation and notes, see the main Coze README.
+
 export {
+	Algs,
+	FamAlgs,
+	GenAlgs,
+	Curves,
+	Uses,
+
 	Params,
 	Curve,
 	Family,
@@ -13,76 +21,110 @@ export {
 	Use,
 }
 
-/** 
- * For more on Alg, see notes on the Go implementation of Coze, Genus, Family,
- * HashAlg, CurveAlg, and Use.
- * 
-* @typedef  {String} Alg     - Algorithm             e.g. "ES256" 
-* @typedef  {String} Genus   - Genus.                e.g. "SHA2", "ECDSA".
-* @typedef  {String} Family  - Family.               e.g. "SHA", "EC".
-* @typedef  {String} Hash    - Hashing algorithm.    e.g. "SHA-256".
-* @typedef  {String} Curve   - Elliptic curve.       e.g. "P-256".
-* @typedef  {String} Use     - Algorithm use.        e.g. "sig" or "enc"
-/*
+/**
+ * @typedef {import('./typedefs.js').Params}  Params
+ * @typedef {import('./typedefs.js').Alg}     Alg
+ * @typedef {import('./typedefs.js').Gen}     Gen
+ * @typedef {import('./typedefs.js').Fam}     Fam
+ * @typedef {import('./typedefs.js').Dig}     Dig
+ * @typedef {import('./typedefs.js').Crv}     Crv
+ * @typedef {import('./typedefs.js').Use}     Use
+ */
 
-/** 
- * Params holds all relevant values for an `alg`. If values are not applicable
- * for a particular `alg`, values may be populated with the zero value, e.g.
- * for the hash alg "SHA-256" Curve's value is 0.
- * 
- * -Name:     Alg string Name.
- * -Genus:    Genus                              e.g. "SHA2", "ECDSA".
- * -Family:   Family                             e.g. "SHA", "EC".
- * -Hash:     Hash is the hashing algorithm.     e.g. "SHA-256".
- * -HashSize: Size in bytes of the digest.       e.g. 32 for "SHA-256".
- * -SigSize:  Size in bytes of the signature.    e.g. 64 for "ES256".
- * -XSize:    Size in bytes of `x`.              e.g. "64" for ES256
- * -DSize:    Size in bytes of `d`.              e.g. "32" for ES256
- * -Curve:    Curve is the elliptic curve.       e.g. "P-256".
- * -Use:      Algorithm use.                     e.g. "sig".
- * 
-* @typedef  {Object}  Params
-* @property {string}  Name 
-* @property {Genus}   Genus
-* @property {Family}  Family
-* @property {Hash}    Hash 
-* @property {Number}  HashSize
-* @property {Number}  SigSize
-* @property {Number}  XSize
-* @property {Number}  DSize
-* @property {Curve}   Curve
-* @property {Use}     Use
-/*
+/**
+ * Algs holds all of the supported Coze algorithms.
+ */
+const Algs = {
+	UnknownAlg: "UnknownAlg",
+	ES224: "ES224",
+	ES256: "ES256",
+	ES384: "ES384",
+	ES512: "ES512",
+	Ed25519: "Ed25519",
+	Ed25519ph: "Ed25519ph",
+	Ed448: "Ed448",
+	SHA224: "SHA-224",
+	SHA256: "SHA-256",
+	SHA384: "SHA-384",
+	SHA512: "SHA-512",
+	SHA3224: "SHA3-224",
+	SHA3256: "SHA3-256",
+	SHA3384: "SHA3-384",
+	SHA3512: "SHA3-512",
+	SHAKE128: "SHAKE128",
+	SHAKE256: "SHAKE256",
+};
+
+/**
+ * FamAlgs holds all of the supported Coze Family algorithms.
+ */
+const FamAlgs = {
+	EC: "EC",
+	SHA: "SHA",
+	RSA: "RSA",
+};
+
+/**
+ * GenAlgs holds all of the supported Coze Genus algorithms.
+ */
+const GenAlgs = {
+	ECDSA: "ECDSA",
+	EdDSA: "EdDSA",
+	SHA2: "SHA2",
+	SHA3: "SHA3",
+};
+
+/**
+ * Curves holds all of the supported Coze curve algorithms.
+ */
+const Curves = {
+	P224: "P-224",
+	P256: "P-256",
+	P384: "P-384",
+	P521: "P-521",
+	Curve25519: "Curve25519",
+	Curve448: "Curve448",
+};
+
+/**
+ * Uses holds all of the supported Coze uses.
+ */
+const Uses = {
+	Sig: "sig",
+	Enc: "enc",
+	Dig: "dig",
+};
 
 /**
  * Param reports all relevant values for a given `alg`.
+ * Returns Params object with populated values for relevant fields.
+ * All functions defined in this file will throw an error when given an
+ * unsupported algorithm.
  * 
- * @param   {string} alg  String. Alg is the string representation of a coze.Alg
- * @returns {Params}      Params object with populated values for relevant fields
-*/
+ * @param   {Alg}      alg
+ * @returns {Params}
+ * @throws  {Error}
+ */
 function Params(alg) {
 	/** @type {Params} */
-	let p = {
-		Name: alg,
-		B64: {},
-	};
+	let p = {};
+	p.Name = alg;
 	p.Genus = Genus(alg);
 	p.Family = Family(alg);
+	p.Use = Use(alg);
 	p.Hash = HashAlg(alg);
 	p.HashSize = HashSize(alg);
-	p.B64.HashSize = Math.ceil(4 * p.HashSize / 3);
+	p.HashSizeB64 = Math.ceil(4 * p.HashSize / 3);
 
 	// SigAlg parameters
 	try {
-		p.Curve = Curve(alg);
-		p.Use = Use(alg);
-		p.SigSize = SigSize(alg);
 		p.XSize = XSize(alg);
+		p.XSizeB64 = Math.ceil(4 * p.XSize / 3);
 		p.DSize = DSize(alg);
-
-		p.B64.SigSize = Math.ceil(4 * p.SigSize / 3);
-		p.B64.XSize = Math.ceil(4 * p.XSize / 3);
-		p.B64.DSize = Math.ceil(4 * p.DSize / 3);
+		p.DSizeB64 = Math.ceil(4 * p.DSize / 3);
+		p.Curve = Curve(alg);
+		p.SigSize = SigSize(alg);
+		p.SigSizeB64 = Math.ceil(4 * p.SigSize / 3);
 	} catch (e) {
 		// ignore error
 	}
@@ -94,33 +136,33 @@ function Params(alg) {
  * Genus returns the genus for an alg (ECDSA, EdDSA, SHA-2, SHA-3).
  * See notes on the Go implementation of Coze for more on genus.
  *
- * @param   {Alg} alg 
- * @returns {Use}
+ * @param   {Alg}   alg
+ * @returns {Gen}
  * @throws  {Error}
  */
 function Genus(alg) {
 	switch (alg) {
-		case "ES224":
-		case "ES256":
-		case "ES384":
-		case "ES512":
-			return "ECDSA";
-		case "Ed25519":
-		case "Ed25519ph":
-		case "Ed448":
-			return "EdDSA";
-		case "SHA-224":
-		case "SHA-256":
-		case "SHA-384":
-		case "SHA-512":
-			return "SHA2";
-		case "SHA3-224":
-		case "SHA3-256":
-		case "SHA3-384":
-		case "SHA3-512":
-		case "SHAKE128":
-		case "SHAKE256":
-			return "SHA3";
+		case Algs.ES224:
+		case Algs.ES256:
+		case Algs.ES384:
+		case Algs.ES512:
+			return GenAlgs.ECDSA;
+		case Algs.Ed25519:
+		case Algs.Ed25519ph:
+		case Algs.Ed448:
+			return GenAlgs.EdDSA;
+		case Algs.SHA224:
+		case Algs.SHA256:
+		case Algs.SHA384:
+		case Algs.SHA512:
+			return GenAlgs.SHA2;
+		case Algs.SHA3224:
+		case Algs.SHA3256:
+		case Algs.SHA3384:
+		case Algs.SHA3512:
+		case Algs.SHAKE128:
+		case Algs.SHAKE256:
+			return GenAlgs.SHA3;
 		default:
 			throw new Error("alg.Genus: unsupported algorithm: " + alg);
 	}
@@ -131,30 +173,30 @@ function Genus(alg) {
  * See notes on the Go implementation of Coze for more on family.
  *
  * @param   {Alg}     alg
- * @returns {Family}
+ * @returns {Fam}
  * @throws  {Error}
  */
 function Family(alg) {
 	switch (alg) {
-		case "ES224":
-		case "ES256":
-		case "ES384":
-		case "ES512":
-		case "Ed25519":
-		case "Ed25519ph":
-		case "Ed448":
-			return "EC";
-		case "SHA-224":
-		case "SHA-256":
-		case "SHA-384":
-		case "SHA-512":
-		case "SHA3-224":
-		case "SHA3-256":
-		case "SHA3-384":
-		case "SHA3-512":
-		case "SHAKE128":
-		case "SHAKE256":
-			return "SHA";
+		case Algs.ES224:
+		case Algs.ES256:
+		case Algs.ES384:
+		case Algs.ES512:
+		case Algs.Ed25519:
+		case Algs.Ed25519ph:
+		case Algs.Ed448:
+			return FamAlgs.EC;
+		case Algs.SHA224:
+		case Algs.SHA256:
+		case Algs.SHA384:
+		case Algs.SHA512:
+		case Algs.SHA3224:
+		case Algs.SHA3256:
+		case Algs.SHA3384:
+		case Algs.SHA3512:
+		case Algs.SHAKE128:
+		case Algs.SHAKE256:
+			return FamAlgs.SHA
 		default:
 			throw new Error("alg.Family:  unsupported algorithm: " + alg);
 	}
@@ -166,76 +208,72 @@ function Family(alg) {
  * See notes on the Go implementation of Coze for more.
  *
  * @param   {Alg}   alg 
- * @returns {Hash}  Hash Alg as a string, e.g. "SHA-256".
+ * @returns {Dig}
  * @throws  {Error}
  */
 function HashAlg(alg) {
 	switch (alg) {
-		case "SHA-224":
-		case "ES224":
-			return "SHA-224";
-		case "SHA-256":
-		case "ES256":
-			return "SHA-256";
-		case "SHA-384":
-		case "ES384":
-			return "SHA-384";
-		case "SHA-512":
-		case "ES512": // P-521 is not ES512/SHA-512.  The curve != the alg/hash.
-		case "Ed25519":
-		case "Ed25519ph":
-			return "SHA-512";
-		case "SHAKE128":
-			return "SHAKE128";
-		case "SHAKE256":
-		case "Ed448":
-			return "SHAKE256";
-		case "SHA3-224":
-			return "SHA3-224";
-		case "SHA3-256":
-			return "SHA3-256";
-		case "SHA3-384":
-			return "SHA3-384";
-		case "SHA3-512":
-			return "SHA3-512";
+		case Algs.ES224:
+		case Algs.SHA224:
+			return Algs.SHA224;
+		case Algs.SHA256:
+		case Algs.ES256:
+			return Algs.SHA256;
+		case Algs.SHA384:
+		case Algs.ES384:
+			return Algs.SHA384;
+		case Algs.SHA512:
+		case Algs.ES512: // P-521 is not ES512/SHA-512.  The curve != the alg/hash.
+		case Algs.Ed25519:
+		case Algs.Ed25519ph:
+			return Algs.SHA512;
+		case Algs.SHAKE128:
+			return Algs.SHAKE128
+		case Algs.SHAKE256:
+		case Algs.Ed448:
+			return Algs.SHAKE256
+		case Algs.SHA3224:
+			return Algs.SHA3224
+		case Algs.SHA3256:
+			return Algs.SHA3256
+		case Algs.SHA3384:
+			return Algs.SHA3384
+		case Algs.SHA3512:
+			return Algs.SHA3512
 		default:
 			throw new Error("alg.HashAlg:  unsupported algorithm: " + alg);
 	}
 }
 
 /**
- * HashSize returns the hashing algorithm for the given algorithm.
+ * HashSize returns the hashing algorithm size for the given algorithm in bytes
+ * E.g. 32.
  * 
  * SHAKE128 has 128 bits of pre-collision resistance and a capacity of 256,
  * although it has arbitrary output size. SHAKE256 has 256 bits of pre-collision
  * resistance and a capacity of 512, although it has arbitrary output size.
  * 
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  * 
- * @param   {Alg}     alg - alg string
- * @returns {Number}  size of the hash alg in bytes.  (e.g. 32)
+ * @param   {Alg}     alg
+ * @returns {Number}
  * @throws  {Error}
  */
 function HashSize(alg) {
-	// If given alg that is not a hash, attempt to retrieve the hash alg
-	let ha = HashAlg(alg);
-	if (ha != alg) {
-		alg = ha;
-	}
-	switch (alg) {
-		case "SHA-224":
-		case "SHA3-224":
+	switch (HashAlg(alg)) {
+		case Algs.SHA224:
+		case Algs.SHA3224:
 			return 28;
-		case "SHA-256":
-		case "SHA3-256":
-		case "SHAKE128":
+		case Algs.SHA256:
+		case Algs.SHA3256:
+		case Algs.SHAKE128:
 			return 32;
-		case "SHA-384":
-		case "SHA3-384":
+		case Algs.SHA384:
+		case Algs.SHA3384:
 			return 48;
-		case "SHA-512":
-		case "SHA3-512":
-		case "SHAKE256":
+		case Algs.SHA512:
+		case Algs.SHA3512:
+		case Algs.SHAKE256:
 			return 64;
 		default:
 			throw new Error("alg.HashSize: unsupported algorithm: " + alg);
@@ -243,96 +281,95 @@ function HashSize(alg) {
 }
 
 /**
- * SigSize returns the signature size for the given algorithm.  
+ * SigSize returns the signature size for the given algorithm in bytes.
  * 
  * Curve P-521 uses 521 bits.  This is then padded up the the nearest byte (528)
  * for R and S. 132 = (528*2)/8
  * 
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  * 
- * @param   {Alg}      alg - Sig alg string, e.g. "ES256"
- * @returns {Number}   size of the sig alg in bytes.  (e.g. 64)
+ * @param   {Alg}      alg
+ * @returns {Number}
  * @throws  {Error}
  */
 function SigSize(alg) {
 	switch (alg) {
-		case "ES224":
+		case Algs.ES224:
 			return 56
-		case "ES256":
-		case "Ed25519":
-		case "Ed25519ph":
+		case Algs.ES256:
+		case Algs.Ed25519:
+		case Algs.Ed25519ph:
 			return 64
-		case "ES384":
+		case Algs.ES384:
 			return 96
-		case "Ed448":
+		case Algs.Ed448:
 			return 114
-		case "ES512":
+		case Algs.ES512:
 			return 132
 		default:
 			throw new Error("alg.SigSize: unsupported algorithm: " + alg);
 	}
 }
 
-
-
 /**
- * XSize returns the signature size for the given algorithm.
+ * XSize returns the signature size for the given signature algorithm in bytes.
+ * E.g. 64.
  * 
  * ES512 uses Curve P-521 that's 521 bits is padded up the the nearest byte
  * (528) for R and S. (528*2)/8 = 132.
  *
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  * 
- * @param   {Alg}     alg - Sig alg string, e.g. "ES256"
- * @returns {Number}  size of the sig alg in bytes.  (e.g. 64)
+ * @param   {Alg}     alg
+ * @returns {Number}
  * @throws  {Error}
  */
 function XSize(alg) {
 	switch (alg) {
-		case "Ed25519":
-		case "Ed25519ph":
+		case Algs.Ed25519:
+		case Algs.Ed25519ph:
 			return 32
-		case "ES224":
+		case Algs.ES224:
 			return 56
-		case "Ed448":
+		case Algs.Ed448:
 			return 57
-		case "ES256":
+		case Algs.ES256:
 			return 64
-		case "ES384":
+		case Algs.ES384:
 			return 96
-		case "ES512":
-			return 132
+		case Algs.ES512:
+			return 132 // X and Y are 66 bytes (Rounded up for P521)
 		default:
 			throw new Error("alg.XSize: unsupported algorithm: " + alg);
 	}
 }
 
-
 /**
- * DSize returns the signature size for the given algorithm.
+ * DSize returns the signature size for the given signature algorithm in bytes.
+ * E.g. 64.
  * 
  * ES512 uses Curve P-521 that's 521 bits is padded up the the nearest byte
  * (528). (528)/8 = 66.
  *
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  * 
- * @param   {Alg}     alg - Sig alg string, e.g. "ES256"
- * @returns {Number}  size of the sig alg in bytes.  (e.g. 64)
+ * @param   {Alg}     alg
+ * @returns {Number}
  * @throws  {Error}
  */
 function DSize(alg) {
 	switch (alg) {
-		case "ES224":
+		case Algs.ES224:
 			return 28
-		case "ES256":
-		case "Ed25519":
-		case "Ed25519ph":
+		case Algs.ES256:
+		case Algs.Ed25519:
+		case Algs.Ed25519ph:
 			return 32
-		case "ES384":
+		case Algs.ES384:
 			return 48
-		case "Ed448":
+		case Algs.Ed448:
 			return 57
-		case "ES512":
+		case Algs.ES512:
 			return 66
 		default:
 			throw new Error("alg.DSize: unsupported algorithm: " + alg);
@@ -340,54 +377,54 @@ function DSize(alg) {
 }
 
 /**
- * Curve returns the curve algorithm for the given algorithm.  
+ * Curve returns the curve algorithm for the given signature algorithm.
+ * E.g. "P-256".
  * 
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  *
  * @param   {Alg}    alg 
- * @returns {Curve}  The curve alg as a string, e.g. "SHA-256".
+ * @returns {Crv}
  * @throws  {Error}
  */
 function Curve(alg) {
 	switch (alg) {
-		case "ES224":
-			return "P-224";
-		case "ES256":
-			return "P-256";
-		case "ES384":
-			return "P-384";
-		case "ES512": // P-521 is not ES512/SHA-512.  The curve != the alg/hash.
-			return "P-521";
-		case "Ed25519":
-		case "Ed25519ph":
-			return "Curve25519";
-		case "Ed448":
-			return "Curve448";
+		case Algs.ES224:
+			return Curves.P224;
+		case Algs.ES256:
+			return Curves.P256;
+		case Algs.ES384:
+			return Curves.P384;
+		case Algs.ES512: // P-521 is not ES512/SHA-512.  The curve != the alg/hash.
+			return Curves.P521;
+		case Algs.Ed25519:
+		case Algs.Ed25519ph:
+			return Curves.Curve25519;
+		case Algs.Ed448:
+			return Curves.Curve448;
 		default:
 			throw new Error("alg.Curve: unsupported algorithm: " + alg);
 	}
 }
 
 /**
- * Use returns the use for the given algorithm.  Only "sig" or "enc" are
- * currently valid, and Coze currently only uses "sig".
+ * Use returns the use for the given algorithm.  Only "sig", "enc", and "dig"
+ * are currently valid.
+ * Encryption ("enc") is currently not supported in Coze.
  * 
- * See notes on the Go implementation of Coze for more
+ * See notes on the Go implementation of Coze for more.
  * 
  * @param   {Alg}     alg 
- * @returns {Use}     The string "sig" or "enc"
+ * @returns {Use}
  * @throws  {Error}
  */
 function Use(alg) {
-	switch (alg) {
-		case "ES224":
-		case "ES256":
-		case "ES384":
-		case "ES512":
-		case "Ed25519":
-		case "Ed25519ph":
-		case "Ed448":
-			return "sig";
+	switch (Genus(alg)) {
+		case GenAlgs.EdDSA:
+		case GenAlgs.ECDSA:
+			return Uses.Sig;
+		case GenAlgs.SHA2:
+		case GenAlgs.SHA3:
+			return Uses.Dig;
 		default:
 			throw new Error("alg.Use: unsupported algorithm: " + alg);
 	}
