@@ -10,11 +10,11 @@ export {
 };
 
 /**
- * @typedef {import('./browsertestjs/test.js').Test} Test
- * @typedef {import('./browsertestjs/test.js').Tests} Tests
- * @typedef {import('./browsertestjs/test.js').TestsToRun} TestsToRun
- * @typedef {import('./browsertestjs/test.js').TestGUIOptions} TestGUIOptions
- * @typedef {import('./browsertestjs/test.js').TestBrowserJS} TestBrowserJS
+ * @typedef {import('./browsertestjs/test.js').Test}            Test
+ * @typedef {import('./browsertestjs/test.js').Tests}           Tests
+ * @typedef {import('./browsertestjs/test.js').TestsToRun}      TestsToRun
+ * @typedef {import('./browsertestjs/test.js').TestGUIOptions}  TestGUIOptions
+ * @typedef {import('./browsertestjs/test.js').TestBrowserJS}   TestBrowserJS
  */
 
 /**@type {Test} */
@@ -22,23 +22,23 @@ let t_Param = {
 	"name": "Param",
 	"func": test_Param,
 	"golden": `
-{"Name":"ES224","B64":{"HashSize":38,"SigSize":75,"XSize":75,"DSize":38},"Genus":"ECDSA","Family":"EC","Hash":"SHA-224","HashSize":28,"Use":"sig","SigSize":56,"XSize":56,"DSize":28,"Curve":"P-224"}
-{"Name":"ES256","B64":{"HashSize":43,"SigSize":86,"XSize":86,"DSize":43},"Genus":"ECDSA","Family":"EC","Hash":"SHA-256","HashSize":32,"Use":"sig","SigSize":64,"XSize":64,"DSize":32,"Curve":"P-256"}
-{"Name":"ES384","B64":{"HashSize":64,"SigSize":128,"XSize":128,"DSize":64},"Genus":"ECDSA","Family":"EC","Hash":"SHA-384","HashSize":48,"Use":"sig","SigSize":96,"XSize":96,"DSize":48,"Curve":"P-384"}
-{"Name":"ES512","B64":{"HashSize":86,"SigSize":176,"XSize":176,"DSize":88},"Genus":"ECDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Use":"sig","SigSize":132,"XSize":132,"DSize":66,"Curve":"P-521"}
-{"Name":"Ed25519","B64":{"HashSize":86,"SigSize":86,"XSize":43,"DSize":43},"Genus":"EdDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Use":"sig","SigSize":64,"XSize":32,"DSize":32,"Curve":"Curve25519"}
-{"Name":"Ed25519ph","B64":{"HashSize":86,"SigSize":86,"XSize":43,"DSize":43},"Genus":"EdDSA","Family":"EC","Hash":"SHA-512","HashSize":64,"Use":"sig","SigSize":64,"XSize":32,"DSize":32,"Curve":"Curve25519"}
-{"Name":"Ed448","B64":{"HashSize":86,"SigSize":152,"XSize":76,"DSize":76},"Genus":"EdDSA","Family":"EC","Hash":"SHAKE256","HashSize":64,"Use":"sig","SigSize":114,"XSize":57,"DSize":57,"Curve":"Curve448"}
-{"Name":"SHA-224","B64":{"HashSize":38},"Genus":"SHA2","Family":"SHA","Hash":"SHA-224","HashSize":28,"Use":"dig"}
-{"Name":"SHA-256","B64":{"HashSize":43},"Genus":"SHA2","Family":"SHA","Hash":"SHA-256","HashSize":32,"Use":"dig"}
-{"Name":"SHA-384","B64":{"HashSize":64},"Genus":"SHA2","Family":"SHA","Hash":"SHA-384","HashSize":48,"Use":"dig"}
-{"Name":"SHA-512","B64":{"HashSize":86},"Genus":"SHA2","Family":"SHA","Hash":"SHA-512","HashSize":64,"Use":"dig"}
-{"Name":"SHA3-224","B64":{"HashSize":38},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-224","HashSize":28,"Use":"dig"}
-{"Name":"SHA3-256","B64":{"HashSize":43},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-256","HashSize":32,"Use":"dig"}
-{"Name":"SHA3-384","B64":{"HashSize":64},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-384","HashSize":48,"Use":"dig"}
-{"Name":"SHA3-512","B64":{"HashSize":86},"Genus":"SHA3","Family":"SHA","Hash":"SHA3-512","HashSize":64,"Use":"dig"}
-{"Name":"SHAKE128","B64":{"HashSize":43},"Genus":"SHA3","Family":"SHA","Hash":"SHAKE128","HashSize":32,"Use":"dig"}
-{"Name":"SHAKE256","B64":{"HashSize":86},"Genus":"SHA3","Family":"SHA","Hash":"SHAKE256","HashSize":64,"Use":"dig"}
+{"Name":"ES224","Genus":"ECDSA","Family":"EC","Use":"sig","Hash":"SHA-224","HashSize":28,"HashSizeB64":38,"XSize":56,"XSizeB64":75,"DSize":28,"DSizeB64":38,"Curve":"P-224","SigSize":56,"SigSizeB64":75}
+{"Name":"ES256","Genus":"ECDSA","Family":"EC","Use":"sig","Hash":"SHA-256","HashSize":32,"HashSizeB64":43,"XSize":64,"XSizeB64":86,"DSize":32,"DSizeB64":43,"Curve":"P-256","SigSize":64,"SigSizeB64":86}
+{"Name":"ES384","Genus":"ECDSA","Family":"EC","Use":"sig","Hash":"SHA-384","HashSize":48,"HashSizeB64":64,"XSize":96,"XSizeB64":128,"DSize":48,"DSizeB64":64,"Curve":"P-384","SigSize":96,"SigSizeB64":128}
+{"Name":"ES512","Genus":"ECDSA","Family":"EC","Use":"sig","Hash":"SHA-512","HashSize":64,"HashSizeB64":86,"XSize":132,"XSizeB64":176,"DSize":66,"DSizeB64":88,"Curve":"P-521","SigSize":132,"SigSizeB64":176}
+{"Name":"Ed25519","Genus":"EdDSA","Family":"EC","Use":"sig","Hash":"SHA-512","HashSize":64,"HashSizeB64":86,"XSize":32,"XSizeB64":43,"DSize":32,"DSizeB64":43,"Curve":"Curve25519","SigSize":64,"SigSizeB64":86}
+{"Name":"Ed25519ph","Genus":"EdDSA","Family":"EC","Use":"sig","Hash":"SHA-512","HashSize":64,"HashSizeB64":86,"XSize":32,"XSizeB64":43,"DSize":32,"DSizeB64":43,"Curve":"Curve25519","SigSize":64,"SigSizeB64":86}
+{"Name":"Ed448","Genus":"EdDSA","Family":"EC","Use":"sig","Hash":"SHAKE256","HashSize":64,"HashSizeB64":86,"XSize":57,"XSizeB64":76,"DSize":57,"DSizeB64":76,"Curve":"Curve448","SigSize":114,"SigSizeB64":152}
+{"Name":"SHA-224","Genus":"SHA2","Family":"SHA","Use":"dig","Hash":"SHA-224","HashSize":28,"HashSizeB64":38}
+{"Name":"SHA-256","Genus":"SHA2","Family":"SHA","Use":"dig","Hash":"SHA-256","HashSize":32,"HashSizeB64":43}
+{"Name":"SHA-384","Genus":"SHA2","Family":"SHA","Use":"dig","Hash":"SHA-384","HashSize":48,"HashSizeB64":64}
+{"Name":"SHA-512","Genus":"SHA2","Family":"SHA","Use":"dig","Hash":"SHA-512","HashSize":64,"HashSizeB64":86}
+{"Name":"SHA3-224","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHA3-224","HashSize":28,"HashSizeB64":38}
+{"Name":"SHA3-256","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHA3-256","HashSize":32,"HashSizeB64":43}
+{"Name":"SHA3-384","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHA3-384","HashSize":48,"HashSizeB64":64}
+{"Name":"SHA3-512","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHA3-512","HashSize":64,"HashSizeB64":86}
+{"Name":"SHAKE128","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHAKE128","HashSize":32,"HashSizeB64":43}
+{"Name":"SHAKE256","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHAKE256","HashSize":64,"HashSizeB64":86}
 `
 };
 
@@ -92,10 +92,14 @@ let t_Thumbprint = {
 	"func": test_Thumbprint,
 	"golden": true
 };
-
 let t_Duplicate = {
 	"name": "Duplicate",
 	"func": test_Duplicate,
+	"golden": true
+};
+let t_VerifyArray = {
+	"name": "VerifyCozeArray",
+	"func": test_VerifyArray,
 	"golden": true
 };
 
@@ -406,6 +410,41 @@ async function test_CozeKeyCorrect() {
 	return true;
 }
 
+// Tests VerifyCozeArray().
+async function test_VerifyArray() {
+	let cozeKey = await Coze.NewKey(Coze.Algs.ES256);
+	let cozies = [await Coze.SignCoze({
+				"pay": {
+					"msg": "First",
+					"iat": 1,
+				}
+			},
+			cozeKey
+		),
+		await Coze.SignCoze({
+				"pay": {
+					"msg": "Second",
+					"iat": 2,
+				}
+			},
+			cozeKey
+		),
+		await Coze.SignCoze({
+				"pay": {
+					"msg": "Third",
+					"iat": 3,
+				}
+			},
+			cozeKey
+		),
+	];
+	let v = await Coze.VerifyCozeArray(cozies, cozeKey);
+	if (v.FailedCount !== 0 || v.FailedCoze.length > 0 || !v.VerifiedAll || v.VerifiedCount !== 3) {
+		return false;
+	}
+	return true;
+}
+
 
 /////////////////////////////////////
 // CryptoKey Tests
@@ -421,6 +460,9 @@ async function test_CozeKeyCorrect() {
 // 6.) CryptoKey.SignBuffer
 // 7.) CryptoKey.VerifyArrayBuffer
 // 8.) CryptoKey.GetSignHashAlgoFromCryptoKey (calls `algFromCrv`)
+//
+// `SignBuffer` cannot be tested for throwing an error, since we cannot
+// create an invalid cryptokey. The test will fail at `FromCozeKey`.
 async function test_CryptoKeySign() {
 	let msg = "Test Message";
 	let abMsg = await Coze.SToArrayBuffer(msg);
@@ -446,9 +488,22 @@ async function test_CryptoKeySign() {
 		}
 		results.push(await Coze.CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey));
 	}
-	if (JSON.stringify(results) !== JSON.stringify(["SHA-256", "SHA-384", "SHA-512"])) {
+	if (JSON.stringify(results) !== JSON.stringify([Coze.Algs.SHA256, Coze.Algs.SHA384, Coze.Algs.SHA512])) {
 		return false;
 	}
+
+	// Importing an invalid key from `subtle` will throw a DOMException error:
+	// `DOMException: The imported EC key is invalid`
+	let e = null;
+	try {
+		await Coze.CryptoKey.FromCozeKey(GoldenBadCozeKey);
+	} catch (error) {
+		e = error;
+	}
+	if (e === null) {
+		return false;
+	}
+
 	return true;
 };
 
@@ -477,6 +532,7 @@ let TestsToRun = [
 	t_Thumbprint,
 	t_Duplicate,
 	t_Correct,
+	t_VerifyArray,
 	t_CryptoKeySign,
 ];
 

@@ -3,9 +3,6 @@
 import * as Coze from './coze.js';
 import * as Alg from './alg.js';
 import * as CZK from './key.js';
-import {
-	isEmpty
-} from './coze.js';
 
 export {
 	CryptoKey,
@@ -15,9 +12,10 @@ export {
  * @typedef {import('./typedefs.js').B64}      B64
  * @typedef {import('./typedefs.js').Alg}      Alg
  * @typedef {import('./typedefs.js').Sig}      Sig
+ * @typedef {import('./typedefs.js').Dig}      Dig
  * @typedef {import('./typedefs.js').Key}      Key
- * @typedef {import('./typedefs.js').Curve}    Crv
- * @typedef {import('./typedefs.js').Message}  Msg
+ * @typedef {import('./typedefs.js').Crv}      Crv
+ * @typedef {import('./typedefs.js').Msg}      Msg
  */
 
 var CryptoKey = {
@@ -28,24 +26,28 @@ var CryptoKey = {
 	 * 
 	 * @param  {Alg}           [alg=ES256] - Alg of the key to generate. (e.g. "ES256")
 	 * @return {CryptoKeyPair}
-	 * @throws 
+	 * @throws {Error}
 	 */
 	New: async function (alg) {
-		if (isEmpty(alg)) {
-			alg = "ES256"
+		if (Coze.isEmpty(alg)) {
+			alg = Alg.Algs.ES256;
 		}
 		// Javascript only supports ECDSA, and doesn't support ES192 or ES224.  See
 		// https://developer.mozilla.org/en-US/docs/Web/API/EcdsaParams
-		if (Alg.Genus(alg) !== "ECDSA" || alg == "ES224" || alg == "ES192") {
-			throw new Error("CryptoKey.New: Unsupported key algorithm:" + alg);
+		switch (alg) {
+			case Alg.Algs.ES256:
+			case Alg.Algs.ES384:
+			case Alg.Algs.ES512:
+				return await window.crypto.subtle.generateKey({
+						name: Alg.GenAlgs.ECDSA,
+						namedCurve: Alg.Curve(alg)
+					},
+					true,
+					["sign", "verify"]
+				);
+			default:
+				throw new Error("CryptoKey.New: Unsupported key algorithm:" + alg);
 		}
-		return await window.crypto.subtle.generateKey({
-				name: "ECDSA",
-				namedCurve: Alg.Curve(alg)
-			},
-			true,
-			["sign", "verify"]
-		);
 	},
 
 	/**
@@ -53,21 +55,23 @@ var CryptoKey = {
 	 * supports ECDSA since Crypto.subtle only supports ECDSA. 
 	 * https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#JSON_Web_Key
 	 * 
-	 * @param   {Key}         cozeKey          Coze key.
-	 * @param   {Boolean}    [public=false]    Return only a public key.
+	 * Throws error on invalid keys.
+	 * 
+	 * @param   {Key}        cozeKey          Coze key.
+	 * @param   {Boolean}    [public=false]   Return only a public key.
 	 * @returns {CryptoKey}
-	 * @throws
+	 * @throws  {Error}                Error, SyntaxError, DOMException, TypeError
 	 */
 	FromCozeKey: async function (cozeKey, onlyPublic) {
-		if (Alg.Genus(cozeKey.alg) != "ECDSA") {
+		if (Alg.Genus(cozeKey.alg) != Alg.GenAlgs.ECDSA) {
 			throw new Error("CryptoKey.FromCozeKey: unsupported CryptoKey algorithm: " + cozeKey.alg);
 		}
 
 		// Create a new JWK that can be used to create and "import" a CryptoKey
 		var jwk = {};
-		jwk.use = "sig";
+		jwk.use = Alg.Uses.Sig;
 		jwk.crv = Alg.Curve(cozeKey.alg);
-		jwk.kty = "EC";
+		jwk.kty = Alg.FamAlgs.EC;
 
 		let half = Alg.XSize(cozeKey.alg) / 2;
 		let xyab = await Coze.B64utToUint8Array(cozeKey.x);
@@ -77,7 +81,7 @@ var CryptoKey = {
 		// Public CryptoKey "crypto.subtle.importKey" needs key use to be "verify"
 		// even though this doesn't exist in JWK RFC or IANA registry. (2021/05/12)
 		// Gawd help us.  Private CryptoKey needs key `use` to be "sign".
-		if (isEmpty(cozeKey.d) || onlyPublic) {
+		if (Coze.isEmpty(cozeKey.d) || onlyPublic) {
 			var signOrVerify = "verify";
 		} else {
 			signOrVerify = "sign";
@@ -87,7 +91,7 @@ var CryptoKey = {
 		return await crypto.subtle.importKey(
 			"jwk",
 			jwk, {
-				name: "ECDSA",
+				name: Alg.GenAlgs.ECDSA,
 				namedCurve: jwk.crv,
 			},
 			true,
@@ -204,12 +208,12 @@ var CryptoKey = {
 
 	/**
 	 * Uses a Javascript `CryptoKey` to sign a array buffer.  Returns array buffer
-	 * bytes of the signature.
+	 * bytes of the signature. Returns empty buffer on error.
 	 *
 	 * The signing algorithm's hashing algorithm is used for the digest of the
 	 * payload.  
 	 * 
-	 * Coze uses UTF-8 bytes for strings.  
+	 * Coze uses UTF-8.
 	 *
 	 * https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#JSON_Web_Key
 	 * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
@@ -217,10 +221,11 @@ var CryptoKey = {
 	 * @param   {CryptoKey}      cryptoKey
 	 * @param   {ArrayBuffer}    payloadBuffer
 	 * @returns {ArrayBuffer}
+	 * @throws  {Error}
 	 */
 	SignBuffer: async function (cryptoKey, arrayBuffer) {
 		return await window.crypto.subtle.sign({
-				name: "ECDSA",
+				name: Alg.GenAlgs.ECDSA,
 				hash: {
 					name: await CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey)
 				},
@@ -231,8 +236,9 @@ var CryptoKey = {
 	},
 
 	/**
-	 * SignBufferB64 signs a buffer with a CryptoKey and returns base64ut.
-	 * The input is hashed before it's signed.
+	 * SignBufferB64 signs a buffer with a CryptoKey and returns the b64ut
+	 * signature. The input is hashed before it's signed.
+	 * Coze uses UTF-8.
 	 *
 	 * @param   {CryptoKey}   cryptoKey       Private CryptoKey
 	 * @param   {ArrayBuffer} arrayBuffer     ArrayBuffer to sign.
@@ -243,8 +249,8 @@ var CryptoKey = {
 	},
 
 	/**
-	 * SignString signs a string and returns base64ut encoding of the signature.
-	 * Coze uses UTF-8 bytes for strings.
+	 * SignString signs a string and returns the b64ut signature.
+	 * Coze uses UTF-8.
 	 * 
 	 * @param   {CryptoKey} cryptoKey      Private key used for signing.
 	 * @param   {String}    utf8           String to sign.
@@ -268,7 +274,7 @@ var CryptoKey = {
 		// Guarantee key is not private to appease Javascript:
 		await CryptoKey.ToPublic(cryptoKey);
 		return await window.crypto.subtle.verify({
-				name: "ECDSA",
+				name: Alg.GenAlgs.ECDSA,
 				hash: {
 					name: await CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey)
 				},
@@ -312,7 +318,7 @@ var CryptoKey = {
 	 * all CryptoKeys regardless of their form.
 	 * 
 	 * @param   {CryptoKey} CryptoKey  CryptoKey Javascript object.
-	 * @returns {Alg}
+	 * @returns {Dig}
 	 */
 	GetSignHashAlgoFromCryptoKey: async function (cryptoKey) {
 		return Alg.HashAlg(await CryptoKey.algFromCrv(cryptoKey.algorithm.namedCurve));
@@ -328,17 +334,17 @@ var CryptoKey = {
 	 */
 	algFromCrv: async function (crv) {
 		switch (crv) {
-			case "P-224":
-				var alg = "ES224";
+			case Alg.Curves.P224:
+				var alg = Alg.Algs.ES224;
 				break;
-			case "P-256":
-				alg = "ES256";
+			case Alg.Curves.P256:
+				alg = Alg.Algs.ES256
 				break;
-			case "P-384":
-				alg = "ES384";
+			case Alg.Curves.P384:
+				alg = Alg.Algs.ES384;
 				break;
-			case "P-521": // P-521 is not ES512/SHA-512.  The curve != the alg/hash. 
-				alg = "ES512";
+			case Alg.Curves.P521: // P-521 is not ES512/SHA-512.  The curve != the alg/hash. 
+				alg = Alg.Algs.ES512;
 				break;
 			default:
 				throw new Error("CryptoKey.ToCozeKey: Unsupported key algorithm.");

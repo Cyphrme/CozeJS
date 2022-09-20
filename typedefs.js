@@ -12,62 +12,28 @@ export {}
  */
 
 /**
- * Genus is the genus for an Alg (Level 1). E.g. "SHA2", "ECDSA".
- * @typedef  {String} Genus
+ * Gen is the genus for an Alg (Level 1). E.g. "SHA2", "ECDSA".
+ * @typedef  {String} Gen
  */
 
 /**
- * Family is the family for an Alg (Level 2). E.g. "SHA", "EC".
- * @typedef  {String} Family
+ * Fam is the family for an Alg (Level 2). E.g. "SHA", "EC".
+ * @typedef  {String} Fam
  */
 
 /**
- * Hash is the hashing algorithm. E.g. "SHA-256".
- * @typedef  {String} Hash
+ * Dig is the hashing algorithm that results in a digest. E.g. "SHA-256".
+ * @typedef  {String} Dig
  */
 
 /**
- * Curve is the (elliptic) curve used for Alg. E.g. "P-256".
- * @typedef  {String} Curve
+ * Crv is the (elliptic) curve used for Alg. E.g. "P-256".
+ * @typedef  {String} Crv
  */
 
 /**
  * Use is the use for Alg. E.g. "sig", "enc", "dig".
  * @typedef  {String} Use
- */
-
-/** 
- * Params holds all relevant values for an `alg`. If values are not applicable
- * for a particular `alg`, values may be populated with the zero value, e.g.
- * for the hash alg "SHA-256" Curve's value is 0.
- * 
- * -Name:     Alg string Name.
- * -Genus:    Genus                              E.g. "SHA2", "ECDSA".
- * -Family:   Family                             E.g. "SHA", "EC".
- * -Hash:     Hash is the hashing algorithm.     E.g. "SHA-256".
- * -HashSize: Size in bytes of the digest.       E.g. 32 for "SHA-256".
- * -SigSize:  Size in bytes of the signature.    E.g. 64 for "ES256".
- * -XSize:    Size in bytes of `x`.              E.g. "64" for ES256
- * -DSize:    Size in bytes of `d`.              E.g. "32" for ES256
- * -Curve:    Curve is the elliptic curve.       E.g. "P-256".
- * -Use:      Algorithm use.                     E.g. "sig".
-* @typedef  {Object}  Params
-* @property {string}  Name 
-* @property {Genus}   Genus
-* @property {Family}  Family
-* @property {Hash}    Hash 
-* @property {Number}  HashSize
-* @property {Number}  SigSize
-* @property {Number}  XSize
-* @property {Number}  DSize
-* @property {Curve}   Curve
-* @property {Use}     Use
-* @property {B64P}    B64
-/*
-
-/**
- * B64 is a Params object for Base64ut encoding.
- * @typedef {Params} B64P
  */
 
 /**
@@ -85,12 +51,12 @@ export {}
 
 /**
  * A not-hashed message to be signed.
- @typedef {String} Message
+ @typedef {String} Msg
  */
 
 /**
- * A digest.
- @typedef  {B64} Digest
+ * A digest encoded as b64ut.
+ @typedef {B64} Digest
  */
 
 /**
@@ -103,18 +69,36 @@ export {}
  @typedef {Number} Time
  */
 
-/**
- * Pay contains the standard `Coze.Pay` fields.
+/** 
+ * Params holds all relevant values for an `alg`. If values are not applicable
+ * for a particular `alg`, values may be populated with the zero value, e.g.
+ * for the hash alg "SHA-256" Curve's value is 0.
  * 
- * - alg:    Algorithm.            E.g. "ES256".
- * - iat:    Unix time of signing. E.g. 1623132000.
- * - tmb:    Signing thumbprint    E.g. cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk
- * - typ:    Type.                 E.g. "cyphr.me/msg/create".
- * @typedef  {Object} Pay
- * @property {Alg}    alg
- * @property {Time}   iat
- * @property {B64}    tmb
- * @property {String} typ
+ * -Name:     Alg string Name.
+ * -Genus:    Genus                              E.g. "SHA2", "ECDSA".
+ * -Family:   Family                             E.g. "SHA", "EC".
+ * -Hash:     Hash is the hashing algorithm.     E.g. "SHA-256".
+ * -HashSize: Size in bytes of the digest.       E.g. 32 for "SHA-256".
+ * -SigSize:  Size in bytes of the signature.    E.g. 64 for "ES256".
+ * -XSize:    Size in bytes of `x`.              E.g. "64" for ES256
+ * -DSize:    Size in bytes of `d`.              E.g. "32" for ES256
+ * -Curve:    Curve is the elliptic curve.       E.g. "P-256".
+ * -Use:      Algorithm use.                     E.g. "sig".
+ * @typedef  {Object}    Params
+ * @property {String}    Name
+ * @property {Gen}       Genus
+ * @property {Fam}       Family
+ * @property {Use}       Use
+ * @property {Dig}       Hash
+ * @property {Number}    HashSize
+ * @property {Number}    HashSizeB64
+ * @property {Number}    XSize
+ * @property {Number}    XSizeB64
+ * @property {Number}    DSize
+ * @property {Number}    DSizeB64
+ * @property {Crv}       Curve
+ * @property {Number}    SigSize
+ * @property {Number}    SigSizeB64
  */
 
 /**
@@ -136,18 +120,17 @@ export {}
  */
 
 /**
- * VerifiedArray - Used when verifying array of cozies.
+ * Pay contains the standard `Coze.Pay` fields.
  * 
- * - VerifiedAll:    Indicates if whole array was verified. False on error or if
- *                   anything was not verified.
- * - VerifiedCount:  Number of objects verified.
- * - FailedCount:    Number of objects that failed verification.
- * - FailedCoze:     Objects that failed verification.
- * @typedef  {Object}  VerifiedArray
- * @property {Boolean} VerifiedAll
- * @property {Number}  VerifiedCount
- * @property {Number}  FailedCount
- * @property {Coze[]}  FailedCoze
+ * - alg:    Algorithm.            E.g. "ES256".
+ * - iat:    Unix time of signing. E.g. 1623132000.
+ * - tmb:    Signing thumbprint    E.g. cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk
+ * - typ:    Type.                 E.g. "cyphr.me/msg/create".
+ * @typedef  {Object} Pay
+ * @property {Alg}    alg
+ * @property {Time}   iat
+ * @property {B64}    tmb
+ * @property {String} typ
  */
 
 /**

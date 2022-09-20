@@ -12,7 +12,7 @@ export {
 	SignCozeRaw,
 	Verify,
 	VerifyCoze,
-	VerifyCozeArray,
+	// VerifyCozeArray,
 	Meta,
 
 	// Base conversion
@@ -29,10 +29,10 @@ export {
 /**
  * @typedef {import('./typedefs.js').Key}            Key
  * @typedef {import('./typedefs.js').Alg}            Alg
- * @typedef {import('./typedefs.js').Canon}          Canon
- * @typedef {import('./typedefs.js').Message}        Message
+ * @typedef {import('./typedefs.js').Msg}            Msg
  * @typedef {import('./typedefs.js').Coze}           Coze
  * @typedef {import('./typedefs.js').Sig}            Sig
+ * @typedef {import('./typedefs.js').Canon}          Canon
  * @typedef {import('./typedefs.js').Meta}           Meta
  * @typedef {import('./typedefs.js').VerifiedArray}  VerifiedArray
  */
@@ -42,9 +42,9 @@ const PayCanon = ["alg", "iat", "tmb", "typ"];
 
 /**
  * Sign signs message with private Coze key and returns b64ut sig.
- * Returns empty on invalid.
+ * TODO Fix after tests for signbuffer
  * 
- * @param   {Message}       message    Message string.
+ * @param   {Msg}           message    Message string.
  * @param   {Key}           cozeKey    Private coze key.
  * @returns {Sig}
  * @throws  {Error}
@@ -72,7 +72,7 @@ async function Sign(message, cozeKey) {
  */
 async function SignCoze(coze, cozeKey, canon) {
 	if (CZK.IsRevoked(cozeKey)) {
-		throw new Error("Coze: Cannot sign with revoked key.");
+		throw new Error("SignCoze: Cannot sign with revoked key.");
 	}
 	if (isEmpty(coze.pay.alg)) {
 		coze.pay.alg = cozeKey.alg;
@@ -131,7 +131,7 @@ async function SignCozeRaw(coze, cozeKey, canon) {
  * verified. Verify does no Coze checks.  If checks are needed, use
  * VerifyCoze();
  *
- * @param  {Message}   message    Message string.
+ * @param  {Msg}       message    Message string.
  * @param  {Key}       cozekey    Coze key for validation.
  * @param  {Sig}       sig        Signature.
  * @return {Boolean}
@@ -157,58 +157,13 @@ async function Verify(message, cozekey, sig) {
  */
 async function VerifyCoze(coze, cozeKey) {
 	if (!isEmpty(coze.pay.alg) && coze.pay.alg !== cozeKey.alg) {
-		throw new Error("Coze: Coze key alg mismatch with coze.pay.alg.");
+		throw new Error("VerifyCoze: Coze key alg mismatch with coze.pay.alg.");
 	}
 	if (!isEmpty(coze.pay.tmb) && coze.pay.tmb !== cozeKey.tmb) {
-		throw new Error("Coze: Coze key tmb mismatch with coze.pay.tmb.");
+		throw new Error("VerifyCoze: Coze key tmb mismatch with coze.pay.tmb.");
 	}
 	return Verify(JSON.stringify(coze.pay), cozeKey, coze.sig);
 }
-
-/**
- * VerifyCozeArray verifies an array of `coze`s and returns a single
- * "VerifiedArray" object.
- *
- * @param  {coze[]}           coze       Array of Coze objects.
- * @param  {Key}              cozeKey    Javascript object. Coze Key.
- * @return {VerifiedArray}
- * @throws {Error}
- */
-async function VerifyCozeArray(coze, cozeKey) {
-	if (!Array.isArray(coze)) {
-		return VerifyCoze(coze, cozeKey)
-	}
-
-	/** @type {VerifiedArray} */
-	var verifiedObj = {
-		VerifiedAll: false,
-		VerifiedCount: 0,
-		FailedCount: 0,
-		FailedCoze: [],
-	};
-
-	let copy = [...coze]; // Copy so original isn't modified.
-	for (let c of copy) {
-		if (!isEmpty(c.coze)) { // "coze" encapsulated?
-			c = c.coze;
-		}
-
-		let valid = await VerifyCoze(c, cozeKey);
-		if (valid) {
-			verifiedObj.VerifiedCount++;
-		} else {
-			verifiedObj.FailedCount++;
-			verifiedObj.FailedCoze.push(c);
-		}
-	}
-
-	if (verifiedObj.FailedCount == 0) {
-		verifiedObj.VerifiedAll = true;
-	}
-
-	return verifiedObj;
-};
-
 
 /**
  * Meta recalculates and sets [can, cad, czd] for given `coze`. Coze.Pay, and
@@ -229,8 +184,8 @@ async function Meta(coze, alg) {
 	coze.can = await Can.Canon(coze.pay);
 	coze.cad = await Can.CanonicalHash64(coze.pay, alg);
 	coze.czd = await Can.CanonicalHash64({
-		"cad": coze.cad,
-		"sig": coze.sig
+		cad: coze.cad,
+		sig: coze.sig
 	}, alg);
 	return coze;
 }
@@ -247,8 +202,7 @@ async function Meta(coze, alg) {
  * @return {ArrayBuffer}
  */
 async function SToArrayBuffer(string) {
-	var enc = new TextEncoder(); // Suppose to be always in UTF-8
-	return enc.encode(string).buffer;
+	return new TextEncoder().encode(string).buffer; // Suppose to be always in UTF-8
 }
 
 /**
@@ -274,7 +228,6 @@ function B64utToUint8Array(string) {
 	return Uint8Array.from(atob(string.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
 };
 
-
 /**
  * ArrayBufferTo64ut returns a b64 string from an Array buffer.
  * 
@@ -282,8 +235,7 @@ function B64utToUint8Array(string) {
  * @returns {B64}
  */
 function ArrayBufferTo64ut(buffer) {
-	var string = String.fromCharCode.apply(null, new Uint8Array(buffer));
-	return btoa(string).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+	return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
 

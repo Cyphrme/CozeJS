@@ -26,8 +26,8 @@ export {
  * @typedef {import('./typedefs.js').Alg}  Alg
  * @typedef {import('./typedefs.js').Use}  Use
  * @typedef {import('./typedefs.js').Sig}  Sig
- * @typedef {import('./typedefs.js').Time} Time
  * @typedef {import('./typedefs.js').Key}  Key
+ * @typedef {import('./typedefs.js').Time} Time
  */
 
 // Coze key Thumbprint Canons.
@@ -42,9 +42,9 @@ const TmbCanon = ["alg", "x"];
  */
 async function NewKey(alg) {
 	if (isEmpty(alg)) {
-		alg = "ES256"
+		alg = Alg.Algs.ES256;
 	}
-	if (Alg.Genus(alg) == "ECDSA") {
+	if (Alg.Genus(alg) == Alg.GenAlgs.ECDSA) {
 		var keyPair = await CTK.CryptoKey.New(alg);
 	} else {
 		throw new Error("Coze.NewKey: only ECDSA algs are currently supported.");
@@ -91,7 +91,7 @@ async function Valid(privateCozeKey) {
 		let sig = await Coze.Sign(msg, privateCozeKey);
 		return Coze.Verify(msg, privateCozeKey, sig);
 	} catch (e) {
-		// Don't throw error, but still log it for debugging.  
+		// Don't throw error, but still log it for debugging.
 		console.error("Valid: " + e);
 		return false;
 	}
@@ -144,7 +144,7 @@ async function Correct(ck) {
 
 	// tmb only key
 	if (isXEmpty && isDEmpty) {
-		if (isTmbEmpty || ck.tmb.length !== p.B64.HashSize) {
+		if (isTmbEmpty || ck.tmb.length !== p.HashSizeB64) {
 			console.error("Correct: Incorrect `tmb` size: ", ck.tmb.length);
 			return false;
 		}
@@ -152,7 +152,7 @@ async function Correct(ck) {
 	}
 
 	// d is not set
-	if (!isXEmpty && ck.x.length !== p.B64.XSize) {
+	if (!isXEmpty && ck.x.length !== p.XSizeB64) {
 		console.error("Correct: Incorrect x size: ", ck.x.length);
 		return false;
 	}
@@ -234,9 +234,8 @@ async function Revoke(cozeKey, msg) {
 		throw new Error("CozeKey.Revoke: Private key not set.  Cannot sign message");
 	}
 
-	var coze = {
-		pay: {}
-	};
+	var coze = {};
+	coze.pay = {};
 	if (!isEmpty(msg)) { // Optional revoke message. 
 		coze.pay.msg = msg;
 	}
