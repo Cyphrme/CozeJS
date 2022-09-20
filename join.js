@@ -1,4 +1,4 @@
-// `join.js` instructs esbuild to join all coze files into one file.
+// `join.js` instructs esbuild to join all Coze files into one file.
 //
 // From ESBuild for multiple files:
 //
@@ -8,22 +8,16 @@
 // together with esbuild, import them all into a single entry point file and
 // bundle just that one file with esbuild.
 //
-// Use one of the following commands for either human readable or minified. The
-// only point of the `*.join.js` file is debugging.  `*.min.js` should be used
-// in prod.  
+// For production, use the following:
+// ```
+// esbuild join.js      --bundle --format=esm --minify --sourcemap         --outfile=coze.min.js
+// ```
 //
-// For esbuild, run the following:
-//
+// For single file human readable Javascript.  The only point of the `*.join.js`
+// file is debugging.  `*.min.js` should be used in prod.  
 // ```
 // esbuild join.js      --bundle --format=esm                              --outfile=coze.join.js  
-// esbuild join.js      --bundle --format=esm --minify --sourcemap         --outfile=coze.min.js
-// esbuild join_test.js --bundle --format=esm --minify --sourcemap=inline  --outfile=test.coze.min.js
 // ```
-//
-// 
-//
-// Only select functions from `base_convert.js` are exported.
-// See note in `base_convert.js` for more.
 //
 // Coze Core
 export * from './canon.js';

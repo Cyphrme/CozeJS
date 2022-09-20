@@ -36,12 +36,35 @@ For your project use `coze.min.js`.
 
 
 
-# Testing:
+# Developing Coze js
+## How to Build
+1. [Install esbuild][1].
+2. Run the commands below. 
+
+If using Go, esbuild can be installed with the following. ([From
+esbuild's instructions][1]).  
+```
+mkdir -p $GOPATH/src/github/evanw
+cd $GOPATH/src/github/evanw
+git clone --depth 1 --branch v0.15.8 https://github.com/evanw/esbuild.git
+cd esbuild
+go build ./cmd/esbuild
+sudo cp esbuild $GOPATH/bin
+```
+(`go install`, like `go install github.com/evanw/esbuild@0.15.8`, [doesn't currently work.](https://github.com/evanw/esbuild/issues/66#issuecomment-1252765553))
+
+Create the Coze distribution file. (See [join.js](join.js) for more instructions)
+```
+esbuild join.js --bundle --format=esm --minify --outfile=coze.min.js
+```
+
+
+## Testing:
 Coze uses BrowserTestJS for running unit tests in the browser.
 
 The test also runs as a [Github pages](https://cyphrme.github.io/Cozejs/browsertestjs/test.html)
 
-## Go server
+### Go server
 
 ```sh
 cd /cozejs/browsertestjs
@@ -65,7 +88,7 @@ git submodule add --force git@github.com:Cyphrme/BrowserTestJS.git browsertestjs
 ```
 
 
-### Why use a Go server?
+#### Why use a Go server?
 Static HTML files cannot call external Javascript modules when loading static
 files (arbitrary browser/standard limitation):
 
@@ -97,7 +120,7 @@ Then dump the results in a `<script>` section of `browsertestjs/test.html`
 
 
 
-# TODOS:
+## TODOS:
 - `iat`, `alg`, and common `Meta` for arrays ([]coze).
   - If a field is different in any array, it becomes blank.  Fields that are the
    same for every element are populated.
@@ -110,30 +133,7 @@ Then dump the results in a `<script>` section of `browsertestjs/test.html`
 		algos that are not natively supported in JS right now, such as: SHA-224,
 		SHA3-224, SHA3-256, SHA3-384, SHA3-512, SHAKE128, SHAKE256.
 
-# Developing Coze js
-## How to Build
-1. Install esbuild.
-2. Run the commands below. 
 
-If using Go, esbuild can be installed with the following. Otherwise see
-esbuild's instructions.  
-```
-git clone --depth 1 --branch v0.13.14 https://github.com/evanw/esbuild.git
-cd esbuild
-go build ./cmd/esbuild
-```
-
-Create the Coze distribution file.
-```
-
-esbuild join.js --bundle --format=esm --minify --outfile=coze.min.js
-```
-
-When developing we find the human readable join file useful.
-
-```
-esbuild join.js --bundle --format=esm --outfile=coze.join.js
-```
 
 
 
@@ -146,3 +146,7 @@ Coze and Coze js is released under The 3-Clause BSD License.
 
 "Cyphr.me" is a trademark of Cypherpunk, LLC. The Cyphr.me logo is all rights
 reserved Cypherpunk, LLC and may not be used without permission.
+
+
+
+[1]:https://esbuild.github.io/getting-started/#build-from-source
