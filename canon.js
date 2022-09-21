@@ -15,8 +15,8 @@ export {
 }
 
 /**
+ * @typedef {import('./typedefs.js').Hsh}     Hsh
  * @typedef {import('./typedefs.js').Dig}     Dig
- * @typedef {import('./typedefs.js').Digest}  Digest
  * @typedef {import('./typedefs.js').Canon}   Canon
  */
 
@@ -57,6 +57,7 @@ async function Canonical(object, can) {
  * @param   {Object}   obj
  * @param   {Canon}    [canon]
  * @returns {String}
+ * @throws  {Error}
  */
 async function CanonicalS(obj, can) {
 	return JSON.stringify(await Canonical(obj, can));
@@ -67,10 +68,10 @@ async function CanonicalS(obj, can) {
  * the digest.
  *
  * @param   {Object}        input     Object being canonicalized.
- * @param   {Dig}           hash      Must be SubtleCrypto.digest() compatible (i.e. 'SHA-256').
+ * @param   {Hsh}           hash      Must be SubtleCrypto.digest() compatible (i.e. 'SHA-256').
  * @param   {Canon}         [canon]   Array for canonical keys.
  * @returns {ArrayBuffer}             ArrayBuffer of the digest.
- * @throws  {Error}                   Fails if hash is not given.
+ * @throws  {Error}                   Fails if hash is not given or invalid for SubtleCrypto.digest().
  */
 async function CanonicalHash(input, hash, can) {
 	if (isEmpty(hash)) {
@@ -80,12 +81,13 @@ async function CanonicalHash(input, hash, can) {
 }
 
 /**
- * CanonicalHash64 returns the b64ut digest. See docs on Canonical.
+ * CanonicalHash64 wraps CanonicalHash to return b64ut digest. 
  *
- * @param   {Object|String}  obj         Object being canonicalized.
- * @param   {Dig}            [hash]      Subtle crypto compatible digest that's being used (i.e. 'SHA-256').
- * @param   {Canon}          [canon]     Array for canonical keys.
- * @returns {Digest}
+ * @param   {Object}         obj
+ * @param   {Hsh}            hash
+ * @param   {Canon}          [canon]
+ * @returns {Dig}
+ * @throws  {Error}
  */
 async function CanonicalHash64(obj, hash, can) {
 	return await ArrayBufferTo64ut(await CanonicalHash(obj, hash, can));

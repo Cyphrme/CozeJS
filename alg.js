@@ -26,7 +26,7 @@ export {
  * @typedef {import('./typedefs.js').Alg}     Alg
  * @typedef {import('./typedefs.js').Gen}     Gen
  * @typedef {import('./typedefs.js').Fam}     Fam
- * @typedef {import('./typedefs.js').Dig}     Dig
+ * @typedef {import('./typedefs.js').Hsh}     Hsh
  * @typedef {import('./typedefs.js').Crv}     Crv
  * @typedef {import('./typedefs.js').Use}     Use
  */
@@ -92,7 +92,7 @@ const Curves = {
 const Uses = {
 	Sig: "sig",
 	Enc: "enc",
-	Dig: "dig",
+	Hsh: "hsh",
 };
 
 /**
@@ -208,7 +208,7 @@ function Family(alg) {
  * See notes on the Go implementation of Coze for more.
  *
  * @param   {Alg}   alg 
- * @returns {Dig}
+ * @returns {Hsh}
  * @throws  {Error}
  */
 function HashAlg(alg) {
@@ -424,7 +424,7 @@ function Use(alg) {
 			return Uses.Sig;
 		case GenAlgs.SHA2:
 		case GenAlgs.SHA3:
-			return Uses.Dig;
+			return Uses.Hsh;
 		default:
 			throw new Error("alg.Use: unsupported algorithm: " + alg);
 	}

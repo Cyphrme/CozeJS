@@ -12,7 +12,7 @@ export {
  * @typedef {import('./typedefs.js').B64}      B64
  * @typedef {import('./typedefs.js').Alg}      Alg
  * @typedef {import('./typedefs.js').Sig}      Sig
- * @typedef {import('./typedefs.js').Dig}      Dig
+ * @typedef {import('./typedefs.js').Hsh}      Hsh
  * @typedef {import('./typedefs.js').Key}      Key
  * @typedef {import('./typedefs.js').Crv}      Crv
  * @typedef {import('./typedefs.js').Msg}      Msg
@@ -26,7 +26,7 @@ var CryptoKey = {
 	 * 
 	 * @param  {Alg}           [alg=ES256] - Alg of the key to generate. (e.g. "ES256")
 	 * @return {CryptoKeyPair}
-	 * @throws {Error}
+	 * @throws {Error}         Error, SyntaxError, DOMException, TypeError
 	 */
 	New: async function (alg) {
 		if (Coze.isEmpty(alg)) {
@@ -318,7 +318,8 @@ var CryptoKey = {
 	 * all CryptoKeys regardless of their form.
 	 * 
 	 * @param   {CryptoKey} CryptoKey  CryptoKey Javascript object.
-	 * @returns {Dig}
+	 * @returns {Hsh}
+	 * @throws  {Error}                Fails if alg is not supported.
 	 */
 	GetSignHashAlgoFromCryptoKey: async function (cryptoKey) {
 		return Alg.HashAlg(await CryptoKey.algFromCrv(cryptoKey.algorithm.namedCurve));
@@ -326,7 +327,7 @@ var CryptoKey = {
 
 	/**
 	 * algFromCrv returns a SEAlg from the given curve.
-	 * Fails when the curve is not supported or recognized.
+	 * Fails if curve is not supported.
 	 * 
 	 * @param   {Crv}     src    Curve type. E.g. "P-256".
 	 * @returns {Alg}

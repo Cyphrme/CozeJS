@@ -29,16 +29,16 @@ let t_Param = {
 {"Name":"Ed25519","Genus":"EdDSA","Family":"EC","Use":"sig","Hash":"SHA-512","HashSize":64,"HashSizeB64":86,"XSize":32,"XSizeB64":43,"DSize":32,"DSizeB64":43,"Curve":"Curve25519","SigSize":64,"SigSizeB64":86}
 {"Name":"Ed25519ph","Genus":"EdDSA","Family":"EC","Use":"sig","Hash":"SHA-512","HashSize":64,"HashSizeB64":86,"XSize":32,"XSizeB64":43,"DSize":32,"DSizeB64":43,"Curve":"Curve25519","SigSize":64,"SigSizeB64":86}
 {"Name":"Ed448","Genus":"EdDSA","Family":"EC","Use":"sig","Hash":"SHAKE256","HashSize":64,"HashSizeB64":86,"XSize":57,"XSizeB64":76,"DSize":57,"DSizeB64":76,"Curve":"Curve448","SigSize":114,"SigSizeB64":152}
-{"Name":"SHA-224","Genus":"SHA2","Family":"SHA","Use":"dig","Hash":"SHA-224","HashSize":28,"HashSizeB64":38}
-{"Name":"SHA-256","Genus":"SHA2","Family":"SHA","Use":"dig","Hash":"SHA-256","HashSize":32,"HashSizeB64":43}
-{"Name":"SHA-384","Genus":"SHA2","Family":"SHA","Use":"dig","Hash":"SHA-384","HashSize":48,"HashSizeB64":64}
-{"Name":"SHA-512","Genus":"SHA2","Family":"SHA","Use":"dig","Hash":"SHA-512","HashSize":64,"HashSizeB64":86}
-{"Name":"SHA3-224","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHA3-224","HashSize":28,"HashSizeB64":38}
-{"Name":"SHA3-256","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHA3-256","HashSize":32,"HashSizeB64":43}
-{"Name":"SHA3-384","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHA3-384","HashSize":48,"HashSizeB64":64}
-{"Name":"SHA3-512","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHA3-512","HashSize":64,"HashSizeB64":86}
-{"Name":"SHAKE128","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHAKE128","HashSize":32,"HashSizeB64":43}
-{"Name":"SHAKE256","Genus":"SHA3","Family":"SHA","Use":"dig","Hash":"SHAKE256","HashSize":64,"HashSizeB64":86}
+{"Name":"SHA-224","Genus":"SHA2","Family":"SHA","Use":"hsh","Hash":"SHA-224","HashSize":28,"HashSizeB64":38}
+{"Name":"SHA-256","Genus":"SHA2","Family":"SHA","Use":"hsh","Hash":"SHA-256","HashSize":32,"HashSizeB64":43}
+{"Name":"SHA-384","Genus":"SHA2","Family":"SHA","Use":"hsh","Hash":"SHA-384","HashSize":48,"HashSizeB64":64}
+{"Name":"SHA-512","Genus":"SHA2","Family":"SHA","Use":"hsh","Hash":"SHA-512","HashSize":64,"HashSizeB64":86}
+{"Name":"SHA3-224","Genus":"SHA3","Family":"SHA","Use":"hsh","Hash":"SHA3-224","HashSize":28,"HashSizeB64":38}
+{"Name":"SHA3-256","Genus":"SHA3","Family":"SHA","Use":"hsh","Hash":"SHA3-256","HashSize":32,"HashSizeB64":43}
+{"Name":"SHA3-384","Genus":"SHA3","Family":"SHA","Use":"hsh","Hash":"SHA3-384","HashSize":48,"HashSizeB64":64}
+{"Name":"SHA3-512","Genus":"SHA3","Family":"SHA","Use":"hsh","Hash":"SHA3-512","HashSize":64,"HashSizeB64":86}
+{"Name":"SHAKE128","Genus":"SHA3","Family":"SHA","Use":"hsh","Hash":"SHAKE128","HashSize":32,"HashSizeB64":43}
+{"Name":"SHAKE256","Genus":"SHA3","Family":"SHA","Use":"hsh","Hash":"SHAKE256","HashSize":64,"HashSizeB64":86}
 `
 };
 

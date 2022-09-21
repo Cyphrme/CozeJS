@@ -22,8 +22,8 @@ export {}
  */
 
 /**
- * Dig is the hashing algorithm that results in a digest. E.g. "SHA-256".
- * @typedef  {String} Dig
+ * Hsh is the hashing algorithm that results in a digest. E.g. "SHA-256".
+ * @typedef  {String} Hsh
  */
 
 /**
@@ -56,7 +56,7 @@ export {}
 
 /**
  * A digest encoded as b64ut.
- @typedef {B64} Digest
+ @typedef {B64} Dig
  */
 
 /**
@@ -113,9 +113,9 @@ export {}
  * @typedef  {Object}  Coze
  * @property {Pay}     pay
  * @property {Sig}     sig
- * @property {Digest}  [cad]
+ * @property {Dig}  [cad]
  * @property {Array}   [can]
- * @property {Digest}  [czd]
+ * @property {Dig}  [czd]
  * @property {Key}     [key]
  */
 
