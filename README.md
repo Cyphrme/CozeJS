@@ -38,28 +38,23 @@ For your project use `coze.min.js`.
 
 # Developing Coze js
 ## How to Build
-1. [Install esbuild][1].
-2. Run the commands below. 
+##### Install esbuild
 
-If using Go, esbuild can be installed with the following. ([From
-esbuild's instructions][1]).  
+If using Go, esbuild can be installed with the following.
 ```
-mkdir -p $GOPATH/src/github/evanw
-cd $GOPATH/src/github/evanw
-git clone --depth 1 --branch v0.15.8 https://github.com/evanw/esbuild.git
-cd esbuild
-go build ./cmd/esbuild
-sudo cp esbuild $GOPATH/bin
+go install github.com/evanw/esbuild/cmd/esbuild@v0.15.8
 ```
-(`go install`, like `go install github.com/evanw/esbuild@0.15.8`, [doesn't currently work.](https://github.com/evanw/esbuild/issues/66#issuecomment-1252765553))
+[Alternatively, see esbuild's installation instructions][1]
 
-Create the Coze distribution file. (See [join.js](join.js) for more instructions)
+##### Create the Coze distribution file. 
+
+(See [join.js](join.js) for more instructions)
 ```
 esbuild join.js --bundle --format=esm --minify --outfile=coze.min.js
 ```
 
 
-## Testing:
+## Testing
 Coze uses BrowserTestJS for running unit tests in the browser.
 
 The test also runs as a [Github pages](https://cyphrme.github.io/Cozejs/browsertestjs/test.html)
