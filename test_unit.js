@@ -540,14 +540,14 @@ let TestsToRun = [
 /** @type {TestGUIOptions} **/
 let TestGUIOptions = {
 	footer: `<div class="mt-4">
-	<a href="/"><img src="coze_logo_zami_white_450x273.png" alt="Browser Test JS"></a>
+	<a href="/"><img src="../coze_logo_zami_white_450x273.png" alt="Browser Test JS"></a>
 
 	<p><a class="account_keys text-center" href="https://github.com/cyphrme/coze"> Coze Github</a></p>
 	<p><a class="account_keys text-center" href="https://github.com/cyphrme/cozejs"> Coze js Github</a></p>
 	<p><a href="https://cyphr.me/coze_verifier">Cyphr.me Coze Verifier</a></p>
 	<div class="level-item has-text-centered text-muted footer_logo mt-5">
 
-		<a href="https://cyphr.me">Sponsored by: <img src="cyphrme_long.png"></a>
+		<a href="https://cyphr.me">Sponsored by: <img src="../cyphrme_long.png"></a>
 
 		<p class="mt-3">Coze is released under The 3-Clause BSD License. <br>
 
@@ -555,9 +555,9 @@ let TestGUIOptions = {
 		</p>
 </div>`,
 	stylesheet: {
-		href: "cyphrme_bootstrap.min.css"
+		href: "../cyphrme_bootstrap.min.css"
 	},
-	main_image: "coze_logo_zami_white_450x273.png",
+	main_image: "../coze_logo_zami_white_450x273.png",
 };
 
 /** @type {TestBrowserJS} **/
