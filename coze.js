@@ -42,12 +42,11 @@ const PayCanon = ["alg", "iat", "tmb", "typ"];
 
 /**
  * Sign signs message with private Coze key and returns b64ut sig.
- * TODO Fix after tests for signbuffer
  * 
- * @param   {Msg}           message    Message string.
- * @param   {Key}           cozeKey    Private coze key.
+ * @param   {Msg}       message
+ * @param   {Key}       cozeKey
  * @returns {Sig}
- * @throws  {Error}
+ * @throws  {Error}     Error, SyntaxError, DOMException, TypeError
  */
 async function Sign(message, cozeKey) {
 	return CTK.CryptoKey.SignBufferB64(
