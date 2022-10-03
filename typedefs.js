@@ -113,9 +113,9 @@ export {}
  * @typedef  {Object}  Coze
  * @property {Pay}     pay
  * @property {Sig}     sig
- * @property {Dig}  [cad]
+ * @property {Dig}     [cad]
  * @property {Array}   [can]
- * @property {Dig}  [czd]
+ * @property {Dig}     [czd]
  * @property {Key}     [key]
  */
 
@@ -160,12 +160,12 @@ export {}
  */
 
 /**
- * PrivateCozeKey is a Coze key containing any private components.
+ * PrivateCozeKey is a Coze key containing private component `d`.
  * @typedef  {Key} PrivateCozeKey
  */
 
 /**
- * PublicCozeKey is a Coze key containing no private components and required public components.
+ * PublicCozeKey is a Coze key _not_ containing `d` and containing `x`.
  * @typedef  {Key} PublicCozeKey
  **/
 
