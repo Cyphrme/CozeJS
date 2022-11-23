@@ -29,7 +29,8 @@ export {
 
 /**
  * VerifyCozeArray verifies an array of `coze`s and returns a single
- * "VerifiedArray" object.
+ * "VerifiedArray" object.  If a coze has a key, it is ignored, the given
+ * cozeKey is always used.  
  *
  * @param  {coze[]}           coze       Array of Coze objects.
  * @param  {Key}              cozeKey    Javascript object. Coze Key.
