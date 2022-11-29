@@ -92,7 +92,7 @@ async function SignCoze(coze, cozeKey, canon) {
 		coze.pay = await Can.Canonical(coze.pay, canon);
 	}
 
-	coze.sig = await Sign(await JSON.stringify(coze.pay), cozeKey);
+	coze.sig = await Sign(JSON.stringify(coze.pay), cozeKey);
 	return coze;
 }
 
@@ -121,7 +121,7 @@ async function SignCozeRaw(coze, cozeKey, canon) {
 	if (!isEmpty(canon)) {
 		coze.pay = await Can.Canonical(coze.pay, canon);
 	}
-	coze.sig = await Sign(await JSON.stringify(coze.pay), cozeKey);
+	coze.sig = await Sign(JSON.stringify(coze.pay), cozeKey);
 	return coze;
 }
 
