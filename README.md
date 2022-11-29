@@ -1,6 +1,6 @@
 # ⚠️ COZE IS IN ALPHA.  USE AT YOUR OWN RISK ⚠️
 
-![Coze](coze_logo_zami_white_450x273.png)
+![Coze](test/coze_logo_zami_white_450x273.png)
 
 Please see the README in the [Go project.](https://github.com/Cyphrme/Coze)
 
@@ -36,7 +36,7 @@ For your project use `coze.min.js`.
 
 
 
-# Developing Coze js
+# Developing CozeJS
 ## How to Build
 ##### Install esbuild
 
@@ -62,7 +62,7 @@ The test also runs as a [Github pages](https://cyphrme.github.io/Cozejs/browsert
 ### Go server
 
 ```sh
-cd /cozejs/browsertestjs
+cd /test/browsertestjs
 go run server.go
 ```
 
@@ -137,7 +137,7 @@ Then dump the results in a `<script>` section of `browsertestjs/test.html`
 
 ----------------------------------------------------------------------
 # Attribution, Trademark notice, and License
-Coze and Coze js is released under The 3-Clause BSD License. 
+Coze and CozeJS is released under The 3-Clause BSD License. 
 
 "Cyphr.me" is a trademark of Cypherpunk, LLC. The Cyphr.me logo is all rights
 reserved Cypherpunk, LLC and may not be used without permission.
