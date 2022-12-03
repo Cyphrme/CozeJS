@@ -12,7 +12,6 @@ export {
 	SignCozeRaw,
 	Verify,
 	VerifyCoze,
-	// VerifyCozeArray,
 	Meta,
 
 	// Base conversion
@@ -23,7 +22,6 @@ export {
 
 	// Helpers
 	isEmpty,
-	isBool,
 }
 
 /**
@@ -60,8 +58,8 @@ async function Sign(message, cozeKey) {
  * but updated, coze.  Errors on mismatch `alg` or `tmb`.  If empty, `alg` and
  * `tmb` are populated. `iat` set to current time.
  *
- * SignCoze, SignCozeRaw, VerifyCoze, and VerifyCozeArray assumes that object
- * has no duplicate fields since this is disallowed in Javascript.
+ * SignCoze, SignCozeRaw, and VerifyCoze assumes that object has no duplicate
+ * fields since this is disallowed in Javascript.
  * 
  * @param   {Coze}      coze       Object coze.
  * @param   {Key}       cozeKey    A private coze key.

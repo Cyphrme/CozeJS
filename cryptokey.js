@@ -3,6 +3,10 @@
 import * as Coze from './coze.js';
 import * as Alg from './alg.js';
 import * as CZK from './key.js';
+import {
+	isEmpty
+} from './coze.js';
+
 
 export {
 	CryptoKey,
@@ -29,7 +33,7 @@ var CryptoKey = {
 	 * @throws {Error}         Error, SyntaxError, DOMException, TypeError
 	 */
 	New: async function (alg) {
-		if (Coze.isEmpty(alg)) {
+		if (isEmpty(alg)) {
 			alg = Alg.Algs.ES256;
 		}
 		// Javascript only supports ECDSA, and doesn't support ES192 or ES224.  See
@@ -81,7 +85,7 @@ var CryptoKey = {
 		// Public CryptoKey "crypto.subtle.importKey" needs key use to be "verify"
 		// even though this doesn't exist in JWK RFC or IANA registry. (2021/05/12)
 		// Gawd help us.  Private CryptoKey needs key `use` to be "sign".
-		if (Coze.isEmpty(cozeKey.d) || onlyPublic) {
+		if (isEmpty(cozeKey.d) || onlyPublic) {
 			var signOrVerify = "verify";
 		} else {
 			signOrVerify = "sign";

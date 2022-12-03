@@ -439,7 +439,7 @@ async function test_VerifyArray() {
 		),
 	];
 	let v = await Coze.VerifyCozeArray(cozies, cozeKey);
-	if (v.FailedCount !== 0 || v.FailedCoze.length > 0 || !v.VerifiedAll || v.VerifiedCount !== 3) {
+	if (v.FailedCount !== 0 || v.FailedCozies.length > 0 || !v.VerifiedAll || v.VerifiedCount !== 3) {
 		return false;
 	}
 	return true;
