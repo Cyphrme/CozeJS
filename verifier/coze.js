@@ -1,6 +1,6 @@
 "use strict";
 
-import * as Coze from '../all/coze_all.min.js';
+import * as Coze from './coze_all.min.js';
 var InputMsg;
 var InputKey;
 var OutMsg;
