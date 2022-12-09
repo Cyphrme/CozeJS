@@ -20,7 +20,10 @@ var MetaCzd;
 
 // DOM load
 document.addEventListener('DOMContentLoaded', () => {
-	console.log(window.location.hostname);
+	if (window.location.hostname === "localhost"){
+		// Fix for `localhost/coze_verifier_simple` `localhost/coze_verifier` 
+		document.getElementById('VerifierLink').href = "/coze_verifier";
+	}
 
 	InputMsg = document.getElementById('InputMsg');
 	InputKey = document.getElementById('InputKey');
