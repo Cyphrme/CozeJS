@@ -54,9 +54,10 @@ async function Sign(message, cozeKey) {
 }
 
 /**
- * SignCoze signs in place coze.pay with a private Coze key. Returns the same,
- * but updated, coze.  Errors on mismatch `alg` or `tmb`.  If empty, `alg` and
- * `tmb` are populated. `iat` set to current time.
+ * SignCoze signs in place coze.pay.  It populates/replaces alg and tmb using
+ * the given private Coze key and populates/updates iat. Returns the same, but
+ * updated, coze.  The optional canon is used to canonicalize pay before
+ * signing.  If needing a coze without alg, tmb, or iat, use SignCozeRaw.  
  *
  * SignCoze, SignCozeRaw, and VerifyCoze assumes that object has no duplicate
  * fields since this is disallowed in Javascript.
@@ -71,19 +72,9 @@ async function SignCoze(coze, cozeKey, canon) {
 	if (CZK.IsRevoked(cozeKey)) {
 		throw new Error("SignCoze: Cannot sign with revoked key.");
 	}
-	if (isEmpty(coze.pay.alg)) {
-		coze.pay.alg = cozeKey.alg;
-	}
-	if (isEmpty(coze.pay.tmb)) {
-		coze.pay.tmb = await CZK.Thumbprint(cozeKey);
-	}
-	if (coze.pay.alg !== cozeKey.alg) {
-		throw new Error("SignCoze: Coze key alg mismatch with coze.pay.alg.");
-	}
-	if (coze.pay.tmb !== cozeKey.tmb) {
-		throw new Error("SignCoze: Coze key tmb mismatch with coze.pay.tmb.");
-	}
 
+	coze.pay.alg = cozeKey.alg;
+	coze.pay.tmb = await CZK.Thumbprint(cozeKey);
 	coze.pay.iat = Math.round((Date.now() / 1000)); // Javascript's Date converted to Unix time.
 
 	if (!isEmpty(canon)) {
@@ -97,13 +88,14 @@ async function SignCoze(coze, cozeKey, canon) {
 
 /**
  * SignCozeRaw signs in place coze.pay with a private Coze key, but unlike
- * SignCoze, does not set `alg`, `tmb` or `iat`.
+ * SignCoze, does not set `alg`, `tmb` or `iat`. The optional canon is used to
+ * canonicalize pay before signing. 
  *
  * @param   {Coze}      coze       Object coze.
  * @param   {Key}       cozeKey    A private coze key.
  * @param   {Canon}     [canon]    Array for canonical keys.
  * @returns {Coze}                 Coze with new `sig` and canonicalized `pay`.
- * @throws  {Error}                Fails on mismatch `alg` or `tmb`.
+ * @throws  {Error}                Fails on rvk or mismatch `alg` or `tmb`.
  */
 async function SignCozeRaw(coze, cozeKey, canon) {
 	if (CZK.IsRevoked(cozeKey)) {
@@ -163,8 +155,10 @@ async function VerifyCoze(coze, cozeKey) {
 }
 
 /**
- * Meta recalculates and sets [can, cad, czd] for given `coze`. Coze.Pay, and
- * Coze.Sig must be set, and either Coze.Pay.Alg or parameter alg must be set.
+ * Meta generates coze.can, coze.cad, and if possible coze.czd. Coze.Pay must be
+ * set, and either Coze.Pay.Alg or parameter alg must be set. If Coze.Sig is
+ * populated, czd is set. 
+ *
  * Meta does no cryptographic verification.
  *
  * @param  {Coze}      coze     coze.
@@ -174,16 +168,19 @@ async function VerifyCoze(coze, cozeKey) {
  */
 async function Meta(coze, alg) {
 	if (!isEmpty(coze.pay.alg)) {
-		alg = Enum.HashAlg(coze.pay.alg);
+		var hashAlg = Enum.HashAlg(coze.pay.alg);
 	} else {
-		alg = Enum.HashAlg(alg);
+		hashAlg = Enum.HashAlg(alg);
 	}
 	coze.can = await Can.Canon(coze.pay);
-	coze.cad = await Can.CanonicalHash64(coze.pay, alg);
-	coze.czd = await Can.CanonicalHash64({
-		cad: coze.cad,
-		sig: coze.sig
-	}, alg);
+	coze.cad = await Can.CanonicalHash64(coze.pay, hashAlg);
+	if(!isEmpty(coze.sig)){
+		coze.czd = await Can.CanonicalHash64({
+			cad: coze.cad,
+			sig: coze.sig
+		}, hashAlg);
+	}
+
 	return coze;
 }
 
@@ -275,7 +272,6 @@ function isEmpty(thing) {
 	}
 	return false
 };
-
 
 /**
  * Helper function to determine boolean.  

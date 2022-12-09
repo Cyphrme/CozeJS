@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Coze Verifier Simple - Cyphr.me</title>
+
+	<script type="module" src="/assets/js/pkg/cozejs/verifier/coze_verifier_simple.js"></script>
+
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+	<link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+	<link rel="icon" type="image/png" sizes="32x32" href="/favi/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="/favi/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favi/favicon-16x16.png">
+
+
+	<style>
+		* {
+			font-family: 'Ubuntu Mono', monospace;
+			font-size: 18px;
+		}
+
+
+		body {
+			margin-left: 20px;
+		}
+
+		button,
+		select,
+		input,
+		textarea {
+			padding: 7px;
+			margin: 5px;
+		}
+
+		li {
+			padding-bottom: 15px;
+		}
+
+		span {
+			white-space: nowrap;
+		}
+
+		#OutMsg,
+		h1 {
+			font-weight: bold;
+			font-size: 20px;
+		}
+
+		#RvkMsg {
+			color: #FF8C00;
+		}
+
+		.footnote,
+		.footnote p,
+		.footnote a {
+			font-size: 16px;
+		}
+
+		.grid-container {
+			display: grid;
+			align-items: center;
+			grid-template-columns: 140px auto;
+			row-gap: 12px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<h1>Simple Coze Verifier</h1>
+	<h4>This tool may be used offline and does not transmit keys. Key generation and message verification is done locally in browser.</h4>
+	<div class="grid-container">
+		<label for="InputMsg">✉️ Message (JSON or text)</label>
+		<div>
+			<textarea name="InputMsg" id="InputMsg" cols="100" rows="12"></textarea>
+		</div>
+
+
+		<label for="InputKey">🔑 Key</label>
+		<div>
+			<textarea name="InputKey" id="InputKey" cols="100" rows="10"></textarea>
+		</div>
+
+		<p></p>
+		<div>
+			<button id="VerifyBtn" title="Verify message using signature and public key.">✅ Verify</button>
+			<button id="SignBtn" title="Sign message using key.">🔏 Sign</button>
+			<button class="item-3" title="Generates a random key." id="GenRandKeyBtn">🎲🔑 Generate Random key</button>
+
+			<select name="AlgSelect" id="AlgSelect" title="Algorithm of Key">
+				<option value="ES256">ES256</option>
+				<option value="ES384">ES384</option>
+				<option value="ES512">ES512</option>
+				<option value="Ed25519">Ed25519</option>
+			</select>
+
+			<button id="ClearBtn" title="Reset the page and clear all boxes.">🚫 Clear all</button>
+		</div>
+	</div>
+
+	<br>
+
+	<h1>Output</h1>
+	<h2 id="RvkMsg"></h2>
+	<pre id="OutMsg"></pre>
+
+	<p></p>
+	<br>
+	<br>
+	<hr>
+	<h3> Meta </h3>
+	<div class="grid-container">
+		alg: <span id="MetaAlg"></span>
+		iat: <span><span id="MetaIat"></span> <span id="MetaIats"></span></span>
+		tmb: <span id="MetaTmb"></span>
+		typ: <span id="MetaTyp"></span>
+		can: <span id="MetaCan"></span>
+		cad: <span id="MetaCad"></span>
+		sig: <span id="MetaSig"></span>
+		czd: <span id="MetaCzd"></span>
+	</div>
+
+
+
+	<br>
+	<br>
+
+
+	<div class="footnote">
+		<li><id="verifierLink" a href="/coze_verifier">Power Coze Verifier</a></li>
+		<li><id="verifierLink" a href="/coze_verifier">Power Coze Verifier</a></li>
+	</div>
+
+</body>
+</html>

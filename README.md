@@ -35,6 +35,11 @@ For your project use `coze.min.js`.
   https://github.com/paulmillr/noble-ed25519/issues/63
 
 
+#### Javascript vs Go crypto.
+Javascript's `SubtleCrypto.sign(algorithm, key, data)` always hashes a message
+before signing while Go's ECDSA expects a digest to sign. This means that in
+Javascript messages must be passed for signing, while in Go only a digest is
+needed.  
 
 # Developing CozeJS
 ## How to Build
