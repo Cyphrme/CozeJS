@@ -62,7 +62,7 @@
 			display: grid;
 			align-items: center;
 			grid-template-columns: 140px auto;
-			row-gap: 12px;
+			row-gap: 5px;
 		}
 	</style>
 </head>
@@ -85,8 +85,8 @@
 
 		<p></p>
 		<div>
-			<button id="VerifyBtn" title="Verify message using signature and public key.">✅ Verify</button>
-			<button id="SignBtn" title="Sign message using key.">🔏 Sign</button>
+			<button id="VerifyBtn" title="Verify message.">✅ Verify</button>
+			<button id="SignBtn" title="Sign message.">🔏 Sign</button>
 			<button class="item-3" title="Generates a random key." id="GenRandKeyBtn">🎲🔑 Generate Random key</button>
 
 			<select name="AlgSelect" id="AlgSelect" title="Algorithm of Key">
@@ -102,7 +102,7 @@
 
 	<br>
 
-	<h1>Output</h1>
+	<h1>Output <button id="CopyBtn" title="Copy output">📋 Copy</button></h1>
 	<h2 id="RvkMsg"></h2>
 	<pre id="OutMsg"></pre>
 
@@ -126,12 +126,14 @@
 
 	<br>
 	<br>
-
-
 	<div class="footnote">
 		<li><a id="VerifierLink" href="https://cyphr.me/coze_verifier">Power Coze Verifier</a></li>
+		<li><a href="https://github.com/Cyphrme/Cozejs/tree/master/verifier">Github for this page</a></li>
+		<li><a href="https://github.com/Cyphrme/Coze">Main Coze Github</a></li>
 		<li><a href="https://cyphr.me">Sponsored by Cyphr.me</a></li>
 	</div>
 
 </body>
 </html>
+
+

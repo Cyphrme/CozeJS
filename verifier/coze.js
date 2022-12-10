@@ -47,7 +47,20 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.getElementById('SignBtn').addEventListener('click', Sign);
 	document.getElementById('GenRandKeyBtn').addEventListener('click', GenKey);
 	document.getElementById('ClearBtn').addEventListener('click', ClearAll);
+	document.getElementById('CopyBtn').addEventListener('click', Copy);
 });
+
+function Copy(){
+    // Select the text.
+    var selection = window.getSelection();
+    var range = document.createRange();
+    range.selectNodeContents(OutMsg);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    //Add to clipboard.
+    document.execCommand('copy');
+}
+
 
 
 
