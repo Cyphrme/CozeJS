@@ -78,7 +78,7 @@
 }
 
 
-// Small.  Meta should show can, cad, czd
+// Small.  Meta should show [alg,can,cad,sig,czd]
 {
   "pay": {
     "msg": "a",
@@ -89,8 +89,8 @@
 
 
 
-// Good The empty coze, use input alg when alg is empty.  
-// Make sure Meta populates with alg (from input) [alg,tmb,can,cad,sig,czd]
+// Good.  Should show [alg,tmb,can,cad,sig,czd]
+// The empty coze, use input alg when alg is empty.   Make sure Meta populates with alg (from input) 
 {
 	"pay":{},
 	"sig":"9iesKUSV7L1-xz5yd3A94vCkKLmdOAnrcPXTU3_qeKSuk4RMG7Qz0KyubpATy0XA_fXrcdaxJTvXg6saaQQcVQ"
@@ -106,8 +106,7 @@
 }
 
 
-// Good The empty coze, use input alg when alg is empty.  
-// Make sure Meta populates with alg (from input) [alg,can,cad,sig,czd]
+// Good.  Should show [alg,can,cad,sig,czd]
 // Should *not* show tmb since signature will not verify.
 {
 	"pay":{},
