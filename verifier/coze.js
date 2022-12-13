@@ -1,6 +1,6 @@
 "use strict";
 
-import * as Coze from './coze_all.min.js';
+import * as Coze from './coze.min.js';
 var InputMsg;
 var InputKey;
 var OutMsg;
@@ -21,7 +21,8 @@ var MetaCzd;
 // DOM load
 document.addEventListener('DOMContentLoaded', () => {
 	if (window.location.hostname === "localhost"){
-		// Fix for `localhost/coze_verifier_simple` `localhost/coze_verifier` 
+		// Fix for local deving.  Change from `cyphr.me/coze_verifier` to
+		// `localhost/coze_verifier` 
 		document.getElementById('VerifierLink').href = "/coze_verifier";
 	}
 

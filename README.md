@@ -7,6 +7,16 @@ Please see the README in the [Go project.](https://github.com/Cyphrme/Coze)
 For your project use `coze.min.js`.
 
 
+# Simple Coze Verifier
+The simple verifier is self-contained in `/verifier`.
+
+Github hosted version:
+https://cyphrme.github.io/Cozejs/verifier/coze.html
+
+Cyphr.me hosted copy: https://cyphr.me/coze_verifier_simple/coze.html
+Power Coze verifier: https://cyphr.me/coze_verifier
+
+
 # Coze Javascript Gotchas
 - Javascript is not constant time.  Until there's something available with
   constant time guarantees, like [constant time
@@ -39,7 +49,7 @@ For your project use `coze.min.js`.
 Javascript's `SubtleCrypto.sign(algorithm, key, data)` always hashes a message
 before signing while Go's ECDSA expects a digest to sign. This means that in
 Javascript messages must be passed for signing, while in Go only a digest is
-needed.  
+needed.
 
 # Developing CozeJS
 ## How to Build
@@ -58,16 +68,15 @@ go install github.com/evanw/esbuild/cmd/esbuild@v0.15.8
 esbuild join.js --bundle --format=esm --minify --outfile=coze.min.js
 ```
 
-
 ## Testing
 Coze uses BrowserTestJS for running unit tests in the browser.
 
-The test also runs as a [Github pages](https://cyphrme.github.io/Cozejs/browsertestjs/test.html)
+The test also runs as a [Github pages](https://cyphrme.github.io/Cozejs/test/browsertestjs/test.html)
 
-### Go server
+### BrowserTestJS Go server
 
 ```sh
-cd /test/browsertestjs
+cd test/browsertestjs
 go run server.go
 ```
 
@@ -84,7 +93,7 @@ over HTTPS ("secure contexts").
 If the git submodule is causing issues, use `--force`:
 
 ```
-git submodule add --force git@github.com:Cyphrme/BrowserTestJS.git browsertestjs
+git submodule add --force git@github.com:Cyphrme/BrowserTestJS.git test/browsertestjs
 ```
 
 
@@ -108,35 +117,18 @@ itself).  Since main Coze is in Go, that's a reasonable tradeoff.
 
 
 Alternatively, inlining all Javascript into a single `js.min` file might be
-feasible in a single page, static HTML file.  This isn't implemented, but this
-is how it would be done using esbuild:
+feasible in a single page, static HTML file, then dump the results in a
+`<script>` section of `test/browsertestjs/test.html`  This isn't implemented,
+but this is how it would be done using esbuild:
 
 ```sh
 esbuild join_test.js --bundle --format=esm --minify --sourcemap=inline  --outfile=test.coze.min.js
 esbuild join_test.js --bundle --format=esm  --outfile=test.coze.min.js
 ```
 
-Then dump the results in a `<script>` section of `browsertestjs/test.html`
 
-
-
-## TODOS:
-- `iat`, `alg`, and common `Meta` for arrays ([]coze).
-  - If a field is different in any array, it becomes blank.  Fields that are the
-   same for every element are populated.
-
-- Single page "offline" verifier:
-		Probably just use: 
-		https://github.com/gildas-lormeau/SingleFile
-
-- Support other hash algos that are supported in Go. Go has API support for more
-		algos that are not natively supported in JS right now, such as: SHA-224,
-		SHA3-224, SHA3-256, SHA3-384, SHA3-512, SHAKE128, SHAKE256.
-
-
-
-
-
+# TODOS
+See Github issues.  
 
 
 
