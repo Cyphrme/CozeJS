@@ -120,7 +120,7 @@ async function SignCozeRaw(coze, cozeKey, canon) {
  * verified. Verify does no Coze checks.  If checks are needed, use
  * VerifyCoze();
  *
- * @param  {Msg}       message    Message string.
+ * @param  {Msg}       message    Message string. Typically is pay. e.g. `{"alg"...}`
  * @param  {Key}       cozekey    Coze key for validation.
  * @param  {Sig}       sig        Signature.
  * @return {Boolean}
