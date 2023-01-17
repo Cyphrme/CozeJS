@@ -9,9 +9,10 @@ For your project use `coze.min.js`.
 
 ## Simple Coze Verifier
 The simple verifier is self-contained in `/verifier`.
-[Cyphr.me hosted Simple Coze Verifier](https://cyphr.me/coze_verifier_simple/coze.html)
-[Power Coze Verifier](https://cyphr.me/coze_verifier)
-[Github hosted Simple Coze Verifier](https://cyphrme.github.io/Cozejs/verifier/coze.html)
+
+- [Cyphr.me   hosted Power  Coze Verifier](https://cyphr.me/coze_verifier)
+- [Cyphr.me   hosted Simple Coze Verifier](https://cyphr.me/coze_verifier_simple/coze.html)
+- [Github.com hosted Simple Coze Verifier](https://cyphrme.github.io/Cozejs/verifier/coze.html)
 
 
 # Developing CozeJS
