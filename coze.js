@@ -138,7 +138,7 @@ async function Verify(message, cozekey, sig) {
  * VerifyCoze returns a whether or not the Coze is valid. coze.sig must be set.
  * If set, pay.alg and pay.tmb must match with cozeKey.
  * 
- * @param  {Coze}     coze         Coze with signed pay.
+ * @param  {Coze}     coze         Coze with signed pay. e.g. `{"pay":..., "sig":...}`
  * @param  {Key}      [cozeKey]    Public Coze key for verification.
  * @param  {Sig}      [sig]        Signature.
  * @return {Boolean}
