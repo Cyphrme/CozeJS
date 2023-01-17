@@ -34,12 +34,12 @@ cp coze.min.js verifier/coze.min.js
 
 ## Testing
 Coze uses BrowserTestJS for running unit tests in the browser. The test can run
-as a [Github page.](https://cyphrme.github.io/Cozejs/test/browsertestjs/test.html)
+as a [Github page.](https://cyphrme.github.io/Cozejs/verifier/browsertestjs/test.html)
 
-### BrowserTestJS Go server
+<a href="https://github.com/Cyphrme/BrowserTestJS">BrowserTestJS</a> Go server
 
 ```sh
-cd test/browsertestjs
+cd verifier/browsertestjs
 go run server.go
 ```
 
@@ -55,8 +55,7 @@ If the git submodule is causing issues, use `--force`:
 git submodule add --force git@github.com:Cyphrme/BrowserTestJS.git test/browsertestjs
 ```
 
-
-#### Why use a Go server?
+#### Why use a Go server for testing?
 Static HTML files cannot call external Javascript modules when loading static
 files (arbitrary browser/standard limitation): See [this stack overflow](https://stackoverflow.com/questions/46992463/es6-module-support-in-chrome-62-chrome-canary-64-does-not-work-locally-cors-er?rq=1). 
 
