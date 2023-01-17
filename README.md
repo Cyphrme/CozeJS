@@ -1,6 +1,6 @@
-# ⚠️ COZE IS IN ALPHA.  USE AT YOUR OWN RISK ⚠️
+#### ⚠️ COZE IS IN ALPHA.  USE AT YOUR OWN RISK ⚠️
 
-![Coze](test/coze_logo_zami_white_450x273.png)
+![Coze](verifier/coze_logo_zami_white_450x273.png)
 
 For Coze, please see the README in the [Main Coze Project.](https://github.com/Cyphrme/Coze)
 
@@ -52,7 +52,7 @@ over HTTPS ("secure contexts").
 If the git submodule is causing issues, use `--force`:
 
 ```
-git submodule add --force git@github.com:Cyphrme/BrowserTestJS.git test/browsertestjs
+git submodule add --force git@github.com:Cyphrme/BrowserTestJS.git verifier/browsertest
 ```
 
 #### Why use a Go server for testing?
@@ -74,7 +74,7 @@ itself).  Since main Coze is in Go, that's a reasonable tradeoff.
 
 Alternatively, inlining all Javascript into a single `js.min` file might be
 feasible in a single page, static HTML file, then dump the results in a
-`<script>` section of `test/browsertestjs/test.html`  This isn't implemented,
+`<script>` section of `verifier/browsertest/test.html`  This isn't implemented,
 but this is how it would be done using esbuild:
 
 ```sh
