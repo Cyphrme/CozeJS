@@ -33,10 +33,11 @@ cp coze.min.js verifier/coze.min.js
 ```
 
 ## Testing
-Coze uses BrowserTestJS for running unit tests in the browser. The test can run
-as a [Github page.](https://cyphrme.github.io/Cozejs/verifier/browsertest/test.html)
+Coze uses <a href="https://github.com/Cyphrme/BrowserTestJS">BrowserTestJS</a>
+for running unit tests in the browser. The test can run as a [Github
+page.](https://cyphrme.github.io/Cozejs/verifier/browsertest/browsertest.html)
 
-<a href="https://github.com/Cyphrme/BrowserTestJS">BrowserTestJS</a> Go server
+For local development, use the Go server
 
 ```sh
 cd verifier/browsertest
