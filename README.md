@@ -7,14 +7,6 @@ For Coze, please see the README in the [Main Coze Project.](https://github.com/C
 For your project use `coze.min.js`.
 
 
-## Simple Coze Verifier
-The simple verifier is self-contained in `/verifier`.
-
-- [Cyphr.me   hosted Power  Coze Verifier](https://cyphr.me/coze_verifier)
-- [Cyphr.me   hosted Simple Coze Verifier](https://cyphr.me/coze_verifier_simple/coze.html)
-- [Github.com hosted Simple Coze Verifier](https://cyphrme.github.io/Cozejs/verifier/coze.html)
-
-
 # Developing CozeJS
 ## How to Build
 ##### Install esbuild
@@ -34,6 +26,24 @@ go install github.com/evanw/esbuild/cmd/esbuild@v0.15.8
 esbuild join.js --bundle --format=esm --minify --outfile=coze.min.js
 cp coze.min.js verifier/coze.min.js
 ```
+
+## Simple Coze Verifier
+The simple verifier is self-contained in `/verifier`.
+
+- [Cyphr.me   hosted Power  Coze Verifier](https://cyphr.me/coze_verifier)
+- [Cyphr.me   hosted Simple Coze Verifier](https://cyphr.me/coze_verifier_simple/coze.html)
+- [Github.com hosted Simple Coze Verifier](https://cyphrme.github.io/Cozejs/verifier/coze.html)
+
+To run the simple verifier locally, especially useful for local development, use
+the Go server.  
+
+```sh
+cd verifier
+go run server.go
+```
+
+And then go to https://localhost:8082/coze.html in your browser. 
+
 
 ## Testing
 Coze uses <a href="https://github.com/Cyphrme/BrowserTestJS">BrowserTestJS</a>

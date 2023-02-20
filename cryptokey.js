@@ -22,8 +22,8 @@ export {
  * @typedef {import('./typedefs.js').Msg}      Msg
  */
 
-var CryptoKey = {
 
+var CryptoKey = {
 	/**
 	 * New returns a ECDSA CryptoKeyPair. 
 	 * https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair
