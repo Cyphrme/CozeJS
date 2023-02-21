@@ -185,7 +185,7 @@ async function Correct(ck) {
 		let mldBuffer = await Coze.SToArrayBuffer("Test Signing")
 		let sig = await CTK.CryptoKey.SignBuffer(cryptoKey, mldBuffer);
 		let pubKey = await CTK.CryptoKey.FromCozeKey(ck, true);
-		let result = await CTK.CryptoKey.VerifyArrayBuffer(pubKey, mldBuffer, sig);
+		let result = await CTK.CryptoKey.VerifyArrayBuffer(ck.alg, pubKey, mldBuffer, sig);
 
 		if (!result) {
 			console.error("Correct: private key invalid.");

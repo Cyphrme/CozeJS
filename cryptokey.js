@@ -10,6 +10,8 @@ import {
 
 export {
 	CryptoKey,
+	SigToLowS,
+	IsSigLowS,
 };
 
 /**
@@ -32,7 +34,7 @@ var CryptoKey = {
 	 * @return {CryptoKeyPair}
 	 * @throws {Error}         Error, SyntaxError, DOMException, TypeError
 	 */
-	New: async function (alg) {
+	New: async function(alg) {
 		if (isEmpty(alg)) {
 			alg = Alg.Algs.ES256;
 		}
@@ -66,7 +68,7 @@ var CryptoKey = {
 	 * @returns {CryptoKey}
 	 * @throws  {Error}                Error, SyntaxError, DOMException, TypeError
 	 */
-	FromCozeKey: async function (cozeKey, onlyPublic) {
+	FromCozeKey: async function(cozeKey, onlyPublic) {
 		if (Alg.Genus(cozeKey.alg) != Alg.GenAlgs.ECDSA) {
 			throw new Error("CryptoKey.FromCozeKey: unsupported CryptoKey algorithm: " + cozeKey.alg);
 		}
@@ -110,7 +112,7 @@ var CryptoKey = {
 	 * @param   {CryptoKey} cryptoKey
 	 * @returns {void}
 	 */
-	ToPublic: async function (cryptoKey) {
+	ToPublic: async function(cryptoKey) {
 		delete cryptoKey.d; // Remove private `d` from the key.
 		// Only ["verify"] is a valid `key_ops` value for a public CryptoKey.
 		// `key_ops` must be an array.
@@ -182,7 +184,7 @@ var CryptoKey = {
 	 * @returns {Key}
 	 * @throws  {Error}
 	 */
-	ToCozeKey: async function (cryptoKey) {
+	ToCozeKey: async function(cryptoKey) {
 		let exported = await window.crypto.subtle.exportKey(
 			"jwk",
 			cryptoKey
@@ -227,17 +229,22 @@ var CryptoKey = {
 	 * @returns {ArrayBuffer}
 	 * @throws  {Error}
 	 */
-	SignBuffer: async function (cryptoKey, arrayBuffer) {
-		return await window.crypto.subtle.sign({
+	SignBuffer: async function(cryptoKey, arrayBuffer) {
+		let alg = await CryptoKey.algFromCrv(cryptoKey.algorithm.namedCurve);
+		let sig = await window.crypto.subtle.sign({
 				name: Alg.GenAlgs.ECDSA,
 				hash: {
-					name: await CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey)
+					name: Alg.HashAlg(alg)
 				},
 			},
 			cryptoKey,
 			arrayBuffer
 		);
+
+		sig = sigToLowSArrayBuffer(alg, sig);
+		return sig;
 	},
+
 
 	/**
 	 * SignBufferB64 signs a buffer with a CryptoKey and returns the b64ut
@@ -248,7 +255,7 @@ var CryptoKey = {
 	 * @param   {ArrayBuffer} arrayBuffer     ArrayBuffer to sign.
 	 * @returns {B64}
 	 */
-	SignBufferB64: async function (cryptoKey, arrayBuffer) {
+	SignBufferB64: async function(cryptoKey, arrayBuffer) {
 		return await Coze.ArrayBufferTo64ut(await CryptoKey.SignBuffer(cryptoKey, arrayBuffer));
 	},
 
@@ -260,7 +267,7 @@ var CryptoKey = {
 	 * @param   {String}    utf8           String to sign.
 	 * @returns {B64}
 	 */
-	SignString: async function (cryptoKey, utf8) {
+	SignString: async function(cryptoKey, utf8) {
 		return await CryptoKey.SignBufferB64(cryptoKey, await Coze.SToArrayBuffer(utf8));
 	},
 
@@ -269,13 +276,20 @@ var CryptoKey = {
 	 * Javascript CryptoKey.
 	 * Returns whether or not message is verified by the given key and signature.
 	 * 
+	 * @param   {Alg}         alg
 	 * @param   {CryptoKey}   cryptoKey           Javascript CryptoKey.
 	 * @param   {ArrayBuffer} sig                 Signature.
 	 * @param   {ArrayBuffer} msg                 Message.
 	 * @returns {Boolean}
 	 */
-	VerifyArrayBuffer: async function (cryptoKey, msg, sig) {
-		// Guarantee key is not private to appease Javascript:
+	VerifyArrayBuffer: async function(alg, cryptoKey, msg, sig) {
+		// Currently, Cozejs is only ECDSA.  For ECDSA, only accept low-S
+		// signatures.  
+		if (!(await IsSigLowS(alg, sig))) {
+			return false;
+		}
+
+		// Guarantee key is not private to appease Javascript 😔:
 		await CryptoKey.ToPublic(cryptoKey);
 		return await window.crypto.subtle.verify({
 				name: Alg.GenAlgs.ECDSA,
@@ -292,13 +306,14 @@ var CryptoKey = {
 	 * VerifyMsg uses a public key to verify a string msg with a b64ut sig.
 	 * Returns whether or not the signature is valid.
 	 * 
+	 * @param   {Alg}        alg
 	 * @param   {CryptoKey}  cryptoKey         Javascript CryptoKey.
 	 * @param   {Msg}        msg               String that was signed.
 	 * @param   {Sig}        sig               B64 signature.
 	 * @returns {Boolean}
 	 */
-	VerifyMsg: async function (cryptoKey, msg, sig) {
-		return CryptoKey.VerifyArrayBuffer(cryptoKey, await Coze.SToArrayBuffer(msg), await Coze.B64uToArrayBuffer(sig));
+	VerifyMsg: async function(alg, cryptoKey, msg, sig) {
+		return CryptoKey.VerifyArrayBuffer(alg, cryptoKey, await Coze.SToArrayBuffer(msg), await Coze.B64uToArrayBuffer(sig));
 	},
 
 	/**
@@ -325,7 +340,7 @@ var CryptoKey = {
 	 * @returns {Hsh}
 	 * @throws  {Error}                Fails if alg is not supported.
 	 */
-	GetSignHashAlgoFromCryptoKey: async function (cryptoKey) {
+	GetSignHashAlgoFromCryptoKey: async function(cryptoKey) {
 		return Alg.HashAlg(await CryptoKey.algFromCrv(cryptoKey.algorithm.namedCurve));
 	},
 
@@ -337,7 +352,7 @@ var CryptoKey = {
 	 * @returns {Alg}
 	 * @throws  {Error}
 	 */
-	algFromCrv: async function (crv) {
+	algFromCrv: async function(crv) {
 		switch (crv) {
 			case Alg.Curves.P224:
 				var alg = Alg.Algs.ES224;
@@ -357,3 +372,141 @@ var CryptoKey = {
 		return alg;
 	}
 }; // End CryptoKey
+
+
+
+/** Checks if S is a "low-S".  See the Coze docs on "Low-S"
+ *
+ * @param   {Alg}        alg
+ * @param   {BigInt}     s
+ * @returns {BigInt}
+ * @throws  {Error}
+ */
+function IsLowS(alg, s) {
+	if (typeof s !== "bigint") {
+		throw new Error("IsLowS: s is not of type bigint");
+	}
+	return Alg.CurveHalfOrder(alg) > s;
+}
+
+/** Makes sure that s is a "low-S".  See the Coze docs on "Low-S" and the Go
+ * package's "ToLowS" function.  
+ *
+ * @param   {Alg}       alg
+ * @param   {BigInt}    s
+ * @returns {BigInt}
+ * @throws  {Error}
+ */
+function toLowS(alg, s) {
+	if (typeof s !== "bigint") {
+		throw new Error("toLowS: s is not of type bigint");
+	}
+	if (!IsLowS(alg, s)) {
+		return Alg.CurveOrder(alg) - s;
+	}
+	return s
+}
+
+/** Makes sure that S in sig is a "low-S" and converts if needed.  See the Coze
+ * docs on "low-S"
+ * 
+ * @param   {Alg}      alg
+ * @param   {Sig}      sig
+ * @returns {Sig}
+ * @throws  {Error}
+ */
+async function SigToLowS(alg, sig) {
+	let ab = await Coze.B64uToArrayBuffer(sig);
+	let lowSSigAB = await sigToLowSArrayBuffer(alg, ab);
+	 return Coze.ArrayBufferTo64ut(lowSSigAB);
+}
+
+/** SigIsLowS checks if S in sig is a "low-S".  See the Coze docs on "low-S"
+ * 
+ * @param   {Alg}      alg
+ * @param   {Sig}      sig
+ * @returns {Boolean}
+ * @throws  {Error}
+ */
+async function IsSigLowS(alg, sig) {
+	let bigIntS = await sigToS(alg, sig);
+	return IsLowS(alg, bigIntS);
+}
+
+/**
+ * Returns S from sig.  
+ * @param   {Alg}            alg    Return only a public key.
+ * @param   {ArrayBuffer}    sig    Sig ArrayBuffer from subtle crypto
+ * @returns {BigInt}
+ * @throws  {Error}         Error, SyntaxError, DOMException, TypeError
+ */
+function sigToS(alg, sig) {
+	let half = Alg.SigSize(alg) / 2;
+	let s = sig.slice(half);
+	return arrayBufferToBigInt(s);
+}
+
+
+/**
+ * 
+ * @param   {Alg}            alg    Return only a public key.
+ * @param   {ArrayBuffer}    sig    Sig ArrayBuffer from subtle crypto
+ * @returns {ArrayBuffer}
+ * @throws  {Error}         Error, SyntaxError, DOMException, TypeError
+ */
+async function sigToLowSArrayBuffer(alg, sig) {
+	let half = Alg.SigSize(alg) / 2;
+	let r = sig.slice(0, half);
+	let s = sig.slice(half);
+	let bigIntS = arrayBufferToBigInt(s);
+	let bigIntNormS = toLowS(alg, bigIntS);
+	// console.log("sig in:", sig);
+	// console.log("r:", r);
+	// console.log("s:", s);
+	// console.log("s hex:", bigIntS.toString(16).toUpperCase());
+	// console.log("IsLowS: ", IsLowS(alg, bigIntS));
+	// console.log("Before toLowS", bigIntS)
+	// console.log("After toLowS", bigIntNormS)
+	let normS = bigIntToArrayBuffer(Alg.SigSize(alg) / 2, bigIntNormS);
+
+
+	// Add two ArrayBuffers, but it's Javascript so it's hard.  😔 This is just
+	// doing `sig = r + normS`;
+	var tmp = new Uint8Array(r.byteLength + normS.byteLength);
+	tmp.set(new Uint8Array(r), 0);
+	tmp.set(new Uint8Array(normS), r.byteLength);
+	sig = tmp.buffer;
+	return sig
+}
+
+/** Converts a Big Endian ArrayBuffer to BigInt.  
+ * 
+ * @param   {ArrayBuffer}         buffer
+ * @returns {BigInt}         
+ */
+function arrayBufferToBigInt(buffer) {
+	let result = 0n;
+	let a = new Uint8Array(buffer)
+	for (let i = 0; i < a.length; i++) {
+		result = (result << 8n) + BigInt(a[i]);
+	}
+	return result;
+}
+
+/** Converts a BigInt to a Big Endian ArrayBuffer.  
+ * 
+ * @param   {size}         int    // Number of bytes to pad the ArrayBuffer 
+ * @param   {Bigint}       bigInt 
+ * @returns {ArrayBuffer}  buffer
+ */
+function bigIntToArrayBuffer(size, bigInt) {
+	const buffer = new ArrayBuffer(size);
+	const view = new DataView(buffer);
+
+	do {
+		size--;
+		view.setUint8(size, Number(bigInt & BigInt(0xff)));
+		bigInt >>= 8n;
+	} while (size > 0);
+	return buffer;
+}

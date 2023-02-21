@@ -25,27 +25,27 @@ export {
 }
 
 /**
- * @typedef {import('./typedefs.js').Key}            Key
- * @typedef {import('./typedefs.js').Alg}            Alg
- * @typedef {import('./typedefs.js').Msg}            Msg
- * @typedef {import('./typedefs.js').Coze}           Coze
- * @typedef {import('./typedefs.js').Sig}            Sig
- * @typedef {import('./typedefs.js').Canon}          Canon
- * @typedef {import('./typedefs.js').Meta}           Meta
- * @typedef {import('./typedefs.js').VerifiedArray}  VerifiedArray
- */
+* @typedef {import('./typedefs.js').Key}            Key
+* @typedef {import('./typedefs.js').Alg}            Alg
+* @typedef {import('./typedefs.js').Msg}            Msg
+* @typedef {import('./typedefs.js').Coze}           Coze
+* @typedef {import('./typedefs.js').Sig}            Sig
+* @typedef {import('./typedefs.js').Canon}          Canon
+* @typedef {import('./typedefs.js').Meta}           Meta
+* @typedef {import('./typedefs.js').VerifiedArray}  VerifiedArray
+*/
 
 // PayCanon is the standard coze.pay fields.
 const PayCanon = ["alg", "iat", "tmb", "typ"];
 
 /**
- * Sign signs message with private Coze key and returns b64ut sig.
- * 
- * @param   {Msg}       message
- * @param   {Key}       cozeKey
- * @returns {Sig}
- * @throws  {Error}     Error, SyntaxError, DOMException, TypeError
- */
+* Sign signs message with private Coze key and returns b64ut sig.
+* 
+* @param   {Msg}       message
+* @param   {Key}       cozeKey
+* @returns {Sig}
+* @throws  {Error}     Error, SyntaxError, DOMException, TypeError
+*/
 async function Sign(message, cozeKey) {
 	return CTK.CryptoKey.SignBufferB64(
 		await CTK.CryptoKey.FromCozeKey(cozeKey),
@@ -54,20 +54,20 @@ async function Sign(message, cozeKey) {
 }
 
 /**
- * SignCoze signs in place coze.pay.  It populates/replaces alg and tmb using
- * the given private Coze key and populates/updates iat. Returns the same, but
- * updated, coze.  The optional canon is used to canonicalize pay before
- * signing.  If needing a coze without alg, tmb, or iat, use SignCozeRaw.  
- *
- * SignCoze, SignCozeRaw, and VerifyCoze assumes that object has no duplicate
- * fields since this is disallowed in Javascript.
- * 
- * @param   {Coze}      coze       Object coze.
- * @param   {Key}       cozeKey    A private coze key.
- * @param   {Canon}     [canon]    Array for canonical keys.
- * @returns {Coze}                 Coze that may have been modified from given.
- * @throws  {Error}                Fails on invalid key, parse error, mismatch fields.
- */
+* SignCoze signs in place coze.pay.  It populates/replaces alg and tmb using
+* the given private Coze key and populates/updates iat. Returns the same, but
+* updated, coze.  The optional canon is used to canonicalize pay before
+* signing.  If needing a coze without alg, tmb, or iat, use SignCozeRaw.  
+*
+* SignCoze, SignCozeRaw, and VerifyCoze assumes that object has no duplicate
+* fields since this is disallowed in Javascript.
+* 
+* @param   {Coze}      coze       Object coze.
+* @param   {Key}       cozeKey    A private coze key.
+* @param   {Canon}     [canon]    Array for canonical keys.
+* @returns {Coze}                 Coze that may have been modified from given.
+* @throws  {Error}                Fails on invalid key, parse error, mismatch fields.
+*/
 async function SignCoze(coze, cozeKey, canon) {
 	if (CZK.IsRevoked(cozeKey)) {
 		throw new Error("SignCoze: Cannot sign with revoked key.");
@@ -87,16 +87,16 @@ async function SignCoze(coze, cozeKey, canon) {
 
 
 /**
- * SignCozeRaw signs in place coze.pay with a private Coze key, but unlike
- * SignCoze, does not set `alg`, `tmb` or `iat`. The optional canon is used to
- * canonicalize pay before signing. 
- *
- * @param   {Coze}      coze       Object coze.
- * @param   {Key}       cozeKey    A private coze key.
- * @param   {Canon}     [canon]    Array for canonical keys.
- * @returns {Coze}                 Coze with new `sig` and canonicalized `pay`.
- * @throws  {Error}                Fails on rvk or mismatch `alg` or `tmb`.
- */
+* SignCozeRaw signs in place coze.pay with a private Coze key, but unlike
+* SignCoze, does not set `alg`, `tmb` or `iat`. The optional canon is used to
+* canonicalize pay before signing. 
+*
+* @param   {Coze}      coze       Object coze.
+* @param   {Key}       cozeKey    A private coze key.
+* @param   {Canon}     [canon]    Array for canonical keys.
+* @returns {Coze}                 Coze with new `sig` and canonicalized `pay`.
+* @throws  {Error}                Fails on rvk or mismatch `alg` or `tmb`.
+*/
 async function SignCozeRaw(coze, cozeKey, canon) {
 	if (CZK.IsRevoked(cozeKey)) {
 		throw new Error("SignCozeRaw: Cannot sign with revoked key.");
@@ -116,18 +116,19 @@ async function SignCozeRaw(coze, cozeKey, canon) {
 }
 
 /**
- * Verify verifies a `pay` with `sig` and returns whether or not the message is
- * verified. Verify does no Coze checks.  If checks are needed, use
- * VerifyCoze();
- *
- * @param  {Msg}       message    Message string. Typically is pay. e.g. `{"alg"...}`
- * @param  {Key}       cozekey    Coze key for validation.
- * @param  {Sig}       sig        Signature.
- * @return {Boolean}
- * @throws {Error}
- */
+* Verify verifies a `pay` with `sig` and returns whether or not the message is
+* verified. Verify does no Coze checks.  If checks are needed, use
+* VerifyCoze();
+*
+* @param  {Msg}       message    Message string. Typically is pay. e.g. `{"alg"...}`
+* @param  {Key}       cozekey    Coze key for validation.
+* @param  {Sig}       sig        Signature.
+* @return {Boolean}
+* @throws {Error}
+*/
 async function Verify(message, cozekey, sig) {
 	return CTK.CryptoKey.VerifyMsg(
+		cozekey.alg,
 		await CTK.CryptoKey.FromCozeKey(cozekey, true),
 		message,
 		sig,
@@ -135,15 +136,15 @@ async function Verify(message, cozekey, sig) {
 };
 
 /**
- * VerifyCoze returns a whether or not the Coze is valid. coze.sig must be set.
- * If set, pay.alg and pay.tmb must match with cozeKey.
- * 
- * @param  {Coze}     coze         Coze with signed pay. e.g. `{"pay":..., "sig":...}`
- * @param  {Key}      [cozeKey]    Public Coze key for verification.
- * @param  {Sig}      [sig]        Signature.
- * @return {Boolean}
- * @throws {Error}
- */
+* VerifyCoze returns a whether or not the Coze is valid. coze.sig must be set.
+* If set, pay.alg and pay.tmb must match with cozeKey.
+* 
+* @param  {Coze}     coze         Coze with signed pay. e.g. `{"pay":..., "sig":...}`
+* @param  {Key}      [cozeKey]    Public Coze key for verification.
+* @param  {Sig}      [sig]        Signature.
+* @return {Boolean}
+* @throws {Error}
+*/
 async function VerifyCoze(coze, cozeKey) {
 	if (!isEmpty(coze.pay.alg) && coze.pay.alg !== cozeKey.alg) {
 		throw new Error("VerifyCoze: Coze key alg mismatch with coze.pay.alg.");
@@ -155,17 +156,17 @@ async function VerifyCoze(coze, cozeKey) {
 }
 
 /**
- * Meta generates coze.can, coze.cad, and if possible coze.czd. Coze.Pay must be
- * set, and either Coze.Pay.Alg or parameter alg must be set. If Coze.Sig is
- * populated, czd is set. 
- *
- * Meta does no cryptographic verification.
- *
- * @param  {Coze}      coze     coze.
- * @param  {Alg}       [alg]    coze.pay.alg takes precedence.
- * @return {Meta}               Meta Coze (sets fields [can, cad, czd]).
- * @throws {Error}              Fails on JSON parse exception.
- */
+* Meta generates coze.can, coze.cad, and if possible coze.czd. Coze.Pay must be
+* set, and either Coze.Pay.Alg or parameter alg must be set. If Coze.Sig is
+* populated, czd is set. 
+*
+* Meta does no cryptographic verification.
+*
+* @param  {Coze}      coze     coze.
+* @param  {Alg}       [alg]    coze.pay.alg takes precedence.
+* @return {Meta}               Meta Coze (sets fields [can, cad, czd]).
+* @throws {Error}              Fails on JSON parse exception.
+*/
 async function Meta(coze, alg) {
 	if (!isEmpty(coze.pay.alg)) {
 		var hashAlg = Enum.HashAlg(coze.pay.alg);
@@ -190,44 +191,44 @@ async function Meta(coze, alg) {
 ///////////////////////////////////
 
 /**
- * Converts a string to an ArrayBuffer.
- *
- * @param  {String}        string
- * @return {ArrayBuffer}
- */
+* Converts a string to an ArrayBuffer.
+*
+* @param  {String}        string
+* @return {ArrayBuffer}
+*/
 async function SToArrayBuffer(string) {
 	return new TextEncoder().encode(string).buffer; // Suppose to be always in UTF-8
 }
 
 /**
- * B64uToArrayBuffer takes a b64u (truncated or not truncated) string and
- * decodes it to an ArrayBuffer.
- * 
- * @param   {B64}          string 
- * @returns {ArrayBuffer}
- */
+* B64uToArrayBuffer takes a b64u (truncated or not truncated) string and
+* decodes it to an ArrayBuffer.
+* 
+* @param   {B64}          string 
+* @returns {ArrayBuffer}
+*/
 function B64uToArrayBuffer(string) {
 	// atob doesn't care about the padding character '='
 	return Uint8Array.from(atob(string.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)).buffer;
 };
 
 /**
- * B64utToUint8Array takes a b64ut string and decodes it back into a string.
- * 
- * @param   {B64}          string 
- * @returns {Uint8Array}
- */
+* B64utToUint8Array takes a b64ut string and decodes it back into a string.
+* 
+* @param   {B64}          string 
+* @returns {Uint8Array}
+*/
 function B64utToUint8Array(string) {
 	// atob doesn't care about the padding character '='
 	return Uint8Array.from(atob(string.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
 };
 
 /**
- * ArrayBufferTo64ut returns a b64 string from an Array buffer.
- * 
- * @param   {ArrayBuffer} buffer  Arbitrary bytes. UTF-16 is Javascript native.
- * @returns {B64}
- */
+* ArrayBufferTo64ut returns a b64 string from an Array buffer.
+* 
+* @param   {ArrayBuffer} buffer  Arbitrary bytes. UTF-16 is Javascript native.
+* @returns {B64}
+*/
 function ArrayBufferTo64ut(buffer) {
 	return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
@@ -238,23 +239,23 @@ function ArrayBufferTo64ut(buffer) {
 ///////////////////////////////////
 
 /**
- * isEmpty is a helper function to determine if thing is empty. 
- * 
- * Objects are empty if they have no keys. (Returns len === 0 of object keys.)
- *
- * Functions are considered always not empty. 
- * 
- * NaN returns true.  (NaN === NaN is always false, as NaN is never equal to
- * anything. NaN is the only JavaScript value unequal to itself.)
- *
- * Don't use on HTMl elements. For HTML elements, use the !== equality check
- * (element !== null).
- *
- * Cannot use CryptoKey with this function since (len === 0) always. 
- *
- * @param   {any}     thing    Thing you wish was empty.
- * @returns {Boolean}
- */
+* isEmpty is a helper function to determine if thing is empty. 
+* 
+* Objects are empty if they have no keys. (Returns len === 0 of object keys.)
+*
+* Functions are considered always not empty. 
+* 
+* NaN returns true.  (NaN === NaN is always false, as NaN is never equal to
+* anything. NaN is the only JavaScript value unequal to itself.)
+*
+* Don't use on HTMl elements. For HTML elements, use the !== equality check
+* (element !== null).
+*
+* Cannot use CryptoKey with this function since (len === 0) always. 
+*
+* @param   {any}     thing    Thing you wish was empty.
+* @returns {Boolean}
+*/
 function isEmpty(thing) {
 	if (typeof thing === 'function') {
 		return false;
@@ -274,16 +275,16 @@ function isEmpty(thing) {
 };
 
 /**
- * Helper function to determine boolean.  
- *
- * Javascript, instead of considering everything false except a few key words,
- * decided everything is true instead of a few key words.  Why?  Because
- * Javascript.  This function inverts that assumption, so that everything can be
- * considered false unless true. 
- *
- * @param   {any}      bool   Thing that you wish was a boolean.  
- * @returns {Boolean}
- */
+* Helper function to determine boolean.  
+*
+* Javascript, instead of considering everything false except a few key words,
+* decided everything is true instead of a few key words.  Why?  Because
+* Javascript.  This function inverts that assumption, so that everything can be
+* considered false unless true. 
+*
+* @param   {any}      bool   Thing that you wish was a boolean.  
+* @returns {Boolean}
+*/
 function isBool(bool) {
 	if (
 		bool === false ||

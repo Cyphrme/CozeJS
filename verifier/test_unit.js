@@ -102,6 +102,11 @@ let t_VerifyArray = {
 	"func": test_VerifyArray,
 	"golden": true
 };
+let t_LowS = {
+	"name": "LowS",
+	"func": test_LowS,
+	"golden": true
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////    Testing Variables    /////////////////////////////////
@@ -475,14 +480,14 @@ async function test_CryptoKeySign() {
 		// Sign string
 		let sig = await Coze.CryptoKey.SignString(cryptoKey, msg);
 		let pcc = await Coze.CryptoKey.FromCozeKey(cozeKey, true);
-		let result = await Coze.CryptoKey.VerifyMsg(pcc, msg, sig);
+		let result = await Coze.CryptoKey.VerifyMsg(alg, pcc, msg, sig);
 		if (result !== true) {
 			return false
 		}
 
 		// Sign array buffer
 		sig = await Coze.CryptoKey.SignBuffer(cryptoKey, abMsg);
-		result = await Coze.CryptoKey.VerifyArrayBuffer(pcc, abMsg, sig);
+		result = await Coze.CryptoKey.VerifyArrayBuffer(alg, pcc, abMsg, sig);
 		if (result !== true) {
 			return false
 		}
@@ -506,6 +511,48 @@ async function test_CryptoKeySign() {
 
 	return true;
 };
+
+
+
+async function test_LowS() {
+	// All cozies should be low-S
+	for (const alg of Algs) {
+		let cozeKey = await Coze.NewKey(alg);
+		let pay = `{"msg":"Test Message"}`;
+		let sig = await Coze.Sign(pay, cozeKey);
+
+		if ((await Coze.Verify(pay, cozeKey, sig)) !== true) {
+			console.error("Failed on alg: " + alg)
+			return false
+		}
+	}
+
+	// Make sure high-S cozies will not verify.  
+	let highSCozies = [
+		'{"pay":{},"sig":"9iesKUSV7L1-xz5yd3A94vCkKLmdOAnrcPXTU3_qeKSuk4RMG7Qz0KyubpATy0XA_fXrcdaxJTvXg6saaQQcVQ"}',
+		'{"pay":{"msg":"Coze Rocks","alg":"ES256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg"},"sig":"mVw8N6ZncWcObVGvnwUMRIC6m2fbX3Sr1LlHMbj_tZ3ji1rNL-00pVaB12_fmlK3d_BVDipNQUsaRyIlGJudtg"}',
+		'{"pay":{"msg":"Coze Rocks","alg":"ES256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg"},"sig":"cn6KNl4VQlk5MzmhYFVyyJoTOU57O5Bq-8r-yXXR6Ojfs0-6LFGd8j1Y6wiJAQrGpWj_RptsiEg49v95FsVWMQ"}',
+		'{"pay":{"msg":"Coze Rocks","alg":"ES256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg"},"sig":"9KvWfOSIZUjW8Ie0jbdVdu9UlIP4TT4MXz3YyNW3fCTWXHnO1MPROwcXvfNZN_icOvMAK3vfsr2w-CeBozS81w"}',
+	]
+
+	for (let c of highSCozies) {
+		let coze =  JSON.parse(c);
+
+		let v = await Coze.VerifyCoze(coze, GoldenGoodCozeKey);
+		if (v) {
+			return("High-S Should not be valid. ");
+		}
+
+		coze.sig = await Coze.SigToLowS("ES256", coze.sig);
+		v = await Coze.VerifyCoze(coze, GoldenGoodCozeKey);
+		if (!v) {
+			return("High-S to low-S should be valid. ");
+		}
+
+	}
+
+	return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -534,6 +581,7 @@ let TestsToRun = [
 	t_Correct,
 	t_VerifyArray,
 	t_CryptoKeySign,
+	t_LowS,
 ];
 
 
