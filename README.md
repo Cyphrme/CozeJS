@@ -84,6 +84,13 @@ Then go to `https://localhost:8082`.
 	specifies Ed25519 support. Hopefully this will motivate Javascript to include
 	Ed25519.  Also, [Paul has implemented Ed25519ph](
 	https://github.com/paulmillr/noble-ed25519/issues/63).
+
+- TODO use Paul's curves library.  Currenty ESM builds are "broken", and we'll
+  wait for it to be polished.  (The imports are using Typescript `@` imports and
+  not resolving to ESM files.)
+
+	Also, we'll preserve the current style somewhere so that we have a
+	SubtleCrypto backend that can be used.  
  
 - Javascript's `SubtleCrypto.sign(algorithm, key, data)` always hashes a message
 	before signing while Go's ECDSA expects a digest to sign. This means that in
