@@ -30,7 +30,7 @@ cp coze.min.js verifier/coze.min.js
 ## Simple Coze Verifier
 The simple verifier is self-contained in `/verifier`.
 
-- [Cyphr.me   hosted Power  Coze Verifier](https://cyphr.me/coze_verifier)
+- [Cyphr.me   hosted Power  Coze Verifier](https://cyphr.me/coze)
 - [Cyphr.me   hosted Simple Coze Verifier](https://cyphr.me/coze_verifier_simple/coze.html)
 - [Github.com hosted Simple Coze Verifier](https://cyphrme.github.io/Cozejs/verifier/coze.html)
 

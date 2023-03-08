@@ -592,7 +592,7 @@ let TestGUIOptions = {
 
 	<p><a class="account_keys text-center" href="https://github.com/cyphrme/coze"> Coze Github</a></p>
 	<p><a class="account_keys text-center" href="https://github.com/cyphrme/cozejs"> Coze js Github</a></p>
-	<p><a href="https://cyphr.me/coze_verifier">Cyphr.me Coze Verifier</a></p>
+	<p><a href="https://cyphr.me/coze">Cyphr.me Coze Verifier</a></p>
 	<div class="level-item has-text-centered text-muted footer_logo mt-5">
 
 		<a href="https://cyphr.me">Sponsored by: <img src="../cyphrme_long.png"></a>

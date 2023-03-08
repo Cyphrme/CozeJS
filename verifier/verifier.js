@@ -21,9 +21,9 @@ var MetaCzd;
 // DOM load
 document.addEventListener('DOMContentLoaded', () => {
 	if (window.location.hostname === "localhost"){
-		// Fix for local deving.  Change from `cyphr.me/coze_verifier` to
-		// `localhost/coze_verifier` 
-		document.getElementById('VerifierLink').href = "/coze_verifier";
+		// Fix for local deving.  Change from `cyphr.me/coze` to
+		// `localhost/coze` 
+		document.getElementById('VerifierLink').href = "/coze";
 	}
 
 	InputMsg = document.getElementById('InputMsg');
