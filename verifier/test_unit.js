@@ -595,7 +595,7 @@ let TestGUIOptions = {
 	<p><a href="https://cyphr.me/coze">Cyphr.me Coze Verifier</a></p>
 	<div class="level-item has-text-centered text-muted footer_logo mt-5">
 
-		<a href="https://cyphr.me">Sponsored by: <img src="../cyphrme_long.png"></a>
+		<a href="https://cyphr.me">Sponsored by: <img src="../cyphrme_long_500x135.png"></a>
 
 		<p class="mt-3">Coze is released under The 3-Clause BSD License. <br>
 
