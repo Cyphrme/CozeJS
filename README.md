@@ -32,7 +32,7 @@ The simple verifier is self-contained in `/verifier`.
 
 - [Cyphr.me   hosted Power  Coze Verifier](https://cyphr.me/coze)
 - [Cyphr.me   hosted Simple Coze Verifier](https://cyphr.me/coze_verifier_simple/coze.html)
-- [Github.com hosted Simple Coze Verifier](https://cyphrme.github.io/Cozejs/verifier/coze.html)
+- [Github.com hosted Simple Coze Verifier](https://cyphrme.github.io/Coze_js/verifier/coze.html)
 
 To run the simple verifier locally, especially useful for local development, use
 the Go server.  
@@ -48,7 +48,7 @@ And then go to https://localhost:8082/coze.html in your browser.
 ## Testing
 Coze uses <a href="https://github.com/Cyphrme/BrowserTestJS">BrowserTestJS</a>
 for running unit tests in the browser. The test can run as a [Github
-page.](https://cyphrme.github.io/Cozejs/verifier/browsertest/browsertest.html)
+page.](https://cyphrme.github.io/Coze_js/verifier/browsertest/browsertest.html)
 
 For local development, use the Go server. 
 
