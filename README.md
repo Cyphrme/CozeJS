@@ -7,7 +7,7 @@ For Coze, please see the README in the [Main Coze Project.](https://github.com/C
 For your project use `coze.min.js`.
 
 
-# Developing CozeJS
+# Developing Coze JS
 ## How to Build
 ##### Install esbuild
 
@@ -65,9 +65,9 @@ Then go to `https://localhost:8082`.
 	with constant time guarantees, like [constant time
 	WASM](https://cseweb.ucsd.edu/~dstefan/pubs/renner:2018:ct-wasm.pdf), this
 	library will be vulnerable to timing attacks as this problem is inherent to Javascript.
-- Duplicate detection is outside the scope of Cozejs because Cozejs uses
+- Duplicate detection is outside the scope of Coze JS because Coze JS uses
 	Javascript objects which always have unique fields.  Also, no JSON parsing is
-	done inside of Cozejs, which uses last-value-wins. - Objects in ES6 defined
+	done inside of Coze JS, which uses last-value-wins. - Objects in ES6 defined
 	with duplicate fields uses last-value-wins.  
 	- See notes on `test_Duplicate`.
 

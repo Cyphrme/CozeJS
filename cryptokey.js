@@ -283,7 +283,7 @@ var CryptoKey = {
 	 * @returns {Boolean}
 	 */
 	VerifyArrayBuffer: async function(alg, cryptoKey, msg, sig) {
-		// Currently, Cozejs is only ECDSA.  For ECDSA, only accept low-S
+		// Currently, Coze_js is only ECDSA.  For ECDSA, only accept low-S
 		// signatures.  
 		if (!(await IsSigLowS(alg, sig))) {
 			return false;
