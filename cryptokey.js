@@ -80,7 +80,7 @@ var CryptoKey = {
 		jwk.kty = Alg.FamAlgs.EC;
 
 		let half = Alg.XSize(cozeKey.alg) / 2;
-		let xyab = await Coze.B64utToUint8Array(cozeKey.x);
+		let xyab = await Coze.B64ToUint8Array(cozeKey.x);
 		jwk.x = await Coze.ArrayBufferTo64ut(xyab.slice(0, half));
 		jwk.y = await Coze.ArrayBufferTo64ut(xyab.slice(half));
 
@@ -194,8 +194,8 @@ var CryptoKey = {
 		czk.alg = await CryptoKey.algFromCrv(exported.crv);
 		// Concatenate x and y, but concatenation is done at the byte level, so:
 		// unencode, concatenated, and encoded. 
-		let xui8 = Coze.B64utToUint8Array(exported.x);
-		let yui8 = Coze.B64utToUint8Array(exported.y);
+		let xui8 = Coze.B64ToUint8Array(exported.x);
+		let yui8 = Coze.B64ToUint8Array(exported.y);
 		var xyui8 = new Uint8Array([
 			...xui8,
 			...yui8,

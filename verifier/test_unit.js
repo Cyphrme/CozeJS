@@ -18,6 +18,52 @@ export {
  */
 
 /**@type {Test} */
+let t_Verify = {
+	"name": "VerifyCoze",
+	"func": test_Verify,
+	"golden": true,
+};
+let t_VerifyArray = {
+	"name": "VerifyCozeArray",
+	"func": test_VerifyArray,
+	"golden": true
+};
+let t_Sign = {
+	"name": "Sign",
+	"func": test_Sign,
+	"golden": true,
+};
+let t_SignCoze = {
+	"name": "SignCoze",
+	"func": test_SignCoze,
+	"golden": true,
+};
+let t_CryptoKeySign = {
+	"name": "CryptoKey",
+	"func": test_CryptoKeySign,
+	"golden": true
+};
+let t_Valid = {
+	"name": "Valid",
+	"func": test_Valid,
+	"golden": true,
+};
+let t_Correct = {
+	"name": "Correct",
+	"func": test_CozeKeyCorrect,
+	"golden": true
+};
+let t_Revoke = {
+	"name": "Revoke",
+	"func": test_Revoke,
+	"golden": true,
+};
+let t_Thumbprint = {
+	"name": "Thumbprint",
+	"func": test_Thumbprint,
+	"golden": true
+};
+
 let t_Param = {
 	"name": "Param",
 	"func": test_Param,
@@ -41,6 +87,11 @@ let t_Param = {
 {"Name":"SHAKE256","Genus":"SHA3","Family":"SHA","Use":"hsh","Hash":"SHAKE256","HashSize":64,"HashSizeB64":86}
 `
 };
+let t_CanonicalHash = {
+	"name": "CanonicalHash",
+	"func": test_CanonicalHashB64,
+	"golden": true
+};
 
 let t_Canon = {
 	"name": "Canon",
@@ -52,54 +103,9 @@ let t_CanonRepeat = {
 	"func": test_Canon_repeat,
 	"golden": '{"a":"a","b":"b","c":"c"}'
 };
-let t_Sign = {
-	"name": "Sign",
-	"func": test_Sign,
-	"golden": true,
-};
-let t_SignCoze = {
-	"name": "SignCoze",
-	"func": test_SignCoze,
-	"golden": true,
-};
-let t_Valid = {
-	"name": "Valid",
-	"func": test_Valid,
-	"golden": true,
-};
-let t_Revoke = {
-	"name": "Revoke",
-	"func": test_Revoke,
-	"golden": true,
-};
-let t_CryptoKeySign = {
-	"name": "CryptoKey",
-	"func": test_CryptoKeySign,
-	"golden": true
-};
-let t_Correct = {
-	"name": "Correct",
-	"func": test_CozeKeyCorrect,
-	"golden": true
-};
-let t_CanonicalHash = {
-	"name": "CanonicalHash",
-	"func": test_CanonicalHashB64,
-	"golden": true
-};
-let t_Thumbprint = {
-	"name": "Thumbprint",
-	"func": test_Thumbprint,
-	"golden": true
-};
 let t_Duplicate = {
 	"name": "Duplicate",
 	"func": test_Duplicate,
-	"golden": true
-};
-let t_VerifyArray = {
-	"name": "VerifyCozeArray",
-	"func": test_VerifyArray,
 	"golden": true
 };
 let t_LowS = {
@@ -107,6 +113,11 @@ let t_LowS = {
 	"func": test_LowS,
 	"golden": true
 };
+let t_B64Canonical = {
+	"name": "t_B64Canonical",
+	"func": test_B64Canonical,
+	"golden": true
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////    Testing Variables    /////////////////////////////////
@@ -114,7 +125,7 @@ let t_LowS = {
 
 // x": "2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjM"
 // "y": "kaI6t_R2qva1zcb18cG2v149Beb2YmyUd4rAXTlm6OY"
-let GoldenGoodCozeKey = {
+let GoldenCozeKey = {
 	"alg": "ES256",
 	"iat": 1623132000,
 	"kid": "Zami's Majuscule Key.",
@@ -133,11 +144,141 @@ let GoldenBadCozeKey = {
 	"x": "2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
 }
 
+let GoldenCoze = {
+	"pay": {
+		"msg": "Coze Rocks",
+		"alg": "ES256",
+		"iat": 1623132000,
+		"tmb": "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+		"typ": "cyphr.me/msg"
+	},
+	"sig": "Jl8Kt4nznAf0LGgO5yn_9HkGdY3ulvjg-NyRGzlmJzhncbTkFFn9jrwIwGoRAQYhjc88wmwFNH5u_rO56USo_w"
+}
+
+let GoldenCozeBad = {
+	"pay": {
+		"msg": "Coze Rocks",
+		"alg": "ES256",
+		"iat": 1623132000,
+		"tmb": "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+		"typ": "cyphr.me/msg"
+	},
+	"sig": "Jl8Kt4nznAf0LGgO5yn_9HkGdY3ulvjg-NyRGzlmJzhncbTkFFn9jrwIwGoRAQYhjc88wmwFNH5u_rO56USo_g"// bad signature, last byte is off by one bit.  
+}
+
 let Algs = ["ES256", "ES384", "ES512"];
 
 ////////////////////
 // Tests
 ////////////////////
+
+async function test_Verify() {
+	let v = await Coze.VerifyCoze(GoldenCoze, GoldenCozeKey)
+	console.log(v)
+	if (v !== true) {
+		return false
+	}
+	v = await Coze.VerifyCoze(GoldenCozeBad, GoldenCozeKey)
+	if (v !== false) {
+		return false
+	}
+
+	return true
+}
+
+// Tests VerifyCozeArray().
+async function test_VerifyArray() {
+	let cozeKey = await Coze.NewKey(Coze.Algs.ES256);
+	let cozies = [await Coze.SignCoze({
+				"pay": {
+					"msg": "First",
+					"iat": 1,
+				}
+			},
+			cozeKey
+		),
+		await Coze.SignCoze({
+				"pay": {
+					"msg": "Second",
+					"iat": 2,
+				}
+			},
+			cozeKey
+		),
+		await Coze.SignCoze({
+				"pay": {
+					"msg": "Third",
+					"iat": 3,
+				}
+			},
+			cozeKey
+		),
+	];
+	let v = await Coze.VerifyCozeArray(cozies, cozeKey);
+	if (v.FailedCount !== 0 || v.FailedCozies.length > 0 || !v.VerifiedAll || v.VerifiedCount !== 3) {
+		return false;
+	}
+	return true;
+}
+
+
+// test_Sign
+// Tests each support alg.
+// 1.) Coze.NewKey
+// 2.) Coze.Sign
+// 3.) Coze.Verify
+async function test_Sign() {
+	for (const alg of Algs) {
+		let cozeKey = await Coze.NewKey(alg);
+		let pay = `{"msg":"Test Message"}`;
+		let sig = await Coze.Sign(pay, cozeKey);
+
+		if ((await Coze.Verify(pay, cozeKey, sig)) !== true) {
+			console.error("Failed on alg: " + alg)
+			return false
+		}
+	}
+	return true;
+};
+
+// test_SignCoze
+// Tests each support alg.
+// 1.) Coze.NewKey
+// 2.) Coze.SignCoze
+// 3.) Coze.VerifyCoze
+async function test_SignCoze() {
+	for (const alg of Algs) {
+		let cozeKey = await Coze.NewKey(alg);
+		let coze = await Coze.SignCoze({
+				"pay": {
+					"msg": "Test Message",
+					"iat": 3,
+				}
+			},
+			cozeKey
+		);
+		if (true !== await Coze.VerifyCoze(coze, cozeKey)) {
+			return false
+		}
+	}
+	return true;
+};
+
+
+
+
+
+
+// test_Thumbprint tests generating a thumbprint for a known `tmb`.
+async function test_Thumbprint() {
+	let t = await Coze.Thumbprint(GoldenCozeKey);
+	if (t !== GoldenCozeKey.tmb) {
+		console.error("Thumbprint does not match: Calculated: " + t);
+		return false;
+	}
+	return true;
+}
+
 
 // Tests "Alg.Param".
 async function test_Param() {
@@ -225,59 +366,6 @@ async function test_CanonicalHashB64() {
 };
 
 
-// test_Sign
-// Tests each support alg.
-// 1.) Coze.NewKey
-// 2.) Coze.Sign
-// 3.) Coze.Verify
-async function test_Sign() {
-	for (const alg of Algs) {
-		let cozeKey = await Coze.NewKey(alg);
-		let pay = `{"msg":"Test Message"}`;
-		let sig = await Coze.Sign(pay, cozeKey);
-
-		if ((await Coze.Verify(pay, cozeKey, sig)) !== true) {
-			console.error("Failed on alg: " + alg)
-			return false
-		}
-	}
-	return true;
-};
-
-// test_SignCoze
-// Tests each support alg.
-// 1.) Coze.NewKey
-// 2.) Coze.SignCoze
-// 3.) Coze.VerifyCoze
-async function test_SignCoze() {
-	for (const alg of Algs) {
-		let cozeKey = await Coze.NewKey(alg);
-		let coze = await Coze.SignCoze({
-				"pay": {
-					"msg": "Test Message",
-					"iat": 3,
-				}
-			},
-			cozeKey
-		);
-		if (true !== await Coze.VerifyCoze(coze, cozeKey)) {
-			return false
-		}
-	}
-	return true;
-};
-
-// test_Thumbprint tests generating a thumbprint for a known `tmb`.
-async function test_Thumbprint() {
-	let t = await Coze.Thumbprint(GoldenGoodCozeKey);
-	if (t !== GoldenGoodCozeKey.tmb) {
-		console.error("Thumbprint does not match: Calculated: " + t);
-		return false;
-	}
-	return true;
-}
-
-
 // test_Duplicate tests duplicate object names in `coze` and `pay`.
 async function test_Duplicate() {
 	// In ES5, should fail since it's in strict mode.  In ES6, it seems to be
@@ -316,7 +404,7 @@ async function test_Duplicate() {
 
 // Tests Tests "Coze.Thumbprint" and "Coze.Valid"
 async function test_Valid() {
-	if (!await Coze.Valid(GoldenGoodCozeKey)) {
+	if (!await Coze.Valid(GoldenCozeKey)) {
 		return false;
 	}
 	if (await Coze.Valid(GoldenBadCozeKey)) {
@@ -329,8 +417,8 @@ async function test_Valid() {
 // test_Revoke test will test signing a message with a Coze Key, and validating
 // the coze that is generated.
 async function test_Revoke() {
-	let coze = await Coze.Revoke(GoldenGoodCozeKey, "Test revoke.");
-	if (!(await Coze.VerifyCoze(coze, GoldenGoodCozeKey)) || !Coze.IsRevoked(GoldenGoodCozeKey)) {
+	let coze = await Coze.Revoke(GoldenCozeKey, "Test revoke.");
+	if (!(await Coze.VerifyCoze(coze, GoldenCozeKey)) || !Coze.IsRevoked(GoldenCozeKey)) {
 		return false;
 	}
 	return true;
@@ -349,7 +437,7 @@ async function test_CozeKeyCorrect() {
 		[true, true, true, true, true, true], // ES384
 		[true, true, true, true, true, true], // ES512
 	];
-	let keys = [GoldenBadCozeKey, GoldenGoodCozeKey];
+	let keys = [GoldenBadCozeKey, GoldenCozeKey];
 	for (let alg of Algs) {
 		keys.push(await Coze.NewKey(alg));
 	}
@@ -415,40 +503,7 @@ async function test_CozeKeyCorrect() {
 	return true;
 }
 
-// Tests VerifyCozeArray().
-async function test_VerifyArray() {
-	let cozeKey = await Coze.NewKey(Coze.Algs.ES256);
-	let cozies = [await Coze.SignCoze({
-				"pay": {
-					"msg": "First",
-					"iat": 1,
-				}
-			},
-			cozeKey
-		),
-		await Coze.SignCoze({
-				"pay": {
-					"msg": "Second",
-					"iat": 2,
-				}
-			},
-			cozeKey
-		),
-		await Coze.SignCoze({
-				"pay": {
-					"msg": "Third",
-					"iat": 3,
-				}
-			},
-			cozeKey
-		),
-	];
-	let v = await Coze.VerifyCozeArray(cozies, cozeKey);
-	if (v.FailedCount !== 0 || v.FailedCozies.length > 0 || !v.VerifiedAll || v.VerifiedCount !== 3) {
-		return false;
-	}
-	return true;
-}
+
 
 
 /////////////////////////////////////
@@ -536,22 +591,89 @@ async function test_LowS() {
 	]
 
 	for (let c of highSCozies) {
-		let coze =  JSON.parse(c);
+		let coze = JSON.parse(c);
 
-		let v = await Coze.VerifyCoze(coze, GoldenGoodCozeKey);
+		let v = await Coze.VerifyCoze(coze, GoldenCozeKey);
 		if (v) {
-			return("High-S Should not be valid. ");
+			return ("High-S Should not be valid. ");
 		}
 
 		coze.sig = await Coze.SigToLowS("ES256", coze.sig);
-		v = await Coze.VerifyCoze(coze, GoldenGoodCozeKey);
+		v = await Coze.VerifyCoze(coze, GoldenCozeKey);
 		if (!v) {
-			return("High-S to low-S should be valid. ");
+			return ("High-S to low-S should be valid. ");
 		}
 
 	}
 
 	return true;
+}
+
+// Demonstrates Javascript's behavior for non-canonical base 64 encoding.
+// Enforcing canonical only stop malleability.  See
+// https://github.com/Cyphrme/Coze/issues/18. The last three characters of
+// example `tmb` is `hOk`, but `hOl` also decodes to the same byte value (in
+// Hex, `84E9`) even though they are different UTF-8 values. Tool for decoding
+// [hOk](https://convert.zamicol.com/#?inAlph=base64&in=hOk&outAlph=Hex) and
+// [hOl](https://convert.zamicol.com/#?inAlph=base64&in=hOl&outAlph=Hex).
+//
+// As an added concern, Go's base64 ignores new line and carriage return.
+// Thankfully, JSON unmarshal does not, making Coze's interpretation of base 64
+// non-malleable since Coze is JSON.
+async function test_B64Canonical() {
+	let ab1 = Coze.B64uToArrayBuffer("hOk") // correct
+
+	let failed = false
+	try {
+		let ab2 = Coze.B64uToArrayBuffer("hOl") // non-canonical
+	} catch (e) {
+		failed = true;
+	}
+	if (failed != true) {
+		return false
+	}
+
+	let nonCanonicalCozeSig = {
+		"pay": {
+			"msg": "Coze Rocks",
+			"alg": "ES256",
+			"iat": 1623132000,
+			"tmb": "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+			"typ": "cyphr.me/msg"
+		},
+		"sig": "Jl8Kt4nznAf0LGgO5yn_9HkGdY3ulvjg-NyRGzlmJzhncbTkFFn9jrwIwGoRAQYhjc88wmwFNH5u_rO56USo_x" // Non canonical sig (last "x" should be a "w")
+	}
+	failed = false
+	try {
+		failed = await Coze.VerifyCoze(nonCanonicalCozeSig, GoldenCozeKey)
+	} catch (e) {
+		failed = true
+	}
+	if (failed != true) {
+		return false
+	}
+
+	let nonCanonicalCozeTmb = {
+		"pay": {
+			"msg": "Coze Rocks",
+			"alg": "ES256",
+			"iat": 1623132000,
+			"tmb": "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOl", // Non canonical tmb (last "l" should be a "k")
+			"typ": "cyphr.me/msg"
+		},
+		"sig": "Jl8Kt4nznAf0LGgO5yn_9HkGdY3ulvjg-NyRGzlmJzhncbTkFFn9jrwIwGoRAQYhjc88wmwFNH5u_rO56USo_w"
+	}
+	failed = false
+	try {
+		failed = await Coze.VerifyCoze(nonCanonicalCozeTmb, GoldenCozeKey)
+	} catch (e) {
+		failed = true
+	}
+	if (failed != true) {
+		return false
+	}
+	return true;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -568,20 +690,22 @@ async function test_LowS() {
  * @type {TestsToRun}
  **/
 let TestsToRun = [
+	t_Verify,
+	t_VerifyArray,
+	t_Sign,
+	t_SignCoze,
+	t_CryptoKeySign,
+	t_Valid,
+	t_Correct,
+	t_Revoke,
+	t_Thumbprint,
 	t_Param,
 	t_Canon,
 	t_CanonRepeat,
-	t_Sign,
-	t_SignCoze,
-	t_Valid,
-	t_Revoke,
 	t_CanonicalHash,
-	t_Thumbprint,
 	t_Duplicate,
-	t_Correct,
-	t_VerifyArray,
-	t_CryptoKeySign,
 	t_LowS,
+	t_B64Canonical,
 ];
 
 
