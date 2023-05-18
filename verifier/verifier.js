@@ -78,7 +78,7 @@ async function Verify() {
 
 	try {
 		var key = JSON.parse(InputKey.value);
-		var verified = await Coze.VerifyCoze(coze, key);
+		var verified = await Coze.Verify(coze, key);
 
 		if (Coze.IsRevoked(key)) {
 			RvkMsg.innerText = "⚠️ Key is revoked since " + new Date(key.rvk * 1000).toLocaleString()

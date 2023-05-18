@@ -2,7 +2,7 @@
 
 import {
 	isEmpty,
-	VerifyCoze
+	Verify
 } from '../coze.js';
 
 export {
@@ -42,7 +42,7 @@ export {
  */
 async function VerifyCozeArray(coze, cozeKey) {
 	if (!Array.isArray(coze)) {
-		return VerifyCoze(coze, cozeKey)
+		return Verify(coze, cozeKey)
 	}
 
 	/** @type {VerifiedCozeArray} */
@@ -62,7 +62,7 @@ async function VerifyCozeArray(coze, cozeKey) {
 			c = c.coze;
 		}
 
-		let valid = await VerifyCoze(c, cozeKey);
+		let valid = await Verify(c, cozeKey);
 		if (valid) {
 			v.VerifiedCount++;
 		} else {

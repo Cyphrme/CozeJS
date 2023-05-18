@@ -6,12 +6,11 @@ import * as CZK from './key.js';
 import * as CTK from './cryptokey.js';
 
 export {
-	PayCanon,
 	Sign,
-	SignCoze,
+	SignPay,
 	SignCozeRaw,
 	Verify,
-	VerifyCoze,
+	VerifyPay,
 	Meta,
 
 	// Base conversion
@@ -22,12 +21,14 @@ export {
 
 	// Helpers
 	isEmpty,
+
+	PayCanon,
 }
 
 /**
  * @typedef {import('./typedefs.js').Key}            Key
  * @typedef {import('./typedefs.js').Alg}            Alg
- * @typedef {import('./typedefs.js').Msg}            Msg
+ * @typedef {import('./typedefs.js').Pay}            Pay
  * @typedef {import('./typedefs.js').Coze}           Coze
  * @typedef {import('./typedefs.js').Sig}            Sig
  * @typedef {import('./typedefs.js').Canon}          Canon
@@ -38,20 +39,6 @@ export {
 // PayCanon is the standard coze.pay fields.
 const PayCanon = ["alg", "iat", "tmb", "typ"];
 
-/**
- * Sign signs message with private Coze key and returns b64ut sig.
- * 
- * @param   {Msg}       message
- * @param   {Key}       cozeKey
- * @returns {Sig}
- * @throws  {Error}     Error, SyntaxError, DOMException, TypeError
- */
-async function Sign(message, cozeKey) {
-	return CTK.CryptoKey.SignBufferB64(
-		await CTK.CryptoKey.FromCozeKey(cozeKey),
-		await SToArrayBuffer(message)
-	);
-}
 
 /**
  * SignCoze signs in place coze.pay.  It populates/replaces alg and tmb using
@@ -68,7 +55,7 @@ async function Sign(message, cozeKey) {
  * @returns {Coze}                 Coze that may have been modified from given.
  * @throws  {Error}                Fails on invalid key, parse error, mismatch fields.
  */
-async function SignCoze(coze, cozeKey, canon) {
+async function Sign(coze, cozeKey, canon) {
 	if (CZK.IsRevoked(cozeKey)) {
 		throw new Error("SignCoze: Cannot sign with revoked key.");
 	}
@@ -81,9 +68,27 @@ async function SignCoze(coze, cozeKey, canon) {
 		coze.pay = await Can.Canonical(coze.pay, canon);
 	}
 
-	coze.sig = await Sign(JSON.stringify(coze.pay), cozeKey);
+	coze.sig = await SignPay(JSON.stringify(coze.pay), cozeKey);
 	return coze;
 }
+
+
+
+/**
+ * SignPay signs message with private Coze key and returns b64ut sig.
+ * 
+ * @param   {Pay}       pay      ay. e.g. `{"alg"...}` May also be any message.  
+ * @param   {Key}       cozeKey
+ * @returns {Sig}
+ * @throws  {Error}     Error, SyntaxError, DOMException, TypeError
+ */
+async function SignPay(pay, cozeKey) {
+	return CTK.CryptoKey.SignBufferB64(
+		await CTK.CryptoKey.FromCozeKey(cozeKey),
+		await SToArrayBuffer(pay)
+	);
+}
+
 
 
 /**
@@ -111,49 +116,50 @@ async function SignCozeRaw(coze, cozeKey, canon) {
 	if (!isEmpty(canon)) {
 		coze.pay = await Can.Canonical(coze.pay, canon);
 	}
-	coze.sig = await Sign(JSON.stringify(coze.pay), cozeKey);
+	coze.sig = await SignPay(JSON.stringify(coze.pay), cozeKey);
 	return coze;
 }
 
-/**
- * Verify verifies a `pay` with `sig` and returns whether or not the message is
- * verified. Verify does no Coze checks.  If checks are needed, use
- * VerifyCoze(); // TODO rename Verify to VerifyPay and rename VerifyCoze to Verify
- *
- * @param  {Msg}       message    Message string. Typically is pay. e.g. `{"alg"...}`
- * @param  {Key}       cozekey    Coze key for validation.
- * @param  {Sig}       sig        Signature.
- * @return {Boolean}
- * @throws {Error}
- */
-async function Verify(message, cozekey, sig) {
-	return CTK.CryptoKey.VerifyMsg(
-		cozekey.alg,
-		await CTK.CryptoKey.FromCozeKey(cozekey, true),
-		message,
-		sig,
-	);
-};
 
 /**
  * VerifyCoze returns a whether or not the Coze is valid. coze.sig must be set.
  * If set, pay.alg and pay.tmb must match with cozeKey.
- * // TODO rename Verify to VerifyPay and rename VerifyCoze to Verify
  * @param  {Coze}     coze         Coze with signed pay. e.g. `{"pay":..., "sig":...}`
  * @param  {Key}      [cozeKey]    Public Coze key for verification.
  * @param  {Sig}      [sig]        Signature.
  * @return {Boolean}
  * @throws {Error}
  */
-async function VerifyCoze(coze, cozeKey) {
+async function Verify(coze, cozeKey) {
 	if (!isEmpty(coze.pay.alg) && coze.pay.alg !== cozeKey.alg) {
 		throw new Error("VerifyCoze: Coze key alg mismatch with coze.pay.alg.");
 	}
 	if (!isEmpty(coze.pay.tmb) && coze.pay.tmb !== cozeKey.tmb) {
 		throw new Error("VerifyCoze: Coze key tmb mismatch with coze.pay.tmb.");
 	}
-	return Verify(JSON.stringify(coze.pay), cozeKey, coze.sig);
+	return VerifyPay(JSON.stringify(coze.pay), cozeKey, coze.sig);
 }
+
+
+/**
+ * VerifyPay verifies a `pay` with `sig` and returns whether or not the message is
+ * verified. Verify does no Coze checks.  If checks are needed, use
+ * Verify(); 
+ * @param  {Pay}       pay        pay. e.g. `{"alg"...}`  May also be any message.  
+ * @param  {Key}       cozekey    Coze key for validation.
+ * @param  {Sig}       sig        Signature.
+ * @return {Boolean}
+ * @throws {Error}
+ */
+async function VerifyPay(pay, cozekey, sig) {
+	return CTK.CryptoKey.VerifyMsg(
+		cozekey.alg,
+		await CTK.CryptoKey.FromCozeKey(cozekey, true),
+		pay,
+		sig,
+	);
+};
+
 
 /**
  * Meta generates coze.can, coze.cad, and if possible coze.czd. Coze.Pay must be

@@ -18,6 +18,16 @@ export {
  */
 
 /**@type {Test} */
+let t_Sign = {
+	"name": "Sign",
+	"func": test_Sign,
+	"golden": true,
+};
+let t_SignPay = {
+	"name": "Sign Pay",
+	"func": test_SignPay,
+	"golden": true,
+};
 let t_Verify = {
 	"name": "VerifyCoze",
 	"func": test_Verify,
@@ -27,16 +37,6 @@ let t_VerifyArray = {
 	"name": "VerifyCozeArray",
 	"func": test_VerifyArray,
 	"golden": true
-};
-let t_Sign = {
-	"name": "Sign",
-	"func": test_Sign,
-	"golden": true,
-};
-let t_SignCoze = {
-	"name": "SignCoze",
-	"func": test_SignCoze,
-	"golden": true,
 };
 let t_CryptoKeySign = {
 	"name": "CryptoKey",
@@ -63,7 +63,6 @@ let t_Thumbprint = {
 	"func": test_Thumbprint,
 	"golden": true
 };
-
 let t_Param = {
 	"name": "Param",
 	"func": test_Param,
@@ -92,7 +91,6 @@ let t_CanonicalHash = {
 	"func": test_CanonicalHashB64,
 	"golden": true
 };
-
 let t_Canon = {
 	"name": "Canon",
 	"func": test_Canon,
@@ -114,7 +112,7 @@ let t_LowS = {
 	"golden": true
 };
 let t_B64Canonical = {
-	"name": "t_B64Canonical",
+	"name": "B64 Canonical",
 	"func": test_B64Canonical,
 	"golden": true
 }
@@ -172,13 +170,56 @@ let Algs = ["ES256", "ES384", "ES512"];
 // Tests
 ////////////////////
 
+// test_SignCoze
+// Tests each support alg.
+// 1.) Coze.NewKey
+// 2.) Coze.SignCoze
+// 3.) Coze.VerifyCoze
+async function test_Sign() {
+	for (const alg of Algs) {
+		let cozeKey = await Coze.NewKey(alg);
+		let coze = await Coze.Sign({
+				"pay": {
+					"msg": "Test Message",
+					"iat": 3,
+				}
+			},
+			cozeKey
+		);
+		if (true !== await Coze.Verify(coze, cozeKey)) {
+			return false
+		}
+	}
+	return true;
+};
+
+
+// test_SignPay
+// Tests each support alg.
+// 1.) Coze.NewKey
+// 2.) Coze.Sign
+// 3.) Coze.Verify
+async function test_SignPay() {
+	for (const alg of Algs) {
+		let cozeKey = await Coze.NewKey(alg);
+		let pay = `{"msg":"Test Message"}`;
+		let sig = await Coze.SignPay(pay, cozeKey);
+
+		if ((await Coze.VerifyPay(pay, cozeKey, sig)) !== true) {
+			console.error("Failed on alg: " + alg)
+			return false
+		}
+	}
+	return true;
+};
+
 async function test_Verify() {
-	let v = await Coze.VerifyCoze(GoldenCoze, GoldenCozeKey)
+	let v = await Coze.Verify(GoldenCoze, GoldenCozeKey)
 	console.log(v)
 	if (v !== true) {
 		return false
 	}
-	v = await Coze.VerifyCoze(GoldenCozeBad, GoldenCozeKey)
+	v = await Coze.Verify(GoldenCozeBad, GoldenCozeKey)
 	if (v !== false) {
 		return false
 	}
@@ -189,7 +230,7 @@ async function test_Verify() {
 // Tests VerifyCozeArray().
 async function test_VerifyArray() {
 	let cozeKey = await Coze.NewKey(Coze.Algs.ES256);
-	let cozies = [await Coze.SignCoze({
+	let cozies = [await Coze.Sign({
 				"pay": {
 					"msg": "First",
 					"iat": 1,
@@ -197,7 +238,7 @@ async function test_VerifyArray() {
 			},
 			cozeKey
 		),
-		await Coze.SignCoze({
+		await Coze.Sign({
 				"pay": {
 					"msg": "Second",
 					"iat": 2,
@@ -205,7 +246,7 @@ async function test_VerifyArray() {
 			},
 			cozeKey
 		),
-		await Coze.SignCoze({
+		await Coze.Sign({
 				"pay": {
 					"msg": "Third",
 					"iat": 3,
@@ -220,51 +261,6 @@ async function test_VerifyArray() {
 	}
 	return true;
 }
-
-
-// test_Sign
-// Tests each support alg.
-// 1.) Coze.NewKey
-// 2.) Coze.Sign
-// 3.) Coze.Verify
-async function test_Sign() {
-	for (const alg of Algs) {
-		let cozeKey = await Coze.NewKey(alg);
-		let pay = `{"msg":"Test Message"}`;
-		let sig = await Coze.Sign(pay, cozeKey);
-
-		if ((await Coze.Verify(pay, cozeKey, sig)) !== true) {
-			console.error("Failed on alg: " + alg)
-			return false
-		}
-	}
-	return true;
-};
-
-// test_SignCoze
-// Tests each support alg.
-// 1.) Coze.NewKey
-// 2.) Coze.SignCoze
-// 3.) Coze.VerifyCoze
-async function test_SignCoze() {
-	for (const alg of Algs) {
-		let cozeKey = await Coze.NewKey(alg);
-		let coze = await Coze.SignCoze({
-				"pay": {
-					"msg": "Test Message",
-					"iat": 3,
-				}
-			},
-			cozeKey
-		);
-		if (true !== await Coze.VerifyCoze(coze, cozeKey)) {
-			return false
-		}
-	}
-	return true;
-};
-
-
 
 
 
@@ -418,7 +414,8 @@ async function test_Valid() {
 // the coze that is generated.
 async function test_Revoke() {
 	let coze = await Coze.Revoke(GoldenCozeKey, "Test revoke.");
-	if (!(await Coze.VerifyCoze(coze, GoldenCozeKey)) || !Coze.IsRevoked(GoldenCozeKey)) {
+	console.log(coze);
+	if (!(await Coze.Verify(coze, GoldenCozeKey)) || !Coze.IsRevoked(GoldenCozeKey)) {
 		return false;
 	}
 	return true;
@@ -574,9 +571,9 @@ async function test_LowS() {
 	for (const alg of Algs) {
 		let cozeKey = await Coze.NewKey(alg);
 		let pay = `{"msg":"Test Message"}`;
-		let sig = await Coze.Sign(pay, cozeKey);
+		let sig = await Coze.SignPay(pay, cozeKey);
 
-		if ((await Coze.Verify(pay, cozeKey, sig)) !== true) {
+		if ((await Coze.VerifyPay(pay, cozeKey, sig)) !== true) {
 			console.error("Failed on alg: " + alg)
 			return false
 		}
@@ -593,13 +590,13 @@ async function test_LowS() {
 	for (let c of highSCozies) {
 		let coze = JSON.parse(c);
 
-		let v = await Coze.VerifyCoze(coze, GoldenCozeKey);
+		let v = await Coze.Verify(coze, GoldenCozeKey);
 		if (v) {
 			return ("High-S Should not be valid. ");
 		}
 
 		coze.sig = await Coze.SigToLowS("ES256", coze.sig);
-		v = await Coze.VerifyCoze(coze, GoldenCozeKey);
+		v = await Coze.Verify(coze, GoldenCozeKey);
 		if (!v) {
 			return ("High-S to low-S should be valid. ");
 		}
@@ -645,7 +642,7 @@ async function test_B64Canonical() {
 	}
 	failed = false
 	try {
-		failed = await Coze.VerifyCoze(nonCanonicalCozeSig, GoldenCozeKey)
+		failed = await Coze.Verify(nonCanonicalCozeSig, GoldenCozeKey)
 	} catch (e) {
 		failed = true
 	}
@@ -665,7 +662,7 @@ async function test_B64Canonical() {
 	}
 	failed = false
 	try {
-		failed = await Coze.VerifyCoze(nonCanonicalCozeTmb, GoldenCozeKey)
+		failed = await Coze.Verify(nonCanonicalCozeTmb, GoldenCozeKey)
 	} catch (e) {
 		failed = true
 	}
@@ -693,7 +690,7 @@ let TestsToRun = [
 	t_Verify,
 	t_VerifyArray,
 	t_Sign,
-	t_SignCoze,
+	t_SignPay,
 	t_CryptoKeySign,
 	t_Valid,
 	t_Correct,

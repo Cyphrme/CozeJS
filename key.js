@@ -86,8 +86,8 @@ async function Valid(privateCozeKey) {
 	}
 	try {
 		let msg = `7AtyaCHO2BAG06z0W1tOQlZFWbhxGgqej4k9-HWP3DE-zshRbrE-69DIfgY704_FDYez7h_rEI1WQVKhv5Hd5Q`;
-		let sig = await Coze.Sign(msg, privateCozeKey);
-		return Coze.Verify(msg, privateCozeKey, sig);
+		let sig = await Coze.SignPay(msg, privateCozeKey);
+		return Coze.VerifyPay(msg, privateCozeKey, sig);
 	} catch (e) {
 		//console.debug("Valid error: " + e);
 		return false;
@@ -242,7 +242,7 @@ async function Revoke(cozeKey, msg) {
 	// key.revoke and then set back afterward, otherwise set key with new revoke. 
 	let prevRvk = cozeKey.rvk;
 	delete cozeKey.rvk;
-	coze = await Coze.SignCoze(coze, cozeKey);
+	coze = await Coze.Sign(coze, cozeKey);
 	if (prevRvk !== undefined) {
 		cozeKey.rvk = prevRvk;
 	} else {
