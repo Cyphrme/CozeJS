@@ -21,10 +21,10 @@ export {
  * - FailedCount:     Number of objects that failed verification.
  * - FailedCozies:    Objects that failed verification.
  * - FailedPositions: Position in input array of all failed cozies.  
- * @typedef  {Object}    VerifiedCozeArray
- * @property {Boolean}   VerifiedAll
- * @property {Number}    VerifiedCount
- * @property {Number}    FailedCount
+ * @typedef  {object}    VerifiedCozeArray
+ * @property {boolean}   VerifiedAll
+ * @property {number}    VerifiedCount
+ * @property {number}    FailedCount
  * @property {Coze[]}    FailedCozies
  * @property {Number[]}  FailedPositions
  */
@@ -38,7 +38,7 @@ export {
  * @param  {coze[]}           coze       Array of Coze objects.
  * @param  {Key}              cozeKey    Javascript object. Coze Key.
  * @return {VerifiedArray}
- * @throws {Error}
+ * @throws {error}
  */
 async function VerifyCozeArray(coze, cozeKey) {
 	if (!Array.isArray(coze)) {

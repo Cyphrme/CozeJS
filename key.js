@@ -22,23 +22,21 @@ export {
 }
 
 /**
- * @typedef {import('./typedefs.js').B64}  B64
- * @typedef {import('./typedefs.js').Alg}  Alg
- * @typedef {import('./typedefs.js').Use}  Use
- * @typedef {import('./typedefs.js').Sig}  Sig
- * @typedef {import('./typedefs.js').Key}  Key
- * @typedef {import('./typedefs.js').Time} Time
+@typedef {import('./typedefs.js').Tmb}  Tmb
+@typedef {import('./typedefs.js').Alg}  Alg
+@typedef {import('./typedefs.js').Use}  Use
+@typedef {import('./typedefs.js').Sig}  Sig
+@typedef {import('./typedefs.js').Key}  Key
  */
 
 // Coze key Thumbprint Canons.
 const TmbCanon = ["alg", "x"];
 
 /**
- * NewKey returns a new Coze key.
- * If no alg is given, the returned key will be an 'ES256' key.
- * 
- * @param   {Alg}     [alg=ES256] - Alg of the key to generate. (e.g. "ES256")
- * @returns {Key}
+NewKey returns a new Coze key.
+If no alg is given, the returned key will be an 'ES256' key.
+@param   {Alg}     [alg=ES256] - Alg of the key to generate. (e.g. "ES256")
+@returns {Key}
  */
 async function NewKey(alg) {
 	if (isEmpty(alg)) {
@@ -59,12 +57,11 @@ async function NewKey(alg) {
 }
 
 /**
- * Thumbprint generates and returns a B64 Coze key thumbprint.
- * Fails on empty 'alg' or 'x'.
- *
- * @param   {Key} cozeKey
- * @returns {B64}
- * @throws  {Error}
+Thumbprint calculates and returns a B64 Coze key thumbprint. Fails on empty
+'alg' or 'x'.
+@param   {Key}   cozeKey
+@returns {Tmb}
+@throws  {error}
  */
 async function Thumbprint(cozeKey) {
 	if (isEmpty(cozeKey.alg) || isEmpty(cozeKey.x)) {
@@ -74,10 +71,9 @@ async function Thumbprint(cozeKey) {
 };
 
 /**
- * Valid returns true only for a valid private Coze key.
- *
- * @param   {Key}      privateCozeKey  Private Coze key.
- * @returns {Boolean}
+Valid returns true only for a valid private Coze key.
+@param   {Key}      privateCozeKey  Private Coze key.
+@returns {boolean}
  */
 async function Valid(privateCozeKey) {
 	if (isEmpty(privateCozeKey.d)) {
@@ -95,27 +91,26 @@ async function Valid(privateCozeKey) {
 }
 
 /**
- * Correct checks for the correct construction of a Coze key, but may return
- * true on cryptographically invalid public keys.  Key must have `alg` and at
- * least one of `tmb`, `x`, and `d`. Using input information, if it is possible
- * to definitively know the given key is incorrect, Correct returns false, but
- * if it's plausible it's correct, Correct returns true. Correct answers the
- * question: "Is the given Coze key reasonable using the information provided?".
- * Correct is useful for sanity checking public keys without signed messages,
- * sanity checking `tmb` only keys, and validating private keys. Use function
- * "Verify" instead for verifying public keys when a signed message is
- * available. Correct is considered an advanced function. Please understand it
- * thoroughly before use.
- * 
- * Correct:
- * 
- * 1. Checks the length of `x` and/or `tmb` against `alg`.
- * 2. If `x` and `tmb` are present, verifies correct `tmb`.
- * 3. If `d` is present, verifies correct `tmb` and `x` if present, and verifies
- * the key by verifying a generated signature.
- * 
- * @param   {Key}     ck
- * @returns {Boolean}
+Correct checks for the correct construction of a Coze key, but may return
+true on cryptographically invalid public keys.  Key must have `alg` and at
+least one of `tmb`, `x`, and `d`. Using input information, if it is possible
+to definitively know the given key is incorrect, Correct returns false, but
+if it's plausible it's correct, Correct returns true. Correct answers the
+question: "Is the given Coze key reasonable using the information provided?".
+Correct is useful for sanity checking public keys without signed messages,
+sanity checking `tmb` only keys, and validating private keys. Use function
+"Verify" instead for verifying public keys when a signed message is
+available. Correct is considered an advanced function. Please understand it
+thoroughly before use.
+
+Correct:
+
+1. Checks the length of `x` and/or `tmb` against `alg`.
+2. If `x` and `tmb` are present, verifies correct `tmb`.
+3. If `d` is present, verifies correct `tmb` and `x` if present, and verifies
+the key by verifying a generated signature.
+@param   {Key}     ck
+@returns {boolean}
  */
 async function Correct(ck) {
 	if (typeof ck !== "object") {
@@ -172,12 +167,6 @@ async function Correct(ck) {
 		}
 	}
 
-	// // Sanity check - No keys from the future allowed.
-	// if (ck.iat > Math.round((Date.now() / 1000))) {
-	// 	console.error("Correct: cannot have iat greater than present time");
-	// }
-
-
 	// If private key, validate by signing and verifying.
 	// `x` must also be populated, for cryptokey, since we do not have RecalcX().
 	if (!isDEmpty && !isXEmpty) {
@@ -218,13 +207,12 @@ async function Correct(ck) {
 
 
 /**
- * Revoke generates a self revoke message and sets the input key as revoked.
- * 'rvk' will be set on given cozeKey.
- * 
- * @param   {Key}       cozeKey  Private Coze key.
- * @param   {String}    [msg]    Optional, human readable non programmatic reason for revoking the key.
- * @returns {Coze}               Signed revoke Coze.
- * @throws  {Error}              Fails if cryptoKeyPrivate is nil or invalid.
+Revoke generates a self revoke message and sets the input key as revoked.
+'rvk' will be set on given cozeKey.
+@param   {Key}       cozeKey  Private Coze key.
+@param   {string}    [msg]    Optional, human readable non programmatic reason for revoking the key.
+@returns {Coze}               Signed revoke Coze.
+@throws  {error}              Fails if cryptoKeyPrivate is nil or invalid.
  */
 async function Revoke(cozeKey, msg) {
 	if (isEmpty(cozeKey)) {
@@ -253,16 +241,15 @@ async function Revoke(cozeKey, msg) {
 };
 
 /**
- * IsRevoked returns true if a key or a coze is marked as revoked. `rvk` should
- * be an integer Unix timestamp, however this function also checks for the
- * string "true" as well as the bool `true`.
- *
- * Messages self-revoking keys must have `rvk` with an integer value greater
- * than 0.  
- *
- * @param   {Key|Coze}       cozeKey  Coze key or coze object.
- * @param   {String}         [msg]    Optional reason for revoking the key.
- * @returns {Boolean}
+IsRevoked returns true if a key or a coze is marked as revoked. `rvk` should
+be an integer Unix timestamp, however this function also checks for the
+string "true" as well as the bool `true`.
+
+Messages self-revoking keys must have `rvk` with an integer value greater
+than 0.  
+@param   {Key|Coze}       cozeKey  Coze key or coze object.
+@param   {string}         [msg]    Optional reason for revoking the key.
+@returns {boolean}
  */
 function IsRevoked(cozeKey) {
 	if (isEmpty(cozeKey.rvk) || !(parseInt(cozeKey.rvk) > 0)) {

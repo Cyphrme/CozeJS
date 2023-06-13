@@ -32,7 +32,7 @@ var CryptoKey = {
 	 * 
 	 * @param  {Alg}           [alg=ES256] - Alg of the key to generate. (e.g. "ES256")
 	 * @return {CryptoKeyPair}
-	 * @throws {Error}         Error, SyntaxError, DOMException, TypeError
+	 * @throws {error}         Error, SyntaxError, DOMException, TypeError
 	 */
 	New: async function(alg) {
 		if (isEmpty(alg)) {
@@ -64,9 +64,9 @@ var CryptoKey = {
 	 * Throws error on invalid keys.
 	 * 
 	 * @param   {Key}        cozeKey          Coze key.
-	 * @param   {Boolean}    [public=false]   Return only a public key.
+	 * @param   {boolean}    [public=false]   Return only a public key.
 	 * @returns {CryptoKey}
-	 * @throws  {Error}                Error, SyntaxError, DOMException, TypeError
+	 * @throws  {error}                Error, SyntaxError, DOMException, TypeError
 	 */
 	FromCozeKey: async function(cozeKey, onlyPublic) {
 		if (Alg.Genus(cozeKey.alg) != Alg.GenAlgs.ECDSA) {
@@ -182,7 +182,7 @@ var CryptoKey = {
 	 * 
 	 * @param   {CryptoKey}   cryptoKey 
 	 * @returns {Key}
-	 * @throws  {Error}
+	 * @throws  {error}
 	 */
 	ToCozeKey: async function(cryptoKey) {
 		let exported = await window.crypto.subtle.exportKey(
@@ -227,7 +227,7 @@ var CryptoKey = {
 	 * @param   {CryptoKey}      cryptoKey
 	 * @param   {ArrayBuffer}    payloadBuffer
 	 * @returns {ArrayBuffer}
-	 * @throws  {Error}
+	 * @throws  {error}
 	 */
 	SignBuffer: async function(cryptoKey, arrayBuffer) {
 		let alg = await CryptoKey.algFromCrv(cryptoKey.algorithm.namedCurve);
@@ -264,7 +264,7 @@ var CryptoKey = {
 	 * Coze uses UTF-8.
 	 * 
 	 * @param   {CryptoKey} cryptoKey      Private key used for signing.
-	 * @param   {String}    utf8           String to sign.
+	 * @param   {string}    utf8           String to sign.
 	 * @returns {B64}
 	 */
 	SignString: async function(cryptoKey, utf8) {
@@ -280,7 +280,7 @@ var CryptoKey = {
 	 * @param   {CryptoKey}   cryptoKey           Javascript CryptoKey.
 	 * @param   {ArrayBuffer} sig                 Signature.
 	 * @param   {ArrayBuffer} msg                 Message.
-	 * @returns {Boolean}
+	 * @returns {boolean}
 	 */
 	VerifyArrayBuffer: async function(alg, cryptoKey, msg, sig) {
 		// Currently, Coze_js is only ECDSA.  For ECDSA, only accept low-S
@@ -310,7 +310,7 @@ var CryptoKey = {
 	 * @param   {CryptoKey}  cryptoKey         Javascript CryptoKey.
 	 * @param   {Msg}        msg               String that was signed.
 	 * @param   {Sig}        sig               B64 signature.
-	 * @returns {Boolean}
+	 * @returns {boolean}
 	 */
 	VerifyMsg: async function(alg, cryptoKey, msg, sig) {
 		return CryptoKey.VerifyArrayBuffer(alg, cryptoKey, await Coze.SToArrayBuffer(msg), await Coze.B64uToArrayBuffer(sig));
@@ -338,7 +338,7 @@ var CryptoKey = {
 	 * 
 	 * @param   {CryptoKey} CryptoKey  CryptoKey Javascript object.
 	 * @returns {Hsh}
-	 * @throws  {Error}                Fails if alg is not supported.
+	 * @throws  {error}                Fails if alg is not supported.
 	 */
 	GetSignHashAlgoFromCryptoKey: async function(cryptoKey) {
 		return Alg.HashAlg(await CryptoKey.algFromCrv(cryptoKey.algorithm.namedCurve));
@@ -350,7 +350,7 @@ var CryptoKey = {
 	 * 
 	 * @param   {Crv}     src    Curve type. E.g. "P-256".
 	 * @returns {Alg}
-	 * @throws  {Error}
+	 * @throws  {error}
 	 */
 	algFromCrv: async function(crv) {
 		switch (crv) {
@@ -380,7 +380,7 @@ var CryptoKey = {
  * @param   {Alg}        alg
  * @param   {BigInt}     s
  * @returns {BigInt}
- * @throws  {Error}
+ * @throws  {error}
  */
 function IsLowS(alg, s) {
 	if (typeof s !== "bigint") {
@@ -395,7 +395,7 @@ function IsLowS(alg, s) {
  * @param   {Alg}       alg
  * @param   {BigInt}    s
  * @returns {BigInt}
- * @throws  {Error}
+ * @throws  {error}
  */
 function toLowS(alg, s) {
 	if (typeof s !== "bigint") {
@@ -413,7 +413,7 @@ function toLowS(alg, s) {
  * @param   {Alg}      alg
  * @param   {Sig}      sig
  * @returns {Sig}
- * @throws  {Error}
+ * @throws  {error}
  */
 async function SigToLowS(alg, sig) {
 	let ab = await Coze.B64uToArrayBuffer(sig);
@@ -425,8 +425,8 @@ async function SigToLowS(alg, sig) {
  * 
  * @param   {Alg}      alg
  * @param   {Sig}      sig
- * @returns {Boolean}
- * @throws  {Error}
+ * @returns {boolean}
+ * @throws  {error}
  */
 async function IsSigLowS(alg, sig) {
 	let bigIntS = await sigToS(alg, sig);
@@ -438,7 +438,7 @@ async function IsSigLowS(alg, sig) {
  * @param   {Alg}            alg    Return only a public key.
  * @param   {ArrayBuffer}    sig    Sig ArrayBuffer from subtle crypto
  * @returns {BigInt}
- * @throws  {Error}         Error, SyntaxError, DOMException, TypeError
+ * @throws  {error}         Error, SyntaxError, DOMException, TypeError
  */
 function sigToS(alg, sig) {
 	let half = Alg.SigSize(alg) / 2;
@@ -452,7 +452,7 @@ function sigToS(alg, sig) {
  * @param   {Alg}            alg    Return only a public key.
  * @param   {ArrayBuffer}    sig    Sig ArrayBuffer from subtle crypto
  * @returns {ArrayBuffer}
- * @throws  {Error}         Error, SyntaxError, DOMException, TypeError
+ * @throws  {error}         Error, SyntaxError, DOMException, TypeError
  */
 async function sigToLowSArrayBuffer(alg, sig) {
 	let half = Alg.SigSize(alg) / 2;

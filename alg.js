@@ -24,17 +24,17 @@ export {
 }
 
 /**
-* @typedef {import('./typedefs.js').Params}  Params
-* @typedef {import('./typedefs.js').Alg}     Alg
-* @typedef {import('./typedefs.js').Gen}     Gen
-* @typedef {import('./typedefs.js').Fam}     Fam
-* @typedef {import('./typedefs.js').Hsh}     Hsh
-* @typedef {import('./typedefs.js').Crv}     Crv
-* @typedef {import('./typedefs.js').Use}     Use
+@typedef {import('./typedefs.js').Params}  Params
+@typedef {import('./typedefs.js').Alg}     Alg
+@typedef {import('./typedefs.js').Hsh}     Hsh
+@typedef {import('./typedefs.js').Gen}     Gen
+@typedef {import('./typedefs.js').Fam}     Fam
+@typedef {import('./typedefs.js').Crv}     Crv
+@typedef {import('./typedefs.js').Use}     Use
 */
 
 /**
-* Algs holds all of the supported Coze algorithms.
+Algs holds all of the supported Coze algorithms.
 */
 const Algs = {
 	UnknownAlg: "UnknownAlg",
@@ -58,7 +58,7 @@ const Algs = {
 };
 
 /**
-* FamAlgs holds all of the supported Coze Family algorithms.
+FamAlgs holds all of the supported Coze Family algorithms.
 */
 const FamAlgs = {
 	EC: "EC",
@@ -67,7 +67,7 @@ const FamAlgs = {
 };
 
 /**
-* GenAlgs holds all of the supported Coze Genus algorithms.
+GenAlgs holds all of the supported Coze Genus algorithms.
 */
 const GenAlgs = {
 	ECDSA: "ECDSA",
@@ -77,7 +77,7 @@ const GenAlgs = {
 };
 
 /**
-* Curves holds all of the supported Coze curve algorithms.
+Curves holds all of the supported Coze curve algorithms.
 */
 const Curves = {
 	P224: "P-224",
@@ -89,7 +89,7 @@ const Curves = {
 };
 
 /**
-* Uses holds all of the supported Coze uses.
+Uses holds all of the supported Coze uses.
 */
 const Uses = {
 	Sig: "sig",
@@ -98,14 +98,13 @@ const Uses = {
 };
 
 /**
-* Param reports all relevant values for a given `alg`.
-* Returns Params object with populated values for relevant fields.
-* All functions defined in this file will throw an error when given an
-* unsupported algorithm.
-* 
-* @param   {Alg}      alg
-* @returns {Params}
-* @throws  {Error}
+Param reports all relevant values for a given `alg`.
+Returns Params object with populated values for relevant fields.
+All functions defined in this file will throw an error when given an
+unsupported algorithm.
+@param   {Alg}      alg
+@returns {Params}
+@throws  {error}
 */
 function Params(alg) {
 	/** @type {Params} */
@@ -135,12 +134,11 @@ function Params(alg) {
 }
 
 /**
-* Genus returns the genus for an alg (ECDSA, EdDSA, SHA-2, SHA-3).
-* See notes on the Go implementation of Coze for more on genus.
-*
-* @param   {Alg}   alg
-* @returns {Gen}
-* @throws  {Error}
+Genus returns the genus for an alg (ECDSA, EdDSA, SHA-2, SHA-3).
+See notes on the Go implementation of Coze for more on genus.
+@param   {Alg}   alg
+@returns {Gen}
+@throws  {error}
 */
 function Genus(alg) {
 	switch (alg) {
@@ -171,12 +169,11 @@ function Genus(alg) {
 }
 
 /**
-* Family returns the family for an alg (EC and SHA).
-* See notes on the Go implementation of Coze for more on family.
-*
-* @param   {Alg}     alg
-* @returns {Fam}
-* @throws  {Error}
+Family returns the family for an alg (EC and SHA).
+See notes on the Go implementation of Coze for more on family.
+@param   {Alg}     alg
+@returns {Fam}
+@throws  {error}
 */
 function Family(alg) {
 	switch (alg) {
@@ -205,13 +202,12 @@ function Family(alg) {
 }
 
 /**
-* Hash returns the hashing algorithm for the given algorithm.  A hash alg can
-* return itself.
-* See notes on the Go implementation of Coze for more.
-*
-* @param   {Alg}   alg 
-* @returns {Hsh}
-* @throws  {Error}
+Hash returns the hashing algorithm for the given algorithm.  A hash alg can
+return itself.
+See notes on the Go implementation of Coze for more.
+@param   {Alg}   alg 
+@returns {Hsh}
+@throws  {error}
 */
 function HashAlg(alg) {
 	switch (alg) {
@@ -248,18 +244,17 @@ function HashAlg(alg) {
 }
 
 /**
-* HashSize returns the hashing algorithm size for the given algorithm in bytes
-* E.g. 32.
-* 
-* SHAKE128 has 128 bits of pre-collision resistance and a capacity of 256,
-* although it has arbitrary output size. SHAKE256 has 256 bits of pre-collision
-* resistance and a capacity of 512, although it has arbitrary output size.
-* 
-* See notes on the Go implementation of Coze for more.
-* 
-* @param   {Alg}     alg
-* @returns {Number}
-* @throws  {Error}
+HashSize returns the hashing algorithm size for the given algorithm in bytes
+E.g. 32.
+
+SHAKE128 has 128 bits of pre-collision resistance and a capacity of 256,
+although it has arbitrary output size. SHAKE256 has 256 bits of pre-collision
+resistance and a capacity of 512, although it has arbitrary output size.
+
+See notes on the Go implementation of Coze for more.
+@param   {Alg}     alg
+@returns {number}
+@throws  {error}
 */
 function HashSize(alg) {
 	switch (HashAlg(alg)) {
@@ -283,16 +278,15 @@ function HashSize(alg) {
 }
 
 /**
-* SigSize returns the signature size for the given algorithm in bytes.
-* 
-* Curve P-521 uses 521 bits.  This is then padded up the the nearest byte (528)
-* for R and S. 132 = (528*2)/8
-* 
-* See notes on the Go implementation of Coze for more.
-* 
-* @param   {Alg}      alg
-* @returns {Number}
-* @throws  {Error}
+SigSize returns the signature size for the given algorithm in bytes.
+
+Curve P-521 uses 521 bits.  This is then padded up the the nearest byte (528)
+for R and S. 132 = (528*2)/8
+
+See notes on the Go implementation of Coze for more.
+@param   {Alg}      alg
+@returns {number}
+@throws  {error}
 */
 function SigSize(alg) {
 	switch (alg) {
@@ -314,17 +308,16 @@ function SigSize(alg) {
 }
 
 /**
-* XSize returns the signature size for the given signature algorithm in bytes.
-* E.g. 64.
-* 
-* ES512 uses Curve P-521 that's 521 bits is padded up the the nearest byte
-* (528) for R and S. (528*2)/8 = 132.
-*
-* See notes on the Go implementation of Coze for more.
-* 
-* @param   {Alg}     alg
-* @returns {Number}
-* @throws  {Error}
+XSize returns the signature size for the given signature algorithm in bytes.
+E.g. 64.
+
+ES512 uses Curve P-521 that's 521 bits is padded up the the nearest byte
+(528) for R and S. (528*2)/8 = 132.
+
+See notes on the Go implementation of Coze for more.
+@param   {Alg}     alg
+@returns {number}
+@throws  {error}
 */
 function XSize(alg) {
 	switch (alg) {
@@ -347,17 +340,16 @@ function XSize(alg) {
 }
 
 /**
-* DSize returns the signature size for the given signature algorithm in bytes.
-* E.g. 64.
-* 
-* ES512 uses Curve P-521 that's 521 bits is padded up the the nearest byte
-* (528). (528)/8 = 66.
-*
-* See notes on the Go implementation of Coze for more.
-* 
-* @param   {Alg}     alg
-* @returns {Number}
-* @throws  {Error}
+DSize returns the signature size for the given signature algorithm in bytes.
+E.g. 64.
+
+ES512 uses Curve P-521 that's 521 bits is padded up the the nearest byte
+(528). (528)/8 = 66.
+
+See notes on the Go implementation of Coze for more.
+@param   {Alg}     alg
+@returns {number}
+@throws  {error}
 */
 function DSize(alg) {
 	switch (alg) {
@@ -379,14 +371,13 @@ function DSize(alg) {
 }
 
 /**
-* Curve returns the curve algorithm for the given signature algorithm.
-* E.g. "P-256".
-* 
-* See notes on the Go implementation of Coze for more.
-*
-* @param   {Alg}    alg 
-* @returns {Crv}
-* @throws  {Error}
+Curve returns the curve algorithm for the given signature algorithm.
+E.g. "P-256".
+
+See notes on the Go implementation of Coze for more.
+@param   {Alg}    alg 
+@returns {Crv}
+@throws  {error}
 */
 function Curve(alg) {
 	switch (alg) {
@@ -409,15 +400,14 @@ function Curve(alg) {
 }
 
 /**
-* Use returns the use for the given algorithm.  Only "sig", "enc", and "dig"
-* are currently valid.
-* Encryption ("enc") is currently not supported in Coze.
-* 
-* See notes on the Go implementation of Coze for more.
-* 
-* @param   {Alg}     alg 
-* @returns {Use}
-* @throws  {Error}
+Use returns the use for the given algorithm.  Only "sig", "enc", and "dig"
+are currently valid.
+Encryption ("enc") is currently not supported in Coze.
+
+See notes on the Go implementation of Coze for more.
+@param   {Alg}     alg 
+@returns {Use}
+@throws  {error}
 */
 function Use(alg) {
 	switch (Genus(alg)) {
@@ -431,7 +421,6 @@ function Use(alg) {
 			return Uses.Hsh;
 	}
 }
-
 
 const order = { 
 	"ES224" : BigInt("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D"),
@@ -447,11 +436,11 @@ const halfOrder = {
 	"ES512" : order["ES512"] >> BigInt(1),
 }
 
-/* Curve Order returns the Curve's order.  
-* 
-* @param   {Alg}     Alg 
-* @returns {BigInt}
-* @throws  {Error}
+/**
+Curve Order returns the Curve's order.  
+@param   {Alg}     Alg 
+@returns {BigInt}
+@throws  {error}
 */
 function CurveOrder(alg) {
 	switch (alg) {
@@ -462,11 +451,11 @@ function CurveOrder(alg) {
 	}
 }
 
-/* Curve Order returns the Curve's order halved.  
-* 
-* @param   {Alg}     Alg 
-* @returns {BigInt}
-* @throws  {Error}
+/** 
+Curve Order returns the Curve's order halved.  
+@param   {Alg}     Alg 
+@returns {BigInt}
+@throws  {error}
 */
 function CurveHalfOrder(alg) {
 	switch (alg) {

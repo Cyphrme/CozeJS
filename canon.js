@@ -15,30 +15,30 @@ export {
 }
 
 /**
- * @typedef {import('./typedefs.js').Hsh}     Hsh
- * @typedef {import('./typedefs.js').Dig}     Dig
- * @typedef {import('./typedefs.js').Canon}   Canon
+@typedef {import('./typedefs.js').Hsh}     Hsh
+@typedef {import('./typedefs.js').Dig}     Dig
+@typedef {import('./typedefs.js').Can}     Can
  */
 
 /**
- * Canon returns the canon from first level object keys.
- * 
- * @param   {Object} obj      Object to create the canon from.
- * @returns {Canon}
+Canon returns the canon from first level object keys.
+@param   {object} obj      Object to create the canon from.
+@returns {Can}
  */
 function Canon(obj) {
 	return Object.keys(obj);
 }
 
 /**
- * Canon canonicalizes the first level of "object" into the form of "can".
- *
- * Arrays must be converted to objects in order to deduplicate fields.
- * 
- * @param   {Object}  object    Object to be canonicalized.
- * @param   {Canon}   [can]     Array|Object canon.
- * @returns {Object}            Canonicalized object.
- * @throws  {Error}             Fails on invalid canon.
+Canon canonicalizes the first level of "object" into the form of "can". 
+
+Can may be an array or object.  If object, only the first level keys are used as
+canon.  If given cannon is array, array is converted to object for field
+deduplication.
+@param   {object}         object    Object to be canonicalized.
+@param   {Can|object}     [can]     Array|Object canon.
+@returns {object}                   Canonicalized object.
+@throws  {error}                    Fails on invalid canon.
  */
 async function Canonical(object, can) {
 	if (isEmpty(can)) {
@@ -52,26 +52,24 @@ async function Canonical(object, can) {
 }
 
 /**
- * CanonicalS canonicalizes obj and returns a JSON string.
- *
- * @param   {Object}   obj
- * @param   {Canon}    [canon]
- * @returns {String}
- * @throws  {Error}
+CanonicalS canonicalizes obj and returns a JSON string.
+@param   {object}   obj
+@param   {Can}      [can]
+@returns {string}
+@throws  {error}
  */
 async function CanonicalS(obj, can) {
 	return JSON.stringify(await Canonical(obj, can));
 }
 
 /**
- * CanonicalHash puts input into canonical form and returns the array buffer of
- * the digest.
- *
- * @param   {Object}        input     Object being canonicalized.
- * @param   {Hsh}           hash      Must be SubtleCrypto.digest() compatible (i.e. 'SHA-256').
- * @param   {Canon}         [canon]   Array for canonical keys.
- * @returns {ArrayBuffer}             ArrayBuffer of the digest.
- * @throws  {Error}                   Fails if hash is not given or invalid for SubtleCrypto.digest().
+CanonicalHash puts input into canonical form and returns the array buffer of
+the digest.
+@param   {object}        input     Object being canonicalized.
+@param   {Hsh}           hash      Must be SubtleCrypto.digest() compatible (i.e. 'SHA-256').
+@param   {Can}           [can]     Array for canonical keys.
+@returns {ArrayBuffer}             ArrayBuffer of the digest.
+@throws  {error}                   Fails if hash is not given or invalid for SubtleCrypto.digest().
  */
 async function CanonicalHash(input, hash, can) {
 	if (isEmpty(hash)) {
@@ -81,13 +79,12 @@ async function CanonicalHash(input, hash, can) {
 }
 
 /**
- * CanonicalHash64 wraps CanonicalHash to return b64ut digest. 
- *
- * @param   {Object}         obj
- * @param   {Hsh}            hash
- * @param   {Canon}          [canon]
- * @returns {Dig}
- * @throws  {Error}
+CanonicalHash64 wraps CanonicalHash to return b64ut digest. 
+@param   {object}         obj
+@param   {Hsh}            hash
+@param   {Can}            [canon]
+@returns {Dig}
+@throws  {error}
  */
 async function CanonicalHash64(obj, hash, can) {
 	return await ArrayBufferTo64ut(await CanonicalHash(obj, hash, can));
