@@ -252,38 +252,48 @@ function ArrayBufferTo64ut(buffer) {
 /**
 isEmpty is a helper function to determine if thing is empty. 
 
-Objects are empty if they have no keys. (Returns len === 0 of object keys.)
-
 Functions are considered always not empty. 
+
+Arrays: Only if an array has no elements it is empty.  isEmpty does not check
+element contents.  (For item contents, do: `isEmpty(array[0])`)
+
+Objects are empty if they have no keys. (Returns len === 0 of object keys.)
 
 NaN returns true.  (NaN === NaN is always false, as NaN is never equal to
 anything. NaN is the only JavaScript value unequal to itself.)
 
 Don't use on HTMl elements. For HTML elements, use the !== equality check
-(element !== null).
+(element !== null). TODO fix this
 
 Cannot use CryptoKey with this function since (len === 0) always. 
 
-@param   {any}     thing    Thing you wish was empty.
-@returns {boolean}
- */
+@param   {any}     thing    Thing you wish was empty.  
+@returns {boolean}          Boolean.  
+*/
 function isEmpty(thing) {
 	if (typeof thing === 'function') {
-		return false;
+		return false
+	}
+
+	if (Array.isArray(thing)) {
+		if(thing.length == 0){
+			return true
+		}
 	}
 
 	if (thing === Object(thing)) {
 		if (Object.keys(thing).length === 0) {
-			return true;
+			return true
 		}
-		return false;
+		return false
 	}
 
 	if (!isBool(thing)) {
-		return true;
+		return true
 	}
 	return false
-};
+}
+
 
 /**
 Helper function to determine boolean.  
@@ -292,10 +302,9 @@ Javascript, instead of considering everything false except a few key words,
 decided everything is true instead of a few key words.  Why?  Because
 Javascript.  This function inverts that assumption, so that everything can be
 considered false unless true. 
-
 @param   {any}      bool   Thing that you wish was a boolean.  
-@returns {boolean}
- */
+@returns {boolean}         An actual boolean.
+*/
 function isBool(bool) {
 	if (
 		bool === false ||
@@ -311,7 +320,7 @@ function isBool(bool) {
 		Number.isNaN(bool) ||
 		bool === Object(bool) // isObject
 	) {
-		return false;
+		return false
 	}
-	return true;
-};
+	return true
+}

@@ -215,8 +215,8 @@ async function test_SignPay() {
 
 async function test_Verify() {
 	let v = await Coze.Verify(GoldenCoze, GoldenCozeKey)
-	console.log(v)
 	if (v !== true) {
+		console.error(`Coze test: Failed on Verify: Coze: ${GoldenCoze}, Key: ${GoldenCozeKey}`)
 		return false
 	}
 	v = await Coze.Verify(GoldenCozeBad, GoldenCozeKey)
@@ -414,7 +414,6 @@ async function test_Valid() {
 // the coze that is generated.
 async function test_Revoke() {
 	let coze = await Coze.Revoke(GoldenCozeKey, "Test revoke.");
-	console.log(coze);
 	if (!(await Coze.Verify(coze, GoldenCozeKey)) || !Coze.IsRevoked(GoldenCozeKey)) {
 		return false;
 	}
