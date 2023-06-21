@@ -15,9 +15,9 @@ export {
 }
 
 /**
-@typedef {import('./typedefs.js').Hsh}     Hsh
-@typedef {import('./typedefs.js').Dig}     Dig
-@typedef {import('./typedefs.js').Can}     Can
+@typedef {import('./typedef.js').Hsh}     Hsh
+@typedef {import('./typedef.js').Dig}     Dig
+@typedef {import('./typedef.js').Can}     Can
  */
 
 /**

@@ -26,15 +26,15 @@ export {
 }
 
 /**
-@typedef {import('./typedefs.js').Alg}            Alg
-@typedef {import('./typedefs.js').B64}            B64
-@typedef {import('./typedefs.js').Coze}           Coze
-@typedef {import('./typedefs.js').Pay}            Pay
-@typedef {import('./typedefs.js').Sig}            Sig
-@typedef {import('./typedefs.js').Key}            Key
-@typedef {import('./typedefs.js').Canon}          Canon
-@typedef {import('./typedefs.js').Meta}           Meta
-@typedef {import('./typedefs.js').VerifiedArray}  VerifiedArray
+@typedef {import('./typedef.js').Alg}            Alg
+@typedef {import('./typedef.js').B64}            B64
+@typedef {import('./typedef.js').Coze}           Coze
+@typedef {import('./typedef.js').Pay}            Pay
+@typedef {import('./typedef.js').Sig}            Sig
+@typedef {import('./typedef.js').Key}            Key
+@typedef {import('./typedef.js').Can}            Can
+@typedef {import('./typedef.js').Meta}           Meta
+@typedef {import('./typedef.js').VerifiedArray}  VerifiedArray
  */
 
 // PayCanon is the standard coze.pay fields.
@@ -56,6 +56,7 @@ fields since this is disallowed in Javascript.
 @throws  {error}                Fails on invalid key, parse error, mismatch fields.
  */
 async function Sign(coze, cozeKey, canon) {
+	console.log()
 	if (CZK.IsRevoked(cozeKey)) {
 		throw new Error("SignCoze: Cannot sign with revoked key.");
 	}
@@ -159,33 +160,69 @@ async function VerifyPay(pay, cozekey, sig) {
 };
 
 
+
 /**
-Meta generates coze.can, coze.cad, and if possible coze.czd. Coze.Pay must be
-set, and either Coze.Pay.Alg or parameter alg must be set. If Coze.Sig is
-populated, czd is set. 
+Meta calculates a Meta object with the fields [alg,iat,tmb,typ,can,cad,sig,czd]
+derived from the given coze. Meta always calculates `can`, `cad`, if populated
+from pay [alg,iat,tmb,typ] are copied, and calculates `czd` if `sig` is set. Pay
+must be set even if it is an empty object. Either Coze.Pay.Alg or parameter alg
+must be set. If Coze.Sig is populated, `czd` is set. The empty coze (A coze with
+an empty pay but sig is set) is legitimate input for Meta.  
+
+Errors when
+1. Pay doesn't exist. 
+2. No alg is given (both coze.pay.alg and alg are empty).
+3. Pay.Alg doesn't match parameter alg if both are set.
 
 Meta does no cryptographic verification.
 @param  {Coze}      coze     coze.
 @param  {Alg}       [alg]    coze.pay.alg takes precedence.
-@return {Meta}               Meta Coze (sets fields [can, cad, czd]).
-@throws {error}              Fails on JSON parse exception.
+@return {Meta}               Meta object [alg,iat,tmb,typ,can,cad,sig,czd].
+@throws {error}              
  */
 async function Meta(coze, alg) {
-	if (!isEmpty(coze.pay.alg)) {
-		var hashAlg = Enum.HashAlg(coze.pay.alg);
-	} else {
-		hashAlg = Enum.HashAlg(alg);
+	if (isEmpty(coze.pay)) {
+		throw new Error("Meta: coze.pay must exist.")
 	}
-	coze.can = await Can.Canon(coze.pay);
-	coze.cad = await Can.CanonicalHash64(coze.pay, hashAlg);
-	if (!isEmpty(coze.sig)) {
-		coze.czd = await Can.CanonicalHash64({
-			cad: coze.cad,
-			sig: coze.sig
-		}, hashAlg);
+	if (isEmpty(alg)) {
+		if (isEmpty(coze.pay.alg)) {
+			throw new Error("Meta: either coze.pay.alg or parameter alg must be set.")
+		}
+		alg = coze.pay.alg
+	}
+	if (!isEmpty(coze.pay.alg) && alg !== coze.pay.alg){
+		throw new Error(`Meta: coze.pay.alg (${coze.pay.alg}) and parameter alg (${alg}) do not match. `)
 	}
 
-	return coze;
+	let meta = {}
+	meta.alg = Enum.HashAlg(alg);
+	if (!isEmpty(coze.pay.alg)) {
+		meta.alg = Enum.HashAlg(coze.pay.alg);
+	}
+	if (isEmpty(meta.alg)) {
+		throw new Error("Meta: no alg provided for coze.")
+	}
+	if (!isEmpty(coze.pay.iat)) {
+		meta.iat = coze.pay.iat
+	}
+	if (!isEmpty(coze.pay.tmb)) {
+		meta.tmb = coze.pay.tmb
+	}
+	if (!isEmpty(coze.pay.typ)) {
+		meta.typ = coze.pay.typ
+	}
+
+	meta.can = await Can.Canon(coze.pay);
+	meta.cad = await Can.CanonicalHash64(coze.pay, meta.alg);
+	if (!isEmpty(coze.sig)) {
+		meta.sig = coze.sig
+		meta.czd = await Can.CanonicalHash64({
+			cad: meta.cad,
+			sig: meta.sig
+		}, meta.alg);
+	}
+
+	return meta;
 }
 
 
@@ -276,7 +313,7 @@ function isEmpty(thing) {
 	}
 
 	if (Array.isArray(thing)) {
-		if(thing.length == 0){
+		if (thing.length == 0) {
 			return true
 		}
 	}

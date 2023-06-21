@@ -5,8 +5,7 @@
 import * as Coze from './coze_all.min.js';
 
 export {
-	// For `browsertestjs`
-	TestBrowserJS,
+	TestBrowserJS, // Export "TestBrowserJS" is expected by `browsertestjs`
 };
 
 /**
@@ -86,6 +85,11 @@ let t_Param = {
 {"Name":"SHAKE256","Genus":"SHA3","Family":"SHA","Use":"hsh","Hash":"SHAKE256","HashSize":64,"HashSizeB64":86}
 `
 };
+let t_Meta = {
+	"name": "Meta",
+	"func": test_Meta,
+	"golden": true
+};
 let t_CanonicalHash = {
 	"name": "CanonicalHash",
 	"func": test_CanonicalHashB64,
@@ -117,9 +121,9 @@ let t_B64Canonical = {
 	"golden": true
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//////////////////////    Testing Variables    /////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+////////////////////
+// Testing Variables
+////////////////////
 
 // x": "2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjM"
 // "y": "kaI6t_R2qva1zcb18cG2v149Beb2YmyUd4rAXTlm6OY"
@@ -161,7 +165,7 @@ let GoldenCozeBad = {
 		"tmb": "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
 		"typ": "cyphr.me/msg"
 	},
-	"sig": "Jl8Kt4nznAf0LGgO5yn_9HkGdY3ulvjg-NyRGzlmJzhncbTkFFn9jrwIwGoRAQYhjc88wmwFNH5u_rO56USo_g"// bad signature, last byte is off by one bit.  
+	"sig": "Jl8Kt4nznAf0LGgO5yn_9HkGdY3ulvjg-NyRGzlmJzhncbTkFFn9jrwIwGoRAQYhjc88wmwFNH5u_rO56USo_g" // bad signature, last byte is off by one bit.  
 }
 
 let Algs = ["ES256", "ES384", "ES512"];
@@ -285,6 +289,81 @@ async function test_Param() {
 	}
 	return results;
 };
+
+
+// This test should closely resemble the Go implementation test
+// `ExampleCoze_MetaWithAlg`
+async function test_Meta() {
+	let meta = JSON.stringify(await Coze.Meta(GoldenCoze))
+	let goldenMeta = `{"alg":"SHA-256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg","can":["msg","alg","iat","tmb","typ"],"cad":"Ie3xL77AsiCcb4r0pbnZJqMcfSBqg5Lk0npNJyJ9BC4","sig":"Jl8Kt4nznAf0LGgO5yn_9HkGdY3ulvjg-NyRGzlmJzhncbTkFFn9jrwIwGoRAQYhjc88wmwFNH5u_rO56USo_w","czd":"TnRe4DRuGJlw280u3pGhMDOIYM7ii7J8_PhNuSScsIU"}`
+	if (meta != goldenMeta) {
+		throw new Error("meta and goldenMeta not equal")
+	}
+
+	// No coze.pay.alg but parameter alg given.
+	meta = JSON.stringify(await Coze.Meta(JSON.parse(`{
+    "pay": {
+        "msg": "Coze Rocks",
+        "iat": 1623132000,
+        "tmb": "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+        "typ": "cyphr.me/msg"
+    },
+    "sig": "reOiKUO--OwgTNlYpKN60_gZARnW5X6PmQw4zWYbz2QryetRg_qS4KvwEVe1aiSAsWlkVA3MqYuaIM5ihY_8NQ"
+}`), "ES256"))
+	console.log(meta);
+	goldenMeta = `{"alg":"SHA-256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg","can":["msg","iat","tmb","typ"],"cad":"K6MVyIFqhBhLvNafZ8sMCRpCqR1oeFpowi7j8P1uE0M","sig":"reOiKUO--OwgTNlYpKN60_gZARnW5X6PmQw4zWYbz2QryetRg_qS4KvwEVe1aiSAsWlkVA3MqYuaIM5ihY_8NQ","czd":"g6kRqHesiST6L38eZPcTk4Bq-fCxtbD6jTvRS8LKMv8"}`
+	if (meta != goldenMeta) {
+		throw new Error("meta and goldenMeta not equal")
+	}
+
+	// No coze.pay.alg but parameter alg given. No coze.sig so coze.sig must not be
+	// populated and coze.czd not calculated. 
+	meta = JSON.stringify(await Coze.Meta(JSON.parse(`{
+    "pay": {
+        "msg": "Coze Rocks",
+        "iat": 1623132000,
+        "tmb": "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+        "typ": "cyphr.me/msg"
+    }
+}`), "ES256"))
+	console.log(meta);
+	goldenMeta = `{"alg":"SHA-256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg","can":["msg","iat","tmb","typ"],"cad":"K6MVyIFqhBhLvNafZ8sMCRpCqR1oeFpowi7j8P1uE0M"}`
+	if (meta != goldenMeta) {
+		throw new Error("meta and goldenMeta not equal")
+	}
+
+	// Meta with mismatched alg must fail
+	let errored = false
+	try {
+		meta = JSON.stringify(await Coze.Meta(GoldenCoze, "ES512"))
+	} catch (e) {
+		errored = true
+	}
+	if (errored == false) {
+		throw new Error("Coze.Meta must fail if coze.pay.alg is mismatched with alg. ")
+	}
+
+	// Meta with no alg must fail.  
+	errored = false
+	try {
+		meta = await Coze.Meta(JSON.parse(`{
+	"pay": {
+			"msg": "Coze Rocks",
+			"iat": 1623132000,
+			"tmb": "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+			"typ": "cyphr.me/msg"
+	},
+	"sig": "reOiKUO--OwgTNlYpKN60_gZARnW5X6PmQw4zWYbz2QryetRg_qS4KvwEVe1aiSAsWlkVA3MqYuaIM5ihY_8NQ"
+}`))
+	} catch (e) {
+		errored = true
+	}
+	if (errored == false) {
+		throw new Error("Coze.Meta must fail if coze.pay.alg is unpopulated and alg is not provided.")
+	}
+
+	return true
+}
 
 // test_Canon tests CanonicalS(). Checks for UTF-8 order, removal of
 // whitespace (outside of values), and has trailing commas.  
@@ -696,6 +775,7 @@ let TestsToRun = [
 	t_Revoke,
 	t_Thumbprint,
 	t_Param,
+	t_Meta,
 	t_Canon,
 	t_CanonRepeat,
 	t_CanonicalHash,

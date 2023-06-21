@@ -22,11 +22,11 @@ export {
 }
 
 /**
-@typedef {import('./typedefs.js').Tmb}  Tmb
-@typedef {import('./typedefs.js').Alg}  Alg
-@typedef {import('./typedefs.js').Use}  Use
-@typedef {import('./typedefs.js').Sig}  Sig
-@typedef {import('./typedefs.js').Key}  Key
+@typedef {import('./typedef.js').Tmb}  Tmb
+@typedef {import('./typedef.js').Alg}  Alg
+@typedef {import('./typedef.js').Use}  Use
+@typedef {import('./typedef.js').Sig}  Sig
+@typedef {import('./typedef.js').Key}  Key
  */
 
 // Coze key Thumbprint Canons.

@@ -15,13 +15,13 @@ export {
 };
 
 /**
- * @typedef {import('./typedefs.js').B64}      B64
- * @typedef {import('./typedefs.js').Alg}      Alg
- * @typedef {import('./typedefs.js').Sig}      Sig
- * @typedef {import('./typedefs.js').Hsh}      Hsh
- * @typedef {import('./typedefs.js').Key}      Key
- * @typedef {import('./typedefs.js').Crv}      Crv
- * @typedef {import('./typedefs.js').Msg}      Msg
+ * @typedef {import('./typedef.js').B64}      B64
+ * @typedef {import('./typedef.js').Alg}      Alg
+ * @typedef {import('./typedef.js').Sig}      Sig
+ * @typedef {import('./typedef.js').Hsh}      Hsh
+ * @typedef {import('./typedef.js').Key}      Key
+ * @typedef {import('./typedef.js').Crv}      Crv
+ * @typedef {import('./typedef.js').Msg}      Msg
  */
 
 

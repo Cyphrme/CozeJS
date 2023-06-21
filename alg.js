@@ -24,13 +24,13 @@ export {
 }
 
 /**
-@typedef {import('./typedefs.js').Params}  Params
-@typedef {import('./typedefs.js').Alg}     Alg
-@typedef {import('./typedefs.js').Hsh}     Hsh
-@typedef {import('./typedefs.js').Gen}     Gen
-@typedef {import('./typedefs.js').Fam}     Fam
-@typedef {import('./typedefs.js').Crv}     Crv
-@typedef {import('./typedefs.js').Use}     Use
+@typedef {import('./typedef.js').Params}  Params
+@typedef {import('./typedef.js').Alg}     Alg
+@typedef {import('./typedef.js').Hsh}     Hsh
+@typedef {import('./typedef.js').Gen}     Gen
+@typedef {import('./typedef.js').Fam}     Fam
+@typedef {import('./typedef.js').Crv}     Crv
+@typedef {import('./typedef.js').Use}     Use
 */
 
 /**
@@ -207,7 +207,7 @@ return itself.
 See notes on the Go implementation of Coze for more.
 @param   {Alg}   alg 
 @returns {Hsh}
-@throws  {error}
+@throws  {error}  Unsupported algorithm.  
 */
 function HashAlg(alg) {
 	switch (alg) {
