@@ -310,7 +310,6 @@ async function test_Meta() {
     },
     "sig": "reOiKUO--OwgTNlYpKN60_gZARnW5X6PmQw4zWYbz2QryetRg_qS4KvwEVe1aiSAsWlkVA3MqYuaIM5ihY_8NQ"
 }`), "ES256"))
-	console.log(meta);
 	goldenMeta = `{"alg":"SHA-256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg","can":["msg","iat","tmb","typ"],"cad":"K6MVyIFqhBhLvNafZ8sMCRpCqR1oeFpowi7j8P1uE0M","sig":"reOiKUO--OwgTNlYpKN60_gZARnW5X6PmQw4zWYbz2QryetRg_qS4KvwEVe1aiSAsWlkVA3MqYuaIM5ihY_8NQ","czd":"g6kRqHesiST6L38eZPcTk4Bq-fCxtbD6jTvRS8LKMv8"}`
 	if (meta != goldenMeta) {
 		throw new Error("meta and goldenMeta not equal")
@@ -326,7 +325,6 @@ async function test_Meta() {
         "typ": "cyphr.me/msg"
     }
 }`), "ES256"))
-	console.log(meta);
 	goldenMeta = `{"alg":"SHA-256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg","can":["msg","iat","tmb","typ"],"cad":"K6MVyIFqhBhLvNafZ8sMCRpCqR1oeFpowi7j8P1uE0M"}`
 	if (meta != goldenMeta) {
 		throw new Error("meta and goldenMeta not equal")
