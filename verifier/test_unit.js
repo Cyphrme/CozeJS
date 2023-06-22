@@ -9,12 +9,12 @@ export {
 };
 
 /**
- * @typedef {import('./browsertestjs/test.js').Test}            Test
- * @typedef {import('./browsertestjs/test.js').Tests}           Tests
- * @typedef {import('./browsertestjs/test.js').TestsToRun}      TestsToRun
- * @typedef {import('./browsertestjs/test.js').TestGUIOptions}  TestGUIOptions
- * @typedef {import('./browsertestjs/test.js').TestBrowserJS}   TestBrowserJS
- */
+@typedef {import('./browsertestjs/test.js').Test}            Test
+@typedef {import('./browsertestjs/test.js').Tests}           Tests
+@typedef {import('./browsertestjs/test.js').TestsToRun}      TestsToRun
+@typedef {import('./browsertestjs/test.js').TestGUIOptions}  TestGUIOptions
+@typedef {import('./browsertestjs/test.js').TestBrowserJS}   TestBrowserJS
+*/
 
 /**@type {Test} */
 let t_Sign = {
@@ -757,11 +757,10 @@ async function test_B64Canonical() {
 
 
 /**
- * TestsToRun must be declared at the bottom of the file, as the variables
- * cannot be accessed before initialization.
- * 
- * @type {TestsToRun}
- **/
+TestsToRun must be declared at the bottom of the file, as the variables
+cannot be accessed before initialization.
+@type {TestsToRun}
+**/
 let TestsToRun = [
 	t_Verify,
 	t_VerifyArray,
