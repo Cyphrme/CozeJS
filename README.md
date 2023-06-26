@@ -32,7 +32,7 @@ The simple verifier is self-contained in `/verifier`.
 
 - [Cyphr.me   hosted Power  Coze Verifier](https://cyphr.me/coze)
 - [Cyphr.me   hosted Simple Coze Verifier](https://cyphr.me/coze_verifier_simple/coze.html)
-- [Github.com hosted Simple Coze Verifier](https://cyphrme.github.io/Coze_js/verifier/coze.html)
+- [Github.com hosted Simple Coze Verifier](https://cyphrme.github.io/CozeJS/verifier/coze.html)
 
 To run the simple verifier locally, especially useful for local development, use
 the Go server.  
@@ -48,7 +48,7 @@ And then go to https://localhost:8082/coze.html in your browser.
 ## Testing
 Coze uses <a href="https://github.com/Cyphrme/BrowserTestJS">BrowserTestJS</a>
 for running unit tests in the browser. The test can run as a [Github
-page.](https://cyphrme.github.io/Coze_js/verifier/browsertest/browsertest.html)
+page.](https://cyphrme.github.io/CozeJS/verifier/browsertest/browsertest.html)
 
 For local development, use the Go server. 
 
@@ -85,7 +85,7 @@ Then go to `https://localhost:8082`.
 	Ed25519.  Also, [Paul has implemented Ed25519ph](
 	https://github.com/paulmillr/noble-ed25519/issues/63).
 
-- TODO use Paul's curves library.  Currenty ESM builds are "broken", and we'll
+- TODO use Paul's curves library.  Currently ESM builds are "broken", and we'll
   wait for it to be polished.  (The imports are using Typescript `@` imports and
   not resolving to ESM files.)
 
@@ -101,7 +101,7 @@ Then go to `https://localhost:8082`.
 
 
 ----------------------------------------------------------------------
-# Attribution, Trademark notice, and License
+# Attribution, Trademark Notice, and License
 Coze and CozeJS is released under The 3-Clause BSD License. 
 
 "Cyphr.me" is a trademark of Cypherpunk, LLC. The Cyphr.me logo is all rights
