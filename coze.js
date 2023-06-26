@@ -303,7 +303,6 @@ Don't use on HTMl elements. For HTML elements, use the !== equality check
 (element !== null). TODO fix this
 
 Cannot use CryptoKey with this function since (len === 0) always. 
-
 @param   {any}     thing    Thing you wish was empty.  
 @returns {boolean}          Boolean.  
 */
@@ -333,7 +332,7 @@ function isEmpty(thing) {
 
 
 /**
-Helper function to determine boolean.  
+isBool is a helper function to determine boolean.  
 
 Javascript, instead of considering everything false except a few key words,
 decided everything is true instead of a few key words.  Why?  Because
