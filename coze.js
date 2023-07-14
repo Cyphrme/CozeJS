@@ -184,24 +184,21 @@ async function Meta(coze, alg) {
 	if (isEmpty(coze.pay)) {
 		throw new Error("Meta: coze.pay must exist.")
 	}
+	let meta = {}
+
+	// Alg check section. Assumes later call to CanonicalHas64() errors on bad or empty alg.  
 	if (isEmpty(alg)) {
 		if (isEmpty(coze.pay.alg)) {
 			throw new Error("Meta: either coze.pay.alg or parameter alg must be set.")
 		}
-		alg = coze.pay.alg
+		meta.alg = coze.pay.alg
+	} else {
+		meta.alg = alg
 	}
-	if (!isEmpty(coze.pay.alg) && alg !== coze.pay.alg){
+	if (!isEmpty(coze.pay.alg) && meta.alg !== coze.pay.alg) {
 		throw new Error(`Meta: coze.pay.alg (${coze.pay.alg}) and parameter alg (${alg}) do not match. `)
 	}
 
-	let meta = {}
-	meta.alg = Enum.HashAlg(alg);
-	if (!isEmpty(coze.pay.alg)) {
-		meta.alg = Enum.HashAlg(coze.pay.alg);
-	}
-	if (isEmpty(meta.alg)) {
-		throw new Error("Meta: no alg provided for coze.")
-	}
 	if (!isEmpty(coze.pay.iat)) {
 		meta.iat = coze.pay.iat
 	}
@@ -212,14 +209,14 @@ async function Meta(coze, alg) {
 		meta.typ = coze.pay.typ
 	}
 
-	meta.can = await Can.Canon(coze.pay);
-	meta.cad = await Can.CanonicalHash64(coze.pay, meta.alg);
+	meta.can = await Can.Canon(coze.pay)
+	meta.cad = await Can.CanonicalHash64(coze.pay, Enum.HashAlg(meta.alg));
 	if (!isEmpty(coze.sig)) {
 		meta.sig = coze.sig
 		meta.czd = await Can.CanonicalHash64({
 			cad: meta.cad,
 			sig: meta.sig
-		}, meta.alg);
+		}, Enum.HashAlg(meta.alg));
 	}
 
 	return meta;

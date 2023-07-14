@@ -17,11 +17,12 @@ If using Go, esbuild can be installed with the following.
 go install github.com/evanw/esbuild/cmd/esbuild@v0.15.8
 ```
 
-[Alternatively, see esbuild's installation instructions][1]
+[Alternatively, see esbuild's installation instructions.][1]
+Also, [Coze JS npm](https://www.npmjs.com/package/coze).  
 
 ##### Create the Coze distribution file. 
 
-(See [join.js](join.js) for more instructions)
+(See [join.js](join.js) for more instructions.)
 ```
 esbuild join.js --bundle --format=esm --minify --outfile=coze.min.js
 cp coze.min.js verifier/coze.min.js

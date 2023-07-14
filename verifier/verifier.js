@@ -199,32 +199,26 @@ function Reset() {
 
 async function Meta(coze, key) {
 	console.log(coze, key);
+	let meta = {}
 
 	// Set fields for meta.  May be empty on "contextual" cozies.
-	if (!('alg' in coze.pay) && ('alg' in key)) {
-		coze = await Coze.Meta(coze, key.alg);
+	if ('alg' in key) {
+		meta = await Coze.Meta(coze, key.alg);
 	} else {
-		coze = await Coze.Meta(coze);
+		meta = await Coze.Meta(coze);
 	}
 
-	if (!('alg' in coze.pay) && ('alg' in key)) {
-		console.log(coze);
-		coze.pay.alg = key.alg
-	}
+	console.log(meta)
 
-	if (!('tmb' in coze.pay) && ('tmb' in key)) {
-		coze.pay.tmb = key.tmb
+	MetaAlg.textContent = meta.alg;
+	if (('iat' in meta)) {
+		MetaIat.textContent = meta.iat;
+		MetaIats.textContent = "(" + new Date(meta.iat * 1000).toLocaleString() + ")";
 	}
-
-	MetaAlg.textContent = coze.pay.alg;
-	if (('iat' in coze.pay)) {
-		MetaIat.textContent = coze.pay.iat;
-		MetaIats.textContent = "(" + new Date(coze.pay.iat * 1000).toLocaleString() + ")";
-	}
-	MetaTmb.textContent = coze.pay.tmb;
-	MetaTyp.textContent = coze.pay.typ;
-	MetaCan.textContent = JSON.stringify(coze.can);
-	MetaCad.textContent = coze.cad;
-	MetaSig.textContent = coze.sig;
-	MetaCzd.textContent = coze.czd;
+	MetaTmb.textContent = meta.tmb;
+	MetaTyp.textContent = meta.typ;
+	MetaCan.textContent = JSON.stringify(meta.can);
+	MetaCad.textContent = meta.cad;
+	MetaSig.textContent = meta.sig;
+	MetaCzd.textContent = meta.czd;
 }

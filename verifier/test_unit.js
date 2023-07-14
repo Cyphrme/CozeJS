@@ -295,7 +295,7 @@ async function test_Param() {
 // `ExampleCoze_MetaWithAlg`
 async function test_Meta() {
 	let meta = JSON.stringify(await Coze.Meta(GoldenCoze))
-	let goldenMeta = `{"alg":"SHA-256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg","can":["msg","alg","iat","tmb","typ"],"cad":"Ie3xL77AsiCcb4r0pbnZJqMcfSBqg5Lk0npNJyJ9BC4","sig":"Jl8Kt4nznAf0LGgO5yn_9HkGdY3ulvjg-NyRGzlmJzhncbTkFFn9jrwIwGoRAQYhjc88wmwFNH5u_rO56USo_w","czd":"TnRe4DRuGJlw280u3pGhMDOIYM7ii7J8_PhNuSScsIU"}`
+	let goldenMeta = `{"alg":"ES256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg","can":["msg","alg","iat","tmb","typ"],"cad":"Ie3xL77AsiCcb4r0pbnZJqMcfSBqg5Lk0npNJyJ9BC4","sig":"Jl8Kt4nznAf0LGgO5yn_9HkGdY3ulvjg-NyRGzlmJzhncbTkFFn9jrwIwGoRAQYhjc88wmwFNH5u_rO56USo_w","czd":"TnRe4DRuGJlw280u3pGhMDOIYM7ii7J8_PhNuSScsIU"}`
 	if (meta != goldenMeta) {
 		throw new Error("meta and goldenMeta not equal")
 	}
@@ -310,7 +310,7 @@ async function test_Meta() {
     },
     "sig": "reOiKUO--OwgTNlYpKN60_gZARnW5X6PmQw4zWYbz2QryetRg_qS4KvwEVe1aiSAsWlkVA3MqYuaIM5ihY_8NQ"
 }`), "ES256"))
-	goldenMeta = `{"alg":"SHA-256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg","can":["msg","iat","tmb","typ"],"cad":"K6MVyIFqhBhLvNafZ8sMCRpCqR1oeFpowi7j8P1uE0M","sig":"reOiKUO--OwgTNlYpKN60_gZARnW5X6PmQw4zWYbz2QryetRg_qS4KvwEVe1aiSAsWlkVA3MqYuaIM5ihY_8NQ","czd":"g6kRqHesiST6L38eZPcTk4Bq-fCxtbD6jTvRS8LKMv8"}`
+	goldenMeta = `{"alg":"ES256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg","can":["msg","iat","tmb","typ"],"cad":"K6MVyIFqhBhLvNafZ8sMCRpCqR1oeFpowi7j8P1uE0M","sig":"reOiKUO--OwgTNlYpKN60_gZARnW5X6PmQw4zWYbz2QryetRg_qS4KvwEVe1aiSAsWlkVA3MqYuaIM5ihY_8NQ","czd":"g6kRqHesiST6L38eZPcTk4Bq-fCxtbD6jTvRS8LKMv8"}`
 	if (meta != goldenMeta) {
 		throw new Error("meta and goldenMeta not equal")
 	}
@@ -325,7 +325,7 @@ async function test_Meta() {
         "typ": "cyphr.me/msg"
     }
 }`), "ES256"))
-	goldenMeta = `{"alg":"SHA-256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg","can":["msg","iat","tmb","typ"],"cad":"K6MVyIFqhBhLvNafZ8sMCRpCqR1oeFpowi7j8P1uE0M"}`
+	goldenMeta = `{"alg":"ES256","iat":1623132000,"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk","typ":"cyphr.me/msg","can":["msg","iat","tmb","typ"],"cad":"K6MVyIFqhBhLvNafZ8sMCRpCqR1oeFpowi7j8P1uE0M"}`
 	if (meta != goldenMeta) {
 		throw new Error("meta and goldenMeta not equal")
 	}
@@ -593,13 +593,14 @@ async function test_CozeKeyCorrect() {
 // 6.) CryptoKey.SignBuffer
 // 7.) CryptoKey.VerifyArrayBuffer
 // 8.) CryptoKey.GetSignHashAlgoFromCryptoKey (calls `algFromCrv`)
+// 9.) Importing a bad key.  
 //
 // `SignBuffer` cannot be tested for throwing an error, since we cannot
 // create an invalid cryptokey. The test will fail at `FromCozeKey`.
 async function test_CryptoKeySign() {
 	let msg = "Test Message";
 	let abMsg = await Coze.SToArrayBuffer(msg);
-	let results = [];
+	let testGSHAFCK = [];
 
 	for (const alg of Algs) {
 		let cozeKey = await Coze.NewKey(alg);
@@ -617,19 +618,30 @@ async function test_CryptoKeySign() {
 		sig = await Coze.CryptoKey.SignBuffer(cryptoKey, abMsg);
 		result = await Coze.CryptoKey.VerifyArrayBuffer(alg, pcc, abMsg, sig);
 		if (result !== true) {
+			console.log(`Test failed on ${alg}`);
 			return false
 		}
-		results.push(await Coze.CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey));
+		testGSHAFCK.push(await Coze.CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey));
 	}
-	if (JSON.stringify(results) !== JSON.stringify([Coze.Algs.SHA256, Coze.Algs.SHA384, Coze.Algs.SHA512])) {
+	console.log(testGSHAFCK);
+	if (JSON.stringify(testGSHAFCK) !== JSON.stringify([Coze.Algs.SHA256, Coze.Algs.SHA384, Coze.Algs.SHA512])) {
 		return false;
 	}
 
-	// Importing an invalid key from `subtle` will throw a DOMException error:
-	// `DOMException: The imported EC key is invalid`
+	// Importing an invalid key from `subtle` should throw a DOMException error:
+	// `DOMException: The imported EC key is invalid` However, it does only on
+	// Chrome and not on Firefox (2023/07/14).  Firefox finally errors on signing.  
 	let e = null;
 	try {
-		await Coze.CryptoKey.FromCozeKey(GoldenBadCozeKey);
+		 // Should error here, but right now (2023/07/14) only Chrome errors here. 
+		let ck = await Coze.CryptoKey.FromCozeKey(GoldenBadCozeKey); 
+
+		// Firefox does not appear to error on bad private keys until signing.  
+		console.log("Import should have errored for this key:", ck);
+
+		// Sign array buffer.  The following should throw an error everywhere (Chrome/Firefox)
+		let _ = await Coze.CryptoKey.VerifyArrayBuffer(ck.alg, pcc, abMsg, await Coze.CryptoKey.SignBuffer(ck, abMsg));
+		return false // Should never get to this line.  
 	} catch (error) {
 		e = error;
 	}
