@@ -20,6 +20,7 @@ export {
 	ArrayBufferTo64ut,
 
 	// Helpers
+	CheckDuplicate,
 	isEmpty,
 
 	PayCanon,
@@ -48,7 +49,8 @@ updated, coze.  The optional canon is used to canonicalize pay before
 signing.  If needing a coze without alg, tmb, or iat, use SignCozeRaw.  
 
 SignCoze, SignCozeRaw, and VerifyCoze assumes that object has no duplicate
-fields since this is disallowed in Javascript.
+fields since this is disallowed in Javascript. (Verify must check because
+incoming is UTF-8 first, and then is parsed as an object)
 @param   {Coze}      coze       Object coze.
 @param   {Key}       cozeKey    A private coze key.
 @param   {Can}       [canon]    Array for canonical keys.
@@ -121,8 +123,10 @@ async function SignCozeRaw(coze, cozeKey, canon) {
 
 
 /**
-VerifyCoze returns a whether or not the Coze is valid. coze.sig must be set.
-If set, pay.alg and pay.tmb must match with cozeKey.
+VerifyCoze returns a whether or not the Coze is valid. coze.sig must be set. If
+set, pay.alg and pay.tmb must match with cozeKey.  If coze comes from
+not-Javascript-object string, call CheckDuplicate first before calling Verify.
+Javascript objects have unique keys while unparsed JSON may not.  
 @param  {Coze}     coze         Coze with signed pay. e.g. `{"pay":..., "sig":...}`
 @param  {Key}      [cozeKey]    Public Coze key for verification.
 @param  {Sig}      [sig]        Signature.
@@ -130,6 +134,7 @@ If set, pay.alg and pay.tmb must match with cozeKey.
 @throws {error}
  */
 async function Verify(coze, cozeKey) {
+	console.log("Coze:", coze);
 	if (!isEmpty(coze.pay.alg) && coze.pay.alg !== cozeKey.alg) {
 		throw new Error("VerifyCoze: Coze key alg mismatch with coze.pay.alg.");
 	}
@@ -144,6 +149,9 @@ async function Verify(coze, cozeKey) {
 VerifyPay verifies a `pay` with `sig` and returns whether or not the message is
 verified. Verify does no Coze checks.  If checks are needed, use
 Verify(); 
+
+If pay comes from not-Javascript-object string, call CheckDuplicate first before
+calling Verify. Javascript objects have unique keys while unparsed JSON may not.
 @param  {Pay}       pay        pay. e.g. `{"alg"...}`  May also be any message.  
 @param  {Key}       cozekey    Coze key for validation.
 @param  {Sig}       sig        Signature.
@@ -151,6 +159,7 @@ Verify();
 @throws {error}
  */
 async function VerifyPay(pay, cozekey, sig) {
+	console.log("Pay in VerifyPay:", pay)
 	return CTK.CryptoKey.VerifyMsg(
 		cozekey.alg,
 		await CTK.CryptoKey.FromCozeKey(cozekey, true),
@@ -158,6 +167,31 @@ async function VerifyPay(pay, cozekey, sig) {
 		sig,
 	);
 };
+
+/**
+Returns true on no duplicates and false on duplcates. 
+
+Verify and VerifyPay only accept type Coze which is a Javascript object and
+not a string.  If parsing JSON from string into an object, duplicate behavior
+is different between ES5 and ES6 (!!!) where ES5 correctly fails on strict
+and ES6 (incorrectly) uses last-value-wins.  This helper fixes this
+difference. 
+
+This isn't an efficient solution and hopefully a more efficient method will
+become available in the future.  
+@param  {Pay}       json         string, not a JS object.  
+@return {boolean}
+ */
+async function CheckDuplicate(json) {
+	var raw = JSON.minify(json);
+	var parsed = JSON.minify(JSON.stringify(JSON.parse(json)));
+
+	if (raw === parsed) {
+		return true
+	}
+
+	return false
+}
 
 
 

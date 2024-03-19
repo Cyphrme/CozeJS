@@ -26,22 +26,22 @@ document.addEventListener('DOMContentLoaded', () => {
 		document.getElementById('VerifierLink').href = "/coze";
 	}
 
-	InputMsg = document.getElementById('InputMsg');
-	InputKey = document.getElementById('InputKey');
-	OutMsg = document.getElementById('OutMsg');
-	AlgSelect = document.getElementById('AlgSelect');
-	RvkMsg = document.getElementById('RvkMsg');
+	InputMsg = document.getElementById('InputMsg')
+	InputKey = document.getElementById('InputKey')
+	OutMsg = document.getElementById('OutMsg')
+	AlgSelect = document.getElementById('AlgSelect')
+	RvkMsg = document.getElementById('RvkMsg')
 
 	// Meta
-	MetaAlg = document.querySelector("#MetaAlg");
-	MetaTmb = document.querySelector("#MetaTmb");
-	MetaIat = document.querySelector("#MetaIat");
-	MetaIats = document.querySelector("#MetaIats");
-	MetaTyp = document.querySelector("#MetaTyp");
-	MetaCan = document.querySelector("#MetaCan");
-	MetaCad = document.querySelector("#MetaCad");
-	MetaSig = document.querySelector("#MetaSig");
-	MetaCzd = document.querySelector("#MetaCzd");
+	MetaAlg = document.querySelector("#MetaAlg")
+	MetaTmb = document.querySelector("#MetaTmb")
+	MetaIat = document.querySelector("#MetaIat")
+	MetaIats = document.querySelector("#MetaIats")
+	MetaTyp = document.querySelector("#MetaTyp")
+	MetaCan = document.querySelector("#MetaCan")
+	MetaCad = document.querySelector("#MetaCad")
+	MetaSig = document.querySelector("#MetaSig")
+	MetaCzd = document.querySelector("#MetaCzd")
 
 	// Set event listeners for buttons.
 	document.getElementById('VerifyBtn').addEventListener('click', Verify);
@@ -53,13 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function Copy(){
     // Select the text.
-    var selection = window.getSelection();
-    var range = document.createRange();
-    range.selectNodeContents(OutMsg);
-    selection.removeAllRanges();
-    selection.addRange(range);
+    var selection = window.getSelection()
+    var range = document.createRange()
+    range.selectNodeContents(OutMsg)
+    selection.removeAllRanges()
+    selection.addRange(range)
     //Add to clipboard.
-    document.execCommand('copy');
+    document.execCommand('copy')
 }
 
 
@@ -68,6 +68,13 @@ function Copy(){
 async function Verify() {
 	Reset();
 	console.log(InputMsg.value, InputKey.value);
+
+
+	let dup = CheckDuplicate(InputMsg.value) // See notes on check duplicate. 
+	if (dup !== true){
+		OutMsg.innerText = "❌ Duplicate JSON fields" + e
+		return
+	}
 
 	try {
 		var coze = JSON.parse(InputMsg.value);

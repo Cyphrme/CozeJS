@@ -66,11 +66,25 @@ Then go to `https://localhost:8082`.
 	with constant time guarantees, like [constant time
 	WASM](https://cseweb.ucsd.edu/~dstefan/pubs/renner:2018:ct-wasm.pdf), this
 	library will be vulnerable to timing attacks as this problem is inherent to Javascript.
-- Duplicate detection is outside the scope of Coze JS because Coze JS uses
+
+- **Object**, not string/UTF-8 form, duplicate detection (likely) unavailable.
 	Javascript objects which always have unique fields.  Also, no JSON parsing is
 	done inside of Coze JS, which uses last-value-wins. - Objects in ES6 defined
 	with duplicate fields uses last-value-wins.  
 	- See notes on `test_Duplicate`.
+
+	In ES5, duplicates should fail in strict mode.  In ES6, it is terrifyingly
+	last-value-wins, which is the wrong design decision for a plethora of reasons.
+	It should be error-on-duplicate, but there's nothing we can do about that on
+	our side.  See
+ https://github.com/json5/json5-spec/issues/38#issuecomment-1224158640 and
+	https://262.ecma-international.org/5.1/#sec-C > It is a SyntaxError if strict
+	mode code contains an ObjectLiteral with more > than one definition of any
+	data property (11.1.5).
+
+	String/UTF-8/serialized form must be checked for duplicates by calling
+	function `CheckDuplicate`.  
+
 
 - ES224 is not supported.  Even though [FIPS
 	186](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf) defines
