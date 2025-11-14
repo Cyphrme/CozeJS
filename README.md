@@ -1,5 +1,3 @@
-#### ⚠️ COZE IS IN ALPHA.  USE AT YOUR OWN RISK ⚠️
-
 ![Coze](verifier/coze_logo_zami_white_450x273.png)
 
 For Coze, please see the README in the [Main Coze Project.](https://github.com/Cyphrme/Coze)
@@ -62,17 +60,37 @@ Then go to `https://localhost:8082`.
 
 
 # Coze Javascript Gotchas
-- ⚠️ Javascript is not constant time.  Until there's something available
+- ⚠️ **Constant Time** ⚠️- Javascript is not constant time.  Until there's something available
 	with constant time guarantees, like [constant time
 	WASM](https://cseweb.ucsd.edu/~dstefan/pubs/renner:2018:ct-wasm.pdf), this
 	library will be vulnerable to timing attacks as this problem is inherent to Javascript.
-- Duplicate detection is outside the scope of Coze JS because Coze JS uses
-	Javascript objects which always have unique fields.  Also, no JSON parsing is
-	done inside of Coze JS, which uses last-value-wins. - Objects in ES6 defined
-	with duplicate fields uses last-value-wins.  
-	- See notes on `test_Duplicate`.
 
-- ES224 is not supported.  Even though [FIPS
+- ⚠️ **Duplicates** ⚠️- Duplicate detection is unavailable for Javascript objects
+	as Javascript objects always have unique fields with last-value-wins. (This of
+	course does not apply to strings or any serialized UTF-8 form). .  The
+	solution Coze JS uses is that String/UTF-8/serialized form must be checked for
+	duplicates by calling function `CheckDuplicate`.  This is slow and
+	unfortunate, but for security reasons required as different versions of
+	Javascript have different behaviors.
+	
+	In ES5, duplicates should fail in strict mode, which is the correct behavior
+	for a JSON parser.  ES6 experienced regression, and objects in ES6
+	terrifyingly permit duplicate fields with last-value-wins.  
+	This is the wrong design decision for a plethora of reasons and the correct
+	behavior is error-on-duplicate, but there's nothing we can do about that on
+	our side without implementing our own primitives.  	As currently designed, no
+	JSON parsing is done within of Coze JS, and so Coze JS inherits the
+	last-value-wins behaviour from Javascript, thus the Coze JS provided function
+	`CheckDuplicate` must be called for correct behavior.  See notes on
+	`test_Duplicate`.
+	
+	See also https://github.com/json5/json5-spec/issues/38#issuecomment-1224158640
+ and https://262.ecma-international.org/5.1/#sec-C > It is a SyntaxError if
+	strict mode code contains an ObjectLiteral with more > than one definition of
+	any data property (11.1.5).
+
+
+- **ES224 is not supported**.  Even though [FIPS
 	186](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf) defines
 	curves P-224, the [W3C recommendation omits
 	it](https://www.w3.org/TR/WebCryptoAPI/#dfn-EcKeyGenParams) and thus is not
@@ -108,6 +126,7 @@ Coze and CozeJS are released under The 3-Clause BSD License.
 "Cyphr.me" is a trademark of Cypherpunk, LLC. The Cyphr.me logo is all rights
 reserved Cypherpunk, LLC and may not be used without permission.
 
+Coze is an open source project.  Use at your own risk.
 
 
 [1]:https://esbuild.github.io/getting-started/#build-from-source
