@@ -1,3 +1,6 @@
 [submodule "verifier/browsertest"]
 	path = verifier/browsertest
 	url = git@github.com:Cyphrme/BrowserTestJS.git
+[submodule ".agent"]
+	path = .agent
+	url = https://github.com/nrdxp/predicate.git
