@@ -90,11 +90,17 @@ Pay contains the standard `Coz.Pay` fields.  See Go implementation docs (Cyphrme
 - now:    Unix time of signing. E.g. 1623132000.
 - tmb:    Signing thumbprint    E.g. U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg
 - typ:    Type.                 E.g. "cyphr.me/msg/create".
+- msg:    Message payload.      E.g. "Coz is a cryptographic JSON messaging specification."
+- dig:    Digest of external content. E.g. "LSgWE4v..."
+- rvk:    Key revocation time.  E.g. 1623132000.  Only for revoke messages.
 @typedef  {object} Pay
 @property {Alg}    alg
 @property {Now}    now
 @property {Tmb}    tmb
 @property {Typ}    typ
+@property {string} [msg]
+@property {Dig}    [dig]
+@property {Now}    [rvk]
 */
 
 

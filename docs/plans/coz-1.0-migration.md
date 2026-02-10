@@ -101,8 +101,8 @@ All resolved during CHALLENGE/SCOPE:
    - [x] Rebuild `coze.min.js`, `coze_all.min.js`, `coze_standard.min.js` via `BUILD.sh`
    - [x] Update `AGENTS.md` field references (verified already 1.0 compliant)
    - [x] Update `verifier/test_cozies.json5` (key fields renamed; pay fields preserved as signed content)
-   - [ ] Document `msg`/`dig` standard fields per Coz README spec
-   - [ ] Optional: README note on crypto lib choice (Ed25519ph/prehash context)
+   - [x] Document `msg`/`dig` standard fields per Coz README spec
+   - [x] README note on crypto lib choice (Ed25519ph noble-ed25519)
 
 ## Verification
 
