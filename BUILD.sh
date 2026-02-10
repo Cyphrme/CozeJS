@@ -6,6 +6,9 @@
 (
 cd $COZEJS 
 esbuild join.js --bundle --format=esm --platform=browser --minify --sourcemap --outfile=coze.min.js
+# Copy for verifier app
+cp coze.min.js     verifier/coze.min.js
+cp coze.min.js.map verifier/coze.min.js.map
 )
 
 # Coz all 
