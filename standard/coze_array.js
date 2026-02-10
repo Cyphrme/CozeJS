@@ -57,8 +57,8 @@ async function VerifyCozArray(coze, cozKey) {
 	let copy = [...coze]; // Copy so original isn't modified.
 	for (let c of copy) {
 
-		if (!isEmpty(c.coze)) { // "coze" encapsulated?
-			c = c.coze;
+		if (!isEmpty(c.coz)) { // "coz" encapsulated?
+			c = c.coz;
 		}
 
 		let valid = await Verify(c, cozKey);

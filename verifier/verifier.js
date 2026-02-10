@@ -10,8 +10,8 @@ var RvkMsg;
 // Metas
 var MetaAlg;
 var MetaTmb;
-var MetaIat;
-var MetaIats;
+var MetaNow;
+var MetaNows;
 var MetaTyp;
 var MetaCan;
 var MetaCad;
@@ -20,7 +20,7 @@ var MetaCzd;
 
 // DOM load
 document.addEventListener('DOMContentLoaded', () => {
-	if (window.location.hostname === "localhost"){
+	if (window.location.hostname === "localhost") {
 		// Fix for local deving.  Change from `cyphr.me/coze` to
 		// `localhost/coze` 
 		document.getElementById('VerifierLink').href = "/coze";
@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Meta
 	MetaAlg = document.querySelector("#MetaAlg");
 	MetaTmb = document.querySelector("#MetaTmb");
-	MetaIat = document.querySelector("#MetaIat");
-	MetaIats = document.querySelector("#MetaIats");
+	MetaNow = document.querySelector("#MetaNow");
+	MetaNows = document.querySelector("#MetaNows");
 	MetaTyp = document.querySelector("#MetaTyp");
 	MetaCan = document.querySelector("#MetaCan");
 	MetaCad = document.querySelector("#MetaCad");
@@ -51,15 +51,15 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.getElementById('CopyBtn').addEventListener('click', Copy);
 });
 
-function Copy(){
-    // Select the text.
-    var selection = window.getSelection();
-    var range = document.createRange();
-    range.selectNodeContents(OutMsg);
-    selection.removeAllRanges();
-    selection.addRange(range);
-    //Add to clipboard.
-    document.execCommand('copy');
+function Copy() {
+	// Select the text.
+	var selection = window.getSelection();
+	var range = document.createRange();
+	range.selectNodeContents(OutMsg);
+	selection.removeAllRanges();
+	selection.addRange(range);
+	//Add to clipboard.
+	document.execCommand('copy');
 }
 
 
@@ -89,7 +89,7 @@ async function Verify() {
 			Meta(coze, key);
 			return;
 		}
-	} catch (e) {}
+	} catch (e) { }
 	// Still show meta on Coze even if key is bad or signature failed.  Generate
 	// key with alg from select for contextual cozies (such as the empty coze).  
 	let AlgFromSelectKey = {
@@ -117,7 +117,7 @@ async function Sign() {
 		let pay = {
 			msg: InputMsg.value,
 			alg: cozeKey.alg,
-			iat: Math.floor(Date.now() / 1000), // To get Unix time from js time, divide by 1000. 
+			now: Math.floor(Date.now() / 1000), // To get Unix time from js time, divide by 1000. 
 			tmb: cozeKey.tmb,
 			typ: "cyphr.me/msg/create"
 		};
@@ -137,14 +137,14 @@ async function Sign() {
 		coze.pay.alg = cozeKey.alg
 	}
 
-	// Update iat if present in pay.  
-	if (('iat' in coze)) {
-		coze.pay.iat = Math.round((Date.now() / 1000)); // Javascript's Date converted to Unix time.
+	// Update now if present in pay.  
+	if (('now' in coze)) {
+		coze.pay.now = Math.round((Date.now() / 1000)); // Javascript's Date converted to Unix time.
 	}
 
 
 	try {
-		var newCoze = await Coze.SignCozeRaw(coze, cozeKey);
+		var newCoze = await Coze.SignCozRaw(coze, cozeKey);
 	} catch (e) {
 		console.log();
 		OutMsg.innerText = "❌ Error: " + e;
@@ -186,8 +186,8 @@ function Reset() {
 
 	// Meta
 	MetaAlg.textContent = "";
-	MetaIat.textContent = "";
-	MetaIats.textContent = "";
+	MetaNow.textContent = "";
+	MetaNows.textContent = "";
 	MetaTmb.textContent = "";
 	MetaTyp.textContent = "";
 	MetaCan.textContent = "";
@@ -211,9 +211,9 @@ async function Meta(coze, key) {
 	console.log(meta)
 
 	MetaAlg.textContent = meta.alg;
-	if (('iat' in meta)) {
-		MetaIat.textContent = meta.iat;
-		MetaIats.textContent = "(" + new Date(meta.iat * 1000).toLocaleString() + ")";
+	if (('now' in meta)) {
+		MetaNow.textContent = meta.now;
+		MetaNows.textContent = "(" + new Date(meta.now * 1000).toLocaleString() + ")";
 	}
 	MetaTmb.textContent = meta.tmb;
 	MetaTyp.textContent = meta.typ;
