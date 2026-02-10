@@ -1,18 +1,17 @@
-// Tests for Coz simple verifier
-// NOTE: Pay objects contain pre-1.0 field names (e.g. "iat") because they are
-// signed content — changing fields would invalidate signatures.
+// Tests for Coz simple verifier.
+// All values use Coz 1.0 field names.  Golden values from Go reference.
 
 
 // Good:
 {
   "pay": {
-    "msg": "a",
+    "msg": "Coz is a cryptographic JSON messaging specification.",
     "alg": "ES256",
-    "iat": 1670435056,
-    "tmb": "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+    "now": 1623132000,
+    "tmb": "U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg",
     "typ": "cyphr.me/msg/create"
   },
-  "sig": "LQcV3EPT2DJARqw13VU9zgu0IQdEEAFtcS1BU27hiRoIfqn4ihClxKKf8DcY4rLaMaZ73IkVy2pFfnVOdIod5Q"
+  "sig": "OJ4_timgp-wxpLF3hllrbe55wdjhzGOLgRYsGO1BmIMYbo4VKAdgZHnYyIU907ZTJkVr8B81A2K8U4nQA6ONEg"
 }
 
 {
@@ -20,29 +19,29 @@
 	"now":1623132000,
 	"tag":"Zami's Majuscule Key.",
 	"prv":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
-	"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+	"tmb":"U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg",
 	"pub":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
 }
 
 
-// Mismatch
+// Mismatch — Bad prv (last byte VA→VE), signature will not verify.
 {
   "pay": {
-    "msg": "asdffff",
+    "msg": "Coz is a cryptographic JSON messaging specification.",
     "alg": "ES256",
-    "iat": 1670433587,
-    "tmb": "n-mwisE9n-D5HIpwdT48aOG7XAyluFfk2EBW_GKIaTY",
+    "now": 1623132000,
+    "tmb": "U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg",
     "typ": "cyphr.me/msg/create"
   },
-  "sig": "qpkFiQlgbI1ls6LizCcCagzEn0M517uPmm72_TZJH98y5WVco-u6-Gmpc-BjtJDQgjRxzga7EpVwq25Eod3Zpg"
+  "sig": "OJ4_timgp-wxpLF3hllrbe55wdjhzGOLgRYsGO1BmIMYbo4VKAdgZHnYyIU907ZTJkVr8B81A2K8U4nQA6ONEg"
 }
 
 {
 	"alg":"ES256",
 	"now":1623132000,
-	"tag":"Zami's Majuscule Key.",
-	"prv":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
-	"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+	"tag":"GoldenKeyBadD",
+	"prv":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVE",
+	"tmb":"U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg",
 	"pub":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
 }
 
@@ -51,13 +50,13 @@
 // Revoked (Good should show warning)
 {
   "pay": {
-    "msg": "a",
+    "msg": "Coz is a cryptographic JSON messaging specification.",
     "alg": "ES256",
-    "iat": 1670435056,
-    "tmb": "cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+    "now": 1623132000,
+    "tmb": "U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg",
     "typ": "cyphr.me/msg/create"
   },
-  "sig": "LQcV3EPT2DJARqw13VU9zgu0IQdEEAFtcS1BU27hiRoIfqn4ihClxKKf8DcY4rLaMaZ73IkVy2pFfnVOdIod5Q"
+  "sig": "OJ4_timgp-wxpLF3hllrbe55wdjhzGOLgRYsGO1BmIMYbo4VKAdgZHnYyIU907ZTJkVr8B81A2K8U4nQA6ONEg"
 }
 
 {
@@ -66,36 +65,26 @@
 	"rvk":1623132000,
 	"tag":"Zami's Majuscule Key.",
 	"prv":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
-	"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+	"tmb":"U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg",
 	"pub":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
 }
 
 
 // Small.  Meta should show [alg,can,cad].
+// No sig — Meta can compute cad but not czd.
 {
   "pay": {
-    "msg": "asdffff",
+    "msg": "Coz is a cryptographic JSON messaging specification.",
     "alg": "ES256"
   }
 }
 
 
-// Small.  Meta should show [alg,can,cad,sig,czd]
-{
-  "pay": {
-    "msg": "a",
-    "alg": "ES256"
-  },
-  "sig": "Kx1Msp4s_a2Ero9kd_EmWB9uvKb1ZGX3Dv42xyIGK4dWUbPHM08qQiaGmS3JHXytR9GTW2r4GHYE6pY9wVrtsw"
-}
-
-
-
-// Good.  Should show [alg,tmb,can,cad,sig,czd]
-// The empty coz, use input alg when alg is empty.   Make sure Meta populates with alg (from input) 
+// Small.  Meta should show [alg,can,cad,sig,czd].
+// Empty pay with sig — contextual coz.
 {
 	"pay":{},
-	"sig":"9iesKUSV7L1-xz5yd3A94vCkKLmdOAnrcPXTU3_qeKSuk4RMG7Qz0KyubpATy0XA_fXrcdaxJTvXg6saaQQcVQ"
+	"sig":"UG0KP-cElD3mPoN8LRVd4_uoNzMwmpUm3pKxt-iy6So8f1JxmxMcO9JFzsmecFXyt5PjsOTZdUKyV6eZRNl-hg"
 }
 
 {
@@ -103,16 +92,21 @@
 	"now":1623132000,
 	"tag":"Zami's Majuscule Key.",
 	"prv":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
-	"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+	"tmb":"U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg",
 	"pub":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
 }
 
 
-// Good.  Should show [alg,can,cad,sig,czd]
-// Should *not* show tmb since signature will not verify.
+// Good.  Should show [alg,tmb,can,cad,sig,czd].
+// No alg in pay — contextual coz (alg from key input).
 {
-	"pay":{},
-	"sig":"9iesKUSV7L1-xz5yd3A94vCkKLmdOAnrcPXTU3_qeKSuk4RMG7Qz0KyubpATay0XA_fXrcdaxJTvXg6saaQQcVQ"
+	"pay":{
+		"msg": "Coz is a cryptographic JSON messaging specification.",
+		"now": 1623132000,
+		"tmb": "U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg",
+		"typ": "cyphr.me/msg/create"
+	},
+	"sig":"37R-VP0BaR31_vjtOgdZP7lpanTMdQy07xz83o_I7mFMMt2BdoZwdXOAn0dxtKpPrhPPNxBTe-O12ifeiCnONQ"
 }
 
 {
@@ -120,6 +114,6 @@
 	"now":1623132000,
 	"tag":"Zami's Majuscule Key.",
 	"prv":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
-	"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
+	"tmb":"U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg",
 	"pub":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
 }
