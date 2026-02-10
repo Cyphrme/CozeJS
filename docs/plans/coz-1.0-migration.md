@@ -93,7 +93,7 @@ All resolved during CHALLENGE/SCOPE:
 2. **Phase 2: Behavioral Additions** — Implement timestamp validation, `RVK_MAX_SIZE`, and `SignPayRaw`.
    - [x] `validateTimestamp()` — range check [0, 2^53-1], matches Go `Timestamp.Valid()`
    - [x] `MaxSafeTimestamp` constant (`9007199254740991`)
-   - [ ] `RVK_MAX_SIZE` — 2048 byte default, enforced on revoke payloads
+   - [x] `RVK_MAX_SIZE` — 2048 byte default, enforced on revoke payloads (both creation and verification)
    - [x] `SignPayRaw` — sign without modifying `now` (new export)
    - [x] New test cases for `SignPayRaw` and `validateTimestamp`
 

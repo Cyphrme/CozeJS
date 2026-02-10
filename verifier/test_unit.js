@@ -37,6 +37,11 @@ let t_ValidateTimestamp = {
 	"func": test_ValidateTimestamp,
 	"golden": true,
 };
+let t_RVKMaxSize = {
+	"name": "RVK Max Size",
+	"func": test_RVKMaxSize,
+	"golden": true,
+};
 let t_Verify = {
 	"name": "Verify",
 	"func": test_Verify,
@@ -573,6 +578,59 @@ async function test_Revoke() {
 	return true;
 }
 
+
+// test_RVKMaxSize tests RVK_MAX_SIZE enforcement at both creation and
+// verification.  Uses a fresh key to avoid rvk state from test_Revoke.
+async function test_RVKMaxSize() {
+	let key = await Coze.NewKey("ES256");
+
+	// 1. Normal revoke with short message — should succeed.
+	let coz = await Coze.Revoke(key, "Short revoke.");
+	if (!(await Coze.Verify(coz, key))) {
+		console.error("RVKMaxSize: Normal revoke failed verification.");
+		return false;
+	}
+
+	// 2. Oversized revoke message — Revoke() should throw.
+	let bigMsg = "x".repeat(3000);
+	let key2 = await Coze.NewKey("ES256");
+	try {
+		await Coze.Revoke(key2, bigMsg);
+		console.error("RVKMaxSize: Revoke() accepted oversized message.");
+		return false;
+	} catch (e) {
+		if (!e.message.includes("RVK_MAX_SIZE")) {
+			console.error("RVKMaxSize: Unexpected error: " + e.message);
+			return false;
+		}
+	}
+
+	// 3. Verify() rejects oversized revoke payload.
+	//    Construct a coz with rvk > 0 and oversized pay manually.
+	let key3 = await Coze.NewKey("ES256");
+	let fakeCoz = {
+		"pay": {
+			"alg": key3.alg,
+			"tmb": key3.tmb,
+			"rvk": Math.round(Date.now() / 1000),
+			"msg": "y".repeat(3000),
+		},
+		"sig": "AAAA" // Invalid sig, but RVK_MAX_SIZE check is before sig verify.
+	};
+	try {
+		await Coze.Verify(fakeCoz, key3);
+		console.error("RVKMaxSize: Verify() accepted oversized revoke payload.");
+		return false;
+	} catch (e) {
+		if (!e.message.includes("RVK_MAX_SIZE")) {
+			console.error("RVKMaxSize: Unexpected Verify error: " + e.message);
+			return false;
+		}
+	}
+
+	return true;
+}
+
 // test_CozKeyCorrect will test correctness for various keys with different
 // algorithms when calling Correct().
 async function test_CozKeyCorrect() {
@@ -855,6 +913,7 @@ let TestsToRun = [
 	t_SignPay,
 	t_SignPayRaw,
 	t_ValidateTimestamp,
+	t_RVKMaxSize,
 	t_CryptoKeySign,
 	t_Valid,
 	t_Correct,

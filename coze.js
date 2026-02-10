@@ -26,6 +26,7 @@ export {
 	PayCanon,
 	MaxSafeTimestamp,
 	validateTimestamp,
+	RVK_MAX_SIZE,
 }
 
 /**
@@ -163,6 +164,13 @@ async function Verify(coz, cozKey) {
 	}
 	if (!isEmpty(coz.pay.tmb) && coz.pay.tmb !== cozKey.tmb) {
 		throw new Error("Verify: Coz key tmb mismatch with coz.pay.tmb.");
+	}
+	// Enforce revoke message max size to prevent DoS.
+	if (!isEmpty(coz.pay.rvk) && coz.pay.rvk > 0 && RVK_MAX_SIZE > 0) {
+		let paySize = JSON.stringify(coz.pay).length;
+		if (paySize > RVK_MAX_SIZE) {
+			throw new Error(`Verify: revoke message size ${paySize} exceeds RVK_MAX_SIZE ${RVK_MAX_SIZE}`);
+		}
 	}
 	return VerifyPay(JSON.stringify(coz.pay), cozKey, coz.sig);
 }
@@ -390,6 +398,11 @@ function isBool(bool) {
 // MaxSafeTimestamp is the maximum valid timestamp value: 2^53 - 1.
 // Matches Go's coz.MaxSafeTimestamp.
 const MaxSafeTimestamp = 9007199254740991;
+
+// RVK_MAX_SIZE is the maximum allowed payload size in bytes for revoke
+// messages.  Prevents DoS via oversized revoke payloads.  Set to 0 to
+// disable.  Default is 2048 bytes.  Matches Go's coz.RVK_MAX_SIZE.
+let RVK_MAX_SIZE = 2048;
 
 
 /**

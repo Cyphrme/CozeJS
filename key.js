@@ -151,6 +151,14 @@ async function Revoke(cozKey, msg) {
 		coz.pay.msg = msg;
 	}
 
+	// Enforce revoke message max size to prevent DoS.
+	if (Coze.RVK_MAX_SIZE > 0) {
+		let paySize = JSON.stringify(coz.pay).length;
+		if (paySize > Coze.RVK_MAX_SIZE) {
+			throw new Error(`Revoke: revoke message size ${paySize} exceeds RVK_MAX_SIZE ${Coze.RVK_MAX_SIZE}`);
+		}
+	}
+
 	coz.sig = await Coze.SignPay(JSON.stringify(coz.pay), cozKey);
 
 	// Set rvk on the key itself.
