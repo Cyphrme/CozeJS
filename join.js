@@ -1,5 +1,5 @@
-// Coze Core
-// `join.js` instructs esbuild to join all Coze core files into one file.
+// Coz Core
+// `join.js` instructs esbuild to join all Coz core files into one file.
 //
 // From ESBuild for multiple files:
 //

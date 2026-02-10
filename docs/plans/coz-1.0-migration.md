@@ -88,7 +88,7 @@ All resolved during CHALLENGE/SCOPE:
    - [x] `cryptokey.js`: `cozKey.pub`, `cozKey.prv` (never touch JWK `x`/`y`/`d`)
    - [x] `alg.js`: `XSize`→`PubSize`, `DSize`→`PrvSize`, `Params` fields renamed
    - [x] All modules: `coze`→`coz` naming (e.g. `SignCozeRaw`→`SignCozRaw`, error messages, comments)
-   - [ ] `test_unit.js`: All golden values from Go reference (`tmb`, `cad`, `sig`, `czd`)
+   - [x] `test_unit.js`: All golden values from Go reference (`tmb`, `cad`, `sig`, `czd`)
 
 2. **Phase 2: Behavioral Additions** — Implement timestamp validation, `RVK_MAX_SIZE`, and `SignPayRaw`.
    - [ ] `validateTimestamp()` — range check [0, 2^53-1], matches Go `Timestamp.Valid()`
@@ -120,8 +120,9 @@ All resolved during CHALLENGE/SCOPE:
   Empty at plan creation. Populated during /core execution.
 -->
 
-| Item | Severity | Why Introduced | Follow-Up |
-| :--- | :------- | :------------- | :-------- |
+| Item                                                                        | Severity | Why Introduced                                                                                                                    | Follow-Up                                                                                                       | Resolved |
+| :-------------------------------------------------------------------------- | :------- | :-------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- | :------- |
+| Meta test secondary/tertiary golden `cad`/`czd` values manually constructed | MEDIUM   | Go's `ExampleCoz_MetaWithAlg` uses different secondary payloads; values aligned by content but not yet verified against Go output | Run browser tests after `BUILD.sh`; cross-check `cad`/`czd` against Go `go test -run ExampleCoz_MetaWithAlg -v` | ❌       |
 
 ## Retrospective
 
