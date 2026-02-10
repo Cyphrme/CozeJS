@@ -27,6 +27,16 @@ let t_SignPay = {
 	"func": test_SignPay,
 	"golden": true,
 };
+let t_SignPayRaw = {
+	"name": "Sign Pay Raw",
+	"func": test_SignPayRaw,
+	"golden": true,
+};
+let t_ValidateTimestamp = {
+	"name": "Validate Timestamp",
+	"func": test_ValidateTimestamp,
+	"golden": true,
+};
 let t_Verify = {
 	"name": "Verify",
 	"func": test_Verify,
@@ -217,6 +227,69 @@ async function test_SignPay() {
 			return false
 		}
 	}
+	return true;
+};
+
+
+// test_SignPayRaw
+// Signs with SignPayRaw (no field modification) and verifies the result.
+async function test_SignPayRaw() {
+	for (const alg of Algs) {
+		let cozKey = await Coze.NewKey(alg);
+		let coz = {
+			"pay": {
+				"msg": "Test Message",
+				"alg": cozKey.alg,
+				"tmb": cozKey.tmb,
+			}
+		};
+		let signed = await Coze.SignPayRaw(coz, cozKey);
+		if (true !== await Coze.Verify(signed, cozKey)) {
+			console.error("SignPayRaw: Failed verification on alg: " + alg);
+			return false;
+		}
+		// Verify that now was NOT set (SignPayRaw must not touch fields).
+		if (signed.pay.now !== undefined) {
+			console.error("SignPayRaw: now was set but should not have been. alg: " + alg);
+			return false;
+		}
+	}
+	return true;
+};
+
+
+// test_ValidateTimestamp
+// Tests that validateTimestamp accepts valid values and rejects invalid ones.
+async function test_ValidateTimestamp() {
+	// Valid values — should not throw.
+	let validValues = [0, 1, 1623132000, 9007199254740991];
+	for (let v of validValues) {
+		try {
+			Coze.validateTimestamp(v);
+		} catch (e) {
+			console.error("validateTimestamp: Rejected valid value: " + v);
+			return false;
+		}
+	}
+
+	// Invalid values — should throw.
+	let invalidValues = [-1, -100, 9007199254740992, Number.MAX_SAFE_INTEGER + 2];
+	for (let v of invalidValues) {
+		try {
+			Coze.validateTimestamp(v);
+			console.error("validateTimestamp: Accepted invalid value: " + v);
+			return false;
+		} catch (e) {
+			// Expected.
+		}
+	}
+
+	// Verify MaxSafeTimestamp is exported and correct.
+	if (Coze.MaxSafeTimestamp !== 9007199254740991) {
+		console.error("MaxSafeTimestamp: Incorrect value: " + Coze.MaxSafeTimestamp);
+		return false;
+	}
+
 	return true;
 };
 
@@ -780,6 +853,8 @@ let TestsToRun = [
 	t_VerifyArray,
 	t_Sign,
 	t_SignPay,
+	t_SignPayRaw,
+	t_ValidateTimestamp,
 	t_CryptoKeySign,
 	t_Valid,
 	t_Correct,

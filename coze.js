@@ -9,6 +9,7 @@ export {
 	Sign,
 	SignPay,
 	SignCozRaw,
+	SignPayRaw,
 	Verify,
 	VerifyPay,
 	Meta,
@@ -23,6 +24,8 @@ export {
 	isEmpty,
 
 	PayCanon,
+	MaxSafeTimestamp,
+	validateTimestamp,
 }
 
 /**
@@ -112,6 +115,29 @@ async function SignCozRaw(coz, cozKey, canon) {
 	}
 	if (!isEmpty(coz.pay.tmb) && coz.pay.tmb !== cozKey.tmb) {
 		throw new Error("SignCozRaw: Coz key tmb mismatch with coz.pay.tmb.");
+	}
+
+	if (!isEmpty(canon)) {
+		coz.pay = await Can.Canonical(coz.pay, canon);
+	}
+	coz.sig = await SignPay(JSON.stringify(coz.pay), cozKey);
+	return coz;
+}
+
+
+/**
+SignPayRaw signs coz.pay without modifying any fields.  Unlike Sign, it does
+not set `alg`, `tmb`, or update `now`.  Use this when exact control over the
+payload is needed.  Matches Go's Key.SignPayRaw.
+@param   {Coz}       coz        Object coz.
+@param   {Key}       cozKey     A private coz key.
+@param   {Can}       [canon]    Array for canonical keys.
+@returns {Coz}                  Coz with new `sig`.
+@throws  {error}                Fails on rvk.
+ */
+async function SignPayRaw(coz, cozKey, canon) {
+	if (CZK.IsRevoked(cozKey)) {
+		throw new Error("SignPayRaw: Cannot sign with revoked key.");
 	}
 
 	if (!isEmpty(canon)) {
@@ -358,4 +384,22 @@ function isBool(bool) {
 		return false
 	}
 	return true
+}
+
+
+// MaxSafeTimestamp is the maximum valid timestamp value: 2^53 - 1.
+// Matches Go's coz.MaxSafeTimestamp.
+const MaxSafeTimestamp = 9007199254740991;
+
+
+/**
+validateTimestamp checks whether a timestamp is within the allowed range
+[0, 2^53 - 1].  Throws if invalid.  Matches Go's Timestamp.Valid().
+@param   {number}  t  Timestamp value.
+@throws  {Error}      If t is outside the valid range.
+ */
+function validateTimestamp(t) {
+	if (t < 0 || t > MaxSafeTimestamp) {
+		throw new Error(`validateTimestamp: value ${t} is invalid. Must be between 0 and ${MaxSafeTimestamp} inclusive`);
+	}
 }

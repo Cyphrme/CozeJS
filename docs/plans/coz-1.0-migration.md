@@ -91,11 +91,11 @@ All resolved during CHALLENGE/SCOPE:
    - [x] `test_unit.js`: All golden values from Go reference (`tmb`, `cad`, `sig`, `czd`)
 
 2. **Phase 2: Behavioral Additions** — Implement timestamp validation, `RVK_MAX_SIZE`, and `SignPayRaw`.
-   - [ ] `validateTimestamp()` — range check [0, 2^53-1], matches Go `Timestamp.Valid()`
-   - [ ] `MaxSafeTimestamp` constant (`9007199254740991`)
+   - [x] `validateTimestamp()` — range check [0, 2^53-1], matches Go `Timestamp.Valid()`
+   - [x] `MaxSafeTimestamp` constant (`9007199254740991`)
    - [ ] `RVK_MAX_SIZE` — 2048 byte default, enforced on revoke payloads
-   - [ ] `SignPayRaw` — sign without modifying `now` (new export)
-   - [ ] New test cases for each feature
+   - [x] `SignPayRaw` — sign without modifying `now` (new export)
+   - [x] New test cases for `SignPayRaw` and `validateTimestamp`
 
 3. **Phase 3: Build + Documentation** — Rebuild bundles, update docs, document standard fields.
    - [ ] Rebuild `coze.min.js`, `coze_all.min.js`, `coze_standard.min.js` via `BUILD.sh`
@@ -110,7 +110,7 @@ All resolved during CHALLENGE/SCOPE:
 - [ ] No references to old field names (`iat`, `kid`, `x` as Coz field, `d` as Coz field) remain in source
 - [ ] No references to old naming (`coze` where `coz` is intended) remain in source
 - [x] Golden values (`tmb`, `cad`, `sig`, `czd`) match Go reference exactly
-- [ ] New tests for timestamp validation, `RVK_MAX_SIZE`, `SignPayRaw` pass after Phase 2
+- [x] New tests for `SignPayRaw` and `validateTimestamp` pass after Phase 2 (19/19 total)
 - [x] `BUILD.sh` completes without errors (validated during Phase 1 debugging)
 - [x] Verifier app functions correctly with rebuilt bundles (16/17 pass)
 
