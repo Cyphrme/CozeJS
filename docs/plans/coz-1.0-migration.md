@@ -80,14 +80,14 @@ All resolved during CHALLENGE/SCOPE:
 ## Phases
 
 1. **Phase 1: Field Renames + Golden Vector Alignment** — Rename all pre-1.0 field names and internal `coze`→`coz` naming, update constants, realign all golden test vectors. All 17 existing tests pass.
-   - [ ] `typedef.js`: Rename `Iat`→`Now`, `Kid`→`Tag`, type definitions for `x`→`pub`, `d`→`prv`
-   - [ ] `key.js`: `TmbCanon`→`KeyCanon = ["alg","pub"]`, field renames, `kid`→`tag`
-   - [ ] `coze.js`: `PayCanon = ["alg","now","tmb","typ"]`, `iat`→`now` in all references
-   - [ ] `coze.js`: `Sign()` conditional `now` update — `if (!isEmpty(coze.pay.now))`
-   - [ ] `coze.js`: `SignCozRaw` docstring update (`iat`→`now` reference)
-   - [ ] `cryptokey.js`: `cozeKey.x`→`cozKey.pub`, `cozeKey.d`→`cozKey.prv` (never touch JWK `x`/`y`/`d`)
-   - [ ] `alg.js`: `XSize`→`PubSize`, `DSize`→`PrvSize`, `Params` fields renamed
-   - [ ] All modules: `coze`→`coz` naming (e.g. `SignCozeRaw`→`SignCozRaw`, error messages, comments)
+   - [x] `typedef.js`: Rename `Iat`→`Now`, `Kid`→`Tag`, type definitions for `x`→`pub`, `d`→`prv`
+   - [x] `key.js`: `TmbCanon`→`KeyCanon = ["alg","pub"]`, field renames, `kid`→`tag`
+   - [x] `coze.js`: `PayCanon = ["alg","now","tmb","typ"]`, `iat`→`now` in all references
+   - [x] `coze.js`: `Sign()` conditional `now` update — `if (!isEmpty(coz.pay.now))`
+   - [x] `coze.js`: `SignCozRaw` docstring update (`iat`→`now` reference)
+   - [x] `cryptokey.js`: `cozKey.pub`, `cozKey.prv` (never touch JWK `x`/`y`/`d`)
+   - [x] `alg.js`: `XSize`→`PubSize`, `DSize`→`PrvSize`, `Params` fields renamed
+   - [x] All modules: `coze`→`coz` naming (e.g. `SignCozeRaw`→`SignCozRaw`, error messages, comments)
    - [ ] `test_unit.js`: All golden values from Go reference (`tmb`, `cad`, `sig`, `czd`)
 
 2. **Phase 2: Behavioral Additions** — Implement timestamp validation, `RVK_MAX_SIZE`, and `SignPayRaw`.

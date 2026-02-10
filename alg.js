@@ -1,6 +1,6 @@
 "use strict";
 
-// For more documentation and notes, see the main Coze README.
+// For more documentation and notes, see the main Coz README.
 
 export {
 	Algs,
@@ -16,8 +16,8 @@ export {
 	HashAlg,
 	HashSize,
 	SigSize,
-	XSize,
-	DSize,
+	PubSize,
+	PrvSize,
 	Use,
 	CurveOrder,
 	CurveHalfOrder,
@@ -34,7 +34,7 @@ export {
 */
 
 /**
-Algs holds all of the supported Coze algorithms.
+Algs holds all of the supported Coz algorithms.
 */
 const Algs = {
 	UnknownAlg: "UnknownAlg",
@@ -58,7 +58,7 @@ const Algs = {
 };
 
 /**
-FamAlgs holds all of the supported Coze Family algorithms.
+FamAlgs holds all of the supported Coz Family algorithms.
 */
 const FamAlgs = {
 	EC: "EC",
@@ -67,7 +67,7 @@ const FamAlgs = {
 };
 
 /**
-GenAlgs holds all of the supported Coze Genus algorithms.
+GenAlgs holds all of the supported Coz Genus algorithms.
 */
 const GenAlgs = {
 	ECDSA: "ECDSA",
@@ -77,7 +77,7 @@ const GenAlgs = {
 };
 
 /**
-Curves holds all of the supported Coze curve algorithms.
+Curves holds all of the supported Coz curve algorithms.
 */
 const Curves = {
 	P224: "P-224",
@@ -89,7 +89,7 @@ const Curves = {
 };
 
 /**
-Uses holds all of the supported Coze uses.
+Uses holds all of the supported Coz uses.
 */
 const Uses = {
 	Sig: "sig",
@@ -119,10 +119,10 @@ function Params(alg) {
 
 	// SigAlg parameters
 	try {
-		p.XSize = XSize(alg);
-		p.XSizeB64 = Math.ceil(4 * p.XSize / 3);
-		p.DSize = DSize(alg);
-		p.DSizeB64 = Math.ceil(4 * p.DSize / 3);
+		p.PubSize = PubSize(alg);
+		p.PubSizeB64 = Math.ceil(4 * p.PubSize / 3);
+		p.PrvSize = PrvSize(alg);
+		p.PrvSizeB64 = Math.ceil(4 * p.PrvSize / 3);
 		p.Curve = Curve(alg);
 		p.SigSize = SigSize(alg);
 		p.SigSizeB64 = Math.ceil(4 * p.SigSize / 3);
@@ -135,7 +135,7 @@ function Params(alg) {
 
 /**
 Genus returns the genus for an alg (ECDSA, EdDSA, SHA-2, SHA-3).
-See notes on the Go implementation of Coze for more on genus.
+See notes on the Go implementation of Coz for more on genus.
 @param   {Alg}   alg
 @returns {Gen}
 @throws  {error}
@@ -170,7 +170,7 @@ function Genus(alg) {
 
 /**
 Family returns the family for an alg (EC and SHA).
-See notes on the Go implementation of Coze for more on family.
+See notes on the Go implementation of Coz for more on family.
 @param   {Alg}     alg
 @returns {Fam}
 @throws  {error}
@@ -204,7 +204,7 @@ function Family(alg) {
 /**
 Hash returns the hashing algorithm for the given algorithm.  A hash alg can
 return itself.
-See notes on the Go implementation of Coze for more.
+See notes on the Go implementation of Coz for more.
 @param   {Alg}   alg 
 @returns {Hsh}
 @throws  {error}  Unsupported algorithm.  
@@ -251,7 +251,7 @@ SHAKE128 has 128 bits of pre-collision resistance and a capacity of 256,
 although it has arbitrary output size. SHAKE256 has 256 bits of pre-collision
 resistance and a capacity of 512, although it has arbitrary output size.
 
-See notes on the Go implementation of Coze for more.
+See notes on the Go implementation of Coz for more.
 @param   {Alg}     alg
 @returns {number}
 @throws  {error}
@@ -283,7 +283,7 @@ SigSize returns the signature size for the given algorithm in bytes.
 Curve P-521 uses 521 bits.  This is then padded up the the nearest byte (528)
 for R and S. 132 = (528*2)/8
 
-See notes on the Go implementation of Coze for more.
+See notes on the Go implementation of Coz for more.
 @param   {Alg}      alg
 @returns {number}
 @throws  {error}
@@ -308,18 +308,18 @@ function SigSize(alg) {
 }
 
 /**
-XSize returns the signature size for the given signature algorithm in bytes.
-E.g. 64.
+PubSize returns the public key component size for the given signature algorithm
+in bytes. E.g. 64.
 
 ES512 uses Curve P-521 that's 521 bits is padded up the the nearest byte
 (528) for R and S. (528*2)/8 = 132.
 
-See notes on the Go implementation of Coze for more.
+See notes on the Go implementation of Coz for more.
 @param   {Alg}     alg
 @returns {number}
 @throws  {error}
 */
-function XSize(alg) {
+function PubSize(alg) {
 	switch (alg) {
 		case Algs.Ed25519:
 		case Algs.Ed25519ph:
@@ -335,23 +335,23 @@ function XSize(alg) {
 		case Algs.ES512:
 			return 132 // X and Y are 66 bytes (Rounded up for P521)
 		default:
-			throw new Error("alg.XSize: unsupported algorithm: " + alg);
+			throw new Error("alg.PubSize: unsupported algorithm: " + alg);
 	}
 }
 
 /**
-DSize returns the signature size for the given signature algorithm in bytes.
-E.g. 64.
+PrvSize returns the private key component size for the given signature
+algorithm in bytes. E.g. 32.
 
 ES512 uses Curve P-521 that's 521 bits is padded up the the nearest byte
 (528). (528)/8 = 66.
 
-See notes on the Go implementation of Coze for more.
+See notes on the Go implementation of Coz for more.
 @param   {Alg}     alg
 @returns {number}
 @throws  {error}
 */
-function DSize(alg) {
+function PrvSize(alg) {
 	switch (alg) {
 		case Algs.ES224:
 			return 28
@@ -366,7 +366,7 @@ function DSize(alg) {
 		case Algs.ES512:
 			return 66
 		default:
-			throw new Error("alg.DSize: unsupported algorithm: " + alg);
+			throw new Error("alg.PrvSize: unsupported algorithm: " + alg);
 	}
 }
 
@@ -374,7 +374,7 @@ function DSize(alg) {
 Curve returns the curve algorithm for the given signature algorithm.
 E.g. "P-256".
 
-See notes on the Go implementation of Coze for more.
+See notes on the Go implementation of Coz for more.
 @param   {Alg}    alg 
 @returns {Crv}
 @throws  {error}
@@ -402,9 +402,9 @@ function Curve(alg) {
 /**
 Use returns the use for the given algorithm.  Only "sig", "enc", and "dig"
 are currently valid.
-Encryption ("enc") is currently not supported in Coze.
+Encryption ("enc") is currently not supported in Coz.
 
-See notes on the Go implementation of Coze for more.
+See notes on the Go implementation of Coz for more.
 @param   {Alg}     alg 
 @returns {Use}
 @throws  {error}
@@ -422,18 +422,18 @@ function Use(alg) {
 	}
 }
 
-const order = { 
-	"ES224" : BigInt("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D"),
-	"ES256" : BigInt("0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551"),
-	"ES384" : BigInt("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC7634D81F4372DDF581A0DB248B0A77AECEC196ACCC52973"),
-	"ES512" : BigInt("0x1FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA51868783BF2F966B7FCC0148F709A5D03BB5C9B8899C47AEBB6FB71E91386409"),
+const order = {
+	"ES224": BigInt("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF16A2E0B8F03E13DD29455C5C2A3D"),
+	"ES256": BigInt("0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551"),
+	"ES384": BigInt("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC7634D81F4372DDF581A0DB248B0A77AECEC196ACCC52973"),
+	"ES512": BigInt("0x1FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA51868783BF2F966B7FCC0148F709A5D03BB5C9B8899C47AEBB6FB71E91386409"),
 }
 
-const halfOrder = { 
-	"ES224" : order["ES224"] >> BigInt(1),
-	"ES256" : order["ES256"] >> BigInt(1),
-	"ES384" : order["ES384"] >> BigInt(1),
-	"ES512" : order["ES512"] >> BigInt(1),
+const halfOrder = {
+	"ES224": order["ES224"] >> BigInt(1),
+	"ES256": order["ES256"] >> BigInt(1),
+	"ES384": order["ES384"] >> BigInt(1),
+	"ES512": order["ES512"] >> BigInt(1),
 }
 
 /**
@@ -446,7 +446,7 @@ function CurveOrder(alg) {
 	switch (alg) {
 		default:
 			throw new Error("CurveOrder: unsupported curve: " + alg);
-		case  "ES224": case "ES256": case "ES384": case "ES512":
+		case "ES224": case "ES256": case "ES384": case "ES512":
 			return order[alg];
 	}
 }
@@ -461,7 +461,7 @@ function CurveHalfOrder(alg) {
 	switch (alg) {
 		default:
 			throw new Error("CurveHalfOrder: unsupported curve: " + alg);
-	 case  "ES224": case "ES256": case "ES384": case "ES512":
+		case "ES224": case "ES256": case "ES384": case "ES512":
 			return halfOrder[alg];
 	}
 }
