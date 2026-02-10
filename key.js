@@ -72,14 +72,19 @@ verification with a signed message.  See also function Correct.
 @return {boolean}    
  */
 async function Valid(cozKey) {
-	// Import the private key (CryptoKey from Coz key)
-	const CK = await CTK.CryptoKey.FromCozKey(cozKey);
-	// Sign the test msg
-	let msg = "7AtyaCHO2BAG06z0W1tOQlZFWbhxGgqej4k9-HWP3DE-zshRbrE-69DIfgY704_FDYez7h_rEI1WQVKhv5Hd5Q";
-	let sig = await CTK.CryptoKey.SignString(CK, msg);
-	// Get public only key for verification
-	const pubCK = await CTK.CryptoKey.FromCozKey(cozKey, true);
-	return CTK.CryptoKey.VerifyMsg(cozKey.alg, pubCK, msg, sig);
+	if (isEmpty(cozKey.prv)) {
+		console.error("Coz key missing `prv`");
+		return false;
+	}
+	try {
+		let Coze = await import('./coze.js');
+		let msg = `7AtyaCHO2BAG06z0W1tOQlZFWbhxGgqej4k9-HWP3DE-zshRbrE-69DIfgY704_FDYez7h_rEI1WQVKhv5Hd5Q`;
+		let sig = await Coze.SignPay(msg, cozKey);
+		return Coze.VerifyPay(msg, cozKey, sig);
+	} catch (e) {
+		//console.debug("Valid error: " + e);
+		return false;
+	}
 }
 
 
@@ -102,7 +107,10 @@ async function Correct(cozKey) {
 		}
 	}
 
-	if (!isEmpty(cozKey.prv)) {
+	// validate by signing and verifying only when both pub and prv are present.
+	// SubtleCrypto cannot derive pub from prv, so we can only validate when pub
+	// is also available.
+	if (!isEmpty(cozKey.prv) && !isEmpty(cozKey.pub)) {
 		if (!await Valid(cozKey)) {
 			throw new Error("Correct: key is invalid");
 		}

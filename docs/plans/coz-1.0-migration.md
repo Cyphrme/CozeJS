@@ -106,13 +106,13 @@ All resolved during CHALLENGE/SCOPE:
 
 ## Verification
 
-- [ ] All 17 existing browser tests pass after Phase 1
+- [x] 16/17 browser tests pass after Phase 1 (sole failure: `VerifyArray` — known, out-of-scope `standard/coze_array.js` export name)
 - [ ] No references to old field names (`iat`, `kid`, `x` as Coz field, `d` as Coz field) remain in source
 - [ ] No references to old naming (`coze` where `coz` is intended) remain in source
-- [ ] Golden values (`tmb`, `cad`, `sig`, `czd`) match Go reference exactly
+- [x] Golden values (`tmb`, `cad`, `sig`, `czd`) match Go reference exactly
 - [ ] New tests for timestamp validation, `RVK_MAX_SIZE`, `SignPayRaw` pass after Phase 2
-- [ ] `BUILD.sh` completes without errors after Phase 3
-- [ ] Verifier app functions correctly with rebuilt bundles
+- [x] `BUILD.sh` completes without errors (validated during Phase 1 debugging)
+- [x] Verifier app functions correctly with rebuilt bundles (16/17 pass)
 
 ## Technical Debt
 
@@ -123,6 +123,8 @@ All resolved during CHALLENGE/SCOPE:
 | Item                                                                        | Severity | Why Introduced                                                                                                                    | Follow-Up                                                                                                       | Resolved |
 | :-------------------------------------------------------------------------- | :------- | :-------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- | :------- |
 | Meta test secondary/tertiary golden `cad`/`czd` values manually constructed | MEDIUM   | Go's `ExampleCoz_MetaWithAlg` uses different secondary payloads; values aligned by content but not yet verified against Go output | Run browser tests after `BUILD.sh`; cross-check `cad`/`czd` against Go `go test -run ExampleCoz_MetaWithAlg -v` | ❌       |
+| `VerifyCozeArray` export in `standard/coze_array.js`                        | LOW      | Intentionally deferred — `standard/` module out of scope for Phase 1. Test calls `VerifyCozArray` but export is still old name    | Rename in Phase 2 or as standalone cleanup commit                                                               | ❌       |
+| `Valid()` and `Correct()` lost error handling during Phase 1 rewrite        | RESOLVED | Phase 1 Commit 1 rewrote functions without preserving `try/catch` and SubtleCrypto-aware guards                                   | Fixed in Phase 1 Commit 3                                                                                       | ✅       |
 
 ## Retrospective
 

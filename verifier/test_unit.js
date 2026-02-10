@@ -168,7 +168,7 @@ let GoldenCozBad = {
 		"tmb": "U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg",
 		"typ": "cyphr.me/msg/create"
 	},
-	"sig": "OJ4_timgp-wxpLF3hllrbe55wdjhzGOLgRYsGO1BmIMYbo4VKAdgZHnYyIU907ZTJkVr8B81A2K8U4nQA6ONEg" // Note: bad sig is constructed differently — last byte off by one bit
+	"sig": "OJ4_timgp-wxpLF3hllrbe55wdjhzGOLgRYsGO1BmIMYbo4VKAdgZHnYyIU907ZTJkVr8B81A2K8U4nQA6ONEw" // bad signature, last byte is off by one bit.
 }
 
 let Algs = ["ES256", "ES384", "ES512"];

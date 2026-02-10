@@ -56,7 +56,6 @@ fields since this is disallowed in Javascript.
 @throws  {error}                Fails on invalid key, parse error, mismatch fields.
  */
 async function Sign(coz, cozKey, canon) {
-	console.log()
 	if (CZK.IsRevoked(cozKey)) {
 		throw new Error("Sign: Cannot sign with revoked key.");
 	}
