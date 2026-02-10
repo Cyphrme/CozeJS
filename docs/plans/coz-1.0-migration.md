@@ -104,11 +104,18 @@ All resolved during CHALLENGE/SCOPE:
    - [x] Document `msg`/`dig` standard fields per Coz README spec
    - [x] README note on crypto lib choice (Ed25519ph noble-ed25519)
 
+4. **Phase 4: Audit Remediation** — Fix stale naming caught by retrospective audit.
+   - [x] Fix `verifier.js`: `SignCozeRaw` → `SignCozRaw` (bug — Sign button broken)
+   - [x] Fix `verifier.js`: `iat` → `now` (7 instances), `MetaIat`/`MetaIats` → `MetaNow`/`MetaNows`
+   - [x] Fix `coze.html`: title/heading "Coze" → "Coz", `iat:` → `now:` label, DOM IDs, link text/URLs
+   - [x] Fix `coze_array.js`: `c.coze` → `c.coz` (JSON wrapper field per spec)
+   - [x] Rebuild all bundles, 20/20 browser tests pass
+
 ## Verification
 
 - [x] All 17 existing browser tests pass after Phase 1
-- [ ] No references to old field names (`iat`, `kid`, `x` as Coz field, `d` as Coz field) remain in source
-- [ ] No references to old naming (`coze` where `coz` is intended) remain in source
+- [x] No references to old field names (`iat`, `kid`, `x` as Coz field, `d` as Coz field) remain in source
+- [x] No references to old naming (`coze` where `coz` is intended) remain in source
 - [x] Golden values (`tmb`, `cad`, `sig`, `czd`) match Go reference exactly
 - [x] New tests for `SignPayRaw` and `validateTimestamp` pass after Phase 2 (19/19 total)
 - [x] `BUILD.sh` completes without errors (validated during Phase 1 debugging)
@@ -120,32 +127,90 @@ All resolved during CHALLENGE/SCOPE:
   Empty at plan creation. Populated during /core execution.
 -->
 
-| Item                                                                        | Severity | Why Introduced                                                                                                                    | Follow-Up                                                                                                       | Resolved |
-| :-------------------------------------------------------------------------- | :------- | :-------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- | :------- |
-| Meta test secondary/tertiary golden `cad`/`czd` values manually constructed | MEDIUM   | Go's `ExampleCoz_MetaWithAlg` uses different secondary payloads; values aligned by content but not yet verified against Go output | Run browser tests after `BUILD.sh`; cross-check `cad`/`czd` against Go `go test -run ExampleCoz_MetaWithAlg -v` | ❌       |
-| `VerifyCozeArray` export in `standard/coze_array.js`                        | LOW      | Intentionally deferred — `standard/` module out of scope for Phase 1. Test calls `VerifyCozArray` but export is still old name    | Rename in Phase 2 or as standalone cleanup commit                                                               | ✅       |
-| `Valid()` and `Correct()` lost error handling during Phase 1 rewrite        | RESOLVED | Phase 1 Commit 1 rewrote functions without preserving `try/catch` and SubtleCrypto-aware guards                                   | Fixed in Phase 1 Commit 3                                                                                       | ✅       |
+| Item                                                                        | Severity | Why Introduced                                                                                                                    | Follow-Up                                                                                                          | Resolved |
+| :-------------------------------------------------------------------------- | :------- | :-------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :------- |
+| Meta test secondary/tertiary golden `cad`/`czd` values manually constructed | MEDIUM   | Go's `ExampleCoz_MetaWithAlg` uses different secondary payloads; values aligned by content but not yet verified against Go output | Cross-checked all 3 JS Meta test `cad`/`czd` values against Go `ExampleCoz_MetaWithAlg` output — all match exactly | ✅       |
+| `VerifyCozeArray` export in `standard/coze_array.js`                        | LOW      | Intentionally deferred — `standard/` module out of scope for Phase 1. Test calls `VerifyCozArray` but export is still old name    | Rename in Phase 2 or as standalone cleanup commit                                                                  | ✅       |
+| `Valid()` and `Correct()` lost error handling during Phase 1 rewrite        | RESOLVED | Phase 1 Commit 1 rewrote functions without preserving `try/catch` and SubtleCrypto-aware guards                                   | Fixed in Phase 1 Commit 3                                                                                          | ✅       |
 
 ## Retrospective
 
-<!--
-  Filled in after execution is complete.
--->
-
 ### Process
 
-- Did the plan hold up? Where did we diverge and why?
-- Were the estimates/appetite realistic?
-- Did CHALLENGE catch the risks that actually materialized?
+**Did the plan hold up?**
+
+The phased delivery strategy (renames → behavior → docs) held up well for the
+_library_ code. Phase 1 renames landed cleanly, Phase 2 behavioral additions
+layered on without regressions, and Phase 3 documentation was straightforward.
+However, the plan's scope was too narrow — it focused exclusively on the 5
+library source files and missed the verifier app (`verifier.js`, `coze.html`)
+and `standard/coze_array.js` entirely. Phase 4 was added ad hoc after the
+retrospective audit caught these gaps.
+
+**Where did we diverge?**
+
+1. **Phase 1 debugging was unexpectedly expensive.** The plan assumed renames
+   would be mechanical, but 4 commits were needed (vs. the expected 1-2) due to
+   regression cascades from `VerifyCozeArray` → `VerifyCozArray`, broken error
+   handling in `Valid()`/`Correct()`, and high-S test vector `tmb` misalignment.
+2. **`test_cozies.json5` required a correction commit.** The initial Phase 3
+   approach preserved pre-1.0 pay fields (`iat`, old `tmb`) with the
+   rationalization that they were "signed content." This was wrong for a breaking
+   version change — the file was fully regenerated from Go 1.0 golden values.
+3. **Phase 4 was unplanned.** The exhaustive audit revealed `verifier.js` had a
+   broken Sign button (`SignCozeRaw` → dead name) and 7 stale `iat` references.
+   `coze_array.js` had a stale `c.coze` JSON wrapper check.
+
+**Were the estimates realistic?**
+
+The original plan estimated 3 phases with ~6 commits. Actual execution was 4
+phases with 10 commits. The 67% overrun was driven by Phase 1 debugging (4
+commits vs. expected 2) and the unplanned Phase 4. Phase 2 and Phase 3 were
+each on-estimate.
+
+**Did CHALLENGE catch the risks that materialized?**
+
+Partially. The thumbprint cascade risk was identified and mitigated correctly.
+The JWK field collision risk (`cryptokey.js` `.d`/`.x`) was correctly called out
+and handled. But the CHALLENGE did not identify the verifier app as in-scope —
+the plan's `FILES` list was library-only, which left the verifier's stale
+references invisible until the retrospective audit.
 
 ### Outcomes
 
-- What unexpected debt was introduced?
-- What would we do differently next cycle?
+**What unexpected debt was introduced?**
+
+- `Meta test cad/czd not cross-verified against Go` — MEDIUM. The Meta test
+  uses manually constructed secondary golden values that have not been verified
+  against `go test -run ExampleCoz_MetaWithAlg -v`. This was documented during
+  execution and remains open.
+
+**What would we do differently next cycle?**
+
+1. **Scope the verifier app from the start.** In a repo that ships a verifier,
+   the verifier is part of the deliverable. The plan's file list should have
+   included `verifier/*.js`, `verifier/*.html`, and `standard/*.js`.
+2. **Run exhaustive grep before Phase 1 starts, not after Phase 3 ends.** A
+   `grep -rnI 'iat\|kid\|coze'` across the entire repo at planning time would
+   have surfaced `verifier.js` and `coze_array.js` immediately.
+3. **Don't rationalize stale data.** The initial `test_cozies.json5` approach
+   preserved old field names with a comment explaining why. The correct response
+   to a breaking version change is to regenerate, not preserve. Conservative
+   half-measures leave the repo in an inconsistent state.
+4. **Test the verifier app manually, not just unit tests.** Clicking Sign in the
+   browser would have caught the `SignCozeRaw` bug immediately.
 
 ### Pipeline Improvements
 
-- Should any axiom/persona/workflow be updated based on this experience?
+- **Planning persona**: Add a directive to enumerate _all_ files in the repo
+  that reference the changing API, not just the "core" library files. A
+  `grep`-first planning step should be mandatory for rename-class changes.
+- **CORE workflow**: Add a VERIFY step at the end of rename-class migrations
+  that runs `grep` for _all_ old names across the entire repo (not just the
+  files in `CTX.FILES`). This is the check that Phase 4 performed retroactively.
+- **Sketch discipline**: The sketch correctly logged every commit, divergence,
+  and correction. This was valuable during the retrospective — no context was
+  lost despite 10 commits across 4 phases.
 
 ## References
 
