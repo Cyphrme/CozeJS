@@ -1,4 +1,6 @@
-// Tests for Coze simple verifier
+// Tests for Coz simple verifier
+// NOTE: Pay objects contain pre-1.0 field names (e.g. "iat") because they are
+// signed content — changing fields would invalidate signatures.
 
 
 // Good:
@@ -15,11 +17,11 @@
 
 {
 	"alg":"ES256",
-	"iat":1623132000,
-	"kid":"Zami's Majuscule Key.",
-	"d":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
+	"now":1623132000,
+	"tag":"Zami's Majuscule Key.",
+	"prv":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
 	"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
-	"x":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
+	"pub":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
 }
 
 
@@ -37,11 +39,11 @@
 
 {
 	"alg":"ES256",
-	"iat":1623132000,
-	"kid":"Zami's Majuscule Key.",
-	"d":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
+	"now":1623132000,
+	"tag":"Zami's Majuscule Key.",
+	"prv":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
 	"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
-	"x":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
+	"pub":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
 }
 
 
@@ -60,12 +62,12 @@
 
 {
 	"alg":"ES256",
-	"iat":1623132000,
+	"now":1623132000,
 	"rvk":1623132000,
-	"kid":"Zami's Majuscule Key.",
-	"d":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
+	"tag":"Zami's Majuscule Key.",
+	"prv":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
 	"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
-	"x":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
+	"pub":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
 }
 
 
@@ -90,7 +92,7 @@
 
 
 // Good.  Should show [alg,tmb,can,cad,sig,czd]
-// The empty coze, use input alg when alg is empty.   Make sure Meta populates with alg (from input) 
+// The empty coz, use input alg when alg is empty.   Make sure Meta populates with alg (from input) 
 {
 	"pay":{},
 	"sig":"9iesKUSV7L1-xz5yd3A94vCkKLmdOAnrcPXTU3_qeKSuk4RMG7Qz0KyubpATy0XA_fXrcdaxJTvXg6saaQQcVQ"
@@ -98,11 +100,11 @@
 
 {
 	"alg":"ES256",
-	"iat":1623132000,
-	"kid":"Zami's Majuscule Key.",
-	"d":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
+	"now":1623132000,
+	"tag":"Zami's Majuscule Key.",
+	"prv":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
 	"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
-	"x":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
+	"pub":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
 }
 
 
@@ -115,9 +117,9 @@
 
 {
 	"alg":"ES256",
-	"iat":1623132000,
-	"kid":"Zami's Majuscule Key.",
-	"d":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
+	"now":1623132000,
+	"tag":"Zami's Majuscule Key.",
+	"prv":"bNstg4_H3m3SlROufwRSEgibLrBuRq9114OvdapcpVA",
 	"tmb":"cLj8vsYtMBwYkzoFVZHBZo6SNL8wSdCIjCKAwXNuhOk",
-	"x":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
+	"pub":"2nTOaFVm2QLxmUO_SjgyscVHBtvHEfo2rq65MvgNRjORojq39Haq9rXNxvXxwba_Xj0F5vZibJR3isBdOWbo5g"
 }

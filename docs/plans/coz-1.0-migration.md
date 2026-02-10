@@ -98,9 +98,9 @@ All resolved during CHALLENGE/SCOPE:
    - [x] New test cases for `SignPayRaw` and `validateTimestamp`
 
 3. **Phase 3: Build + Documentation** — Rebuild bundles, update docs, document standard fields.
-   - [ ] Rebuild `coze.min.js`, `coze_all.min.js`, `coze_standard.min.js` via `BUILD.sh`
-   - [ ] Update `AGENTS.md` field references
-   - [ ] Update `verifier/test_cozies.json5`
+   - [x] Rebuild `coze.min.js`, `coze_all.min.js`, `coze_standard.min.js` via `BUILD.sh`
+   - [x] Update `AGENTS.md` field references (verified already 1.0 compliant)
+   - [x] Update `verifier/test_cozies.json5` (key fields renamed; pay fields preserved as signed content)
    - [ ] Document `msg`/`dig` standard fields per Coz README spec
    - [ ] Optional: README note on crypto lib choice (Ed25519ph/prehash context)
 
