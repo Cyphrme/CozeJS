@@ -142,6 +142,10 @@ async function Verify(coz, cozKey) {
 	if (!isEmpty(coz.pay.tmb) && coz.pay.tmb !== cozKey.tmb) {
 		throw new Error("Verify: Coz key tmb mismatch with coz.pay.tmb.");
 	}
+	// Spec: "rvk and now must be a positive integer less than 2^53 – 1".
+	if (!isEmpty(coz.pay.now)) {
+		validateTimestamp(coz.pay.now);
+	}
 	// Enforce revoke message max size to prevent DoS.
 	if (!isEmpty(coz.pay.rvk) && coz.pay.rvk > 0 && RVK_MAX_SIZE > 0) {
 		let paySize = JSON.stringify(coz.pay).length;
