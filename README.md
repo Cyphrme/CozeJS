@@ -31,7 +31,7 @@ The simple verifier is self-contained in `/verifier`.
 
 - [Cyphr.me   hosted Power  Coz Verifier](https://cyphr.me/coze)
 - [Cyphr.me   hosted Simple Coz Verifier](https://cyphr.me/coze_verifier_simple/coze.html)
-- [Github.com hosted Simple Coz Verifier](https://cyphrme.github.io/CozeJS/verifier/coze.html)
+- [Github.com hosted Simple Coz Verifier](https://cyphrme.github.io/CozeJS/verifier/coz.html)
 
 To run the simple verifier locally, especially useful for local development, use
 the Go server.  
