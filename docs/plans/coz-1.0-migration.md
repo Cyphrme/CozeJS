@@ -122,18 +122,18 @@ All resolved during CHALLENGE/SCOPE:
    - [x] Update `test_unit.js`: rename all `Coze.SignPay` calls; remove deleted wrapper test
    - [x] Rebuild bundles, 19/19 browser tests pass
 
-   **Commit 2: `key.js` reversions and fixes:**
-   - [ ] Revert `Correct()` to original logic with field renames only (`x`→`pub`, `d`→`prv`).
+   **Commit 2: `key.js` reversions and fixes ✅**
+   - [x] Revert `Correct()` to original logic with field renames only (`x`→`pub`, `d`→`prv`).
          Phase 1 commit `26ae320` rewrote the function minimally (259→164 lines),
          losing: 14-line explanatory JSDoc, `typeof` check, `alg` requirement,
          `Alg.Params()` size validation for `pub`/`tmb`, detailed `console.error`
          messages. Keep only the `!isEmpty(cozKey.pub)` guard on `Valid()` call
          (SubtleCrypto can't derive pub from prv).
-   - [ ] Restore `RecalcX` TODO comment + commented-out function skeleton
-   - [ ] Revert `privateCozKey` → `cozKey` param rename (Zami: "Keep name `privateCozKey`")
-   - [ ] Restore `now` and `tmb` setting in `NewKey()` — original set `iat`/`tmb`/`kid`, our rewrite only kept `tag`
-   - [ ] Revert `Revoke()` to original pattern using `Coze.Sign()` + temp rvk deletion trick; keep `RVK_MAX_SIZE` enforcement
-   - [ ] Rebuild bundles, rerun all tests
+   - [x] Restore `RecalcX` TODO comment + commented-out function skeleton
+   - [x] Revert `privateCozKey` → `cozKey` param rename (Zami: "Keep name `privateCozKey`")
+   - [x] Restore `now` and `tmb` setting in `NewKey()` — original set `iat`/`tmb`/`kid`, our rewrite only kept `tag`
+   - [x] Revert `Revoke()` to original pattern using `Coze.Sign()` + temp rvk deletion trick; keep `RVK_MAX_SIZE` enforcement
+   - [x] Rebuild bundles, 19/19 browser tests pass
 
    **Deferred (not this CORE round):**
    - `cryptokey.js` concerns — pre-existing code, not our diff

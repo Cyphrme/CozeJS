@@ -29,21 +29,32 @@ export {
 const KeyCanon = ["alg", "pub"];
 
 /**
-NewKey generates a new Coz key with given alg, `tmb`, `now`, and `tag`.  
-`tag` is optional. 
-@param   {Alg}      alg       Algorithm to use for key generation.
-@param   {string}   [tag]     Key identifier, readable label.
+NewKey returns a new Coz key.
+If no alg is given, the returned key will be an 'ES256' key.
+@param   {Alg}     [alg=ES256] - Alg of the key to generate. (e.g. "ES256")
+@param   {string}  [tag]       - Key identifier, readable label.
 @returns {Key}
-@throws  {error}     Error, SyntaxError, DOMException, TypeError
  */
 async function NewKey(alg, tag) {
-	let cozKey = await CTK.CryptoKey.ToCozKey(
-		(await CTK.CryptoKey.New(alg)).privateKey
-	);
-	if (!isEmpty(tag)) {
-		cozKey.tag = tag;
+	if (isEmpty(alg)) {
+		alg = Enum.Algs.ES256;
 	}
-	return cozKey;
+	if (Enum.Genus(alg) == Enum.GenAlgs.ECDSA) {
+		var keyPair = await CTK.CryptoKey.New(alg);
+	} else {
+		throw new Error("Coz.NewKey: only ECDSA algs are currently supported.");
+	}
+
+	let k = await CTK.CryptoKey.ToCozKey(keyPair.privateKey);
+	k.now = Math.floor(Date.now() / 1000); // To get Unix from js, divide by 1000.
+	k.tmb = await Thumbprint(k);
+	if (!isEmpty(tag)) {
+		k.tag = tag;
+	} else {
+		k.tag = "My Cyphr.me Key.";
+	}
+
+	return k;
 };
 
 import * as CTK from './cryptokey.js';
@@ -61,95 +72,165 @@ async function Thumbprint(cozKey) {
 	return Can.CanonicalHash64(cozKey, Enum.HashAlg(cozKey.alg), KeyCanon);
 }
 
-
 /**
-Valid validates a private Coz key by signing a message and verifying the
-resulting signature with the key's public component.
-
-Valid always returns false on public-only keys.  Use function "Verify" for
-verification with a signed message.  See also function Correct.
-@param  {Key}        cozKey  A Private Coz Key.
-@return {boolean}    
+Valid returns true only for a valid private Coz key.
+@param   {Key}      privateCozKey  Private Coz key.
+@returns {boolean}
  */
-async function Valid(cozKey) {
-	if (isEmpty(cozKey.prv)) {
+async function Valid(privateCozKey) {
+	if (isEmpty(privateCozKey.prv)) {
 		console.error("Coz key missing `prv`");
 		return false;
 	}
 	try {
 		let Coze = await import('./coze.js');
 		let msg = `7AtyaCHO2BAG06z0W1tOQlZFWbhxGgqej4k9-HWP3DE-zshRbrE-69DIfgY704_FDYez7h_rEI1WQVKhv5Hd5Q`;
-		let sig = await Coze.SignPayRaw(msg, cozKey);
-		return Coze.VerifyPay(msg, cozKey, sig);
+		let sig = await Coze.SignPayRaw(msg, privateCozKey);
+		return Coze.VerifyPay(msg, privateCozKey, sig);
 	} catch (e) {
 		//console.debug("Valid error: " + e);
 		return false;
 	}
 }
 
-
 /**
-Correct checks for the correct construction of a Coz key.  Key must have at
-least one of [`tmb`, `pub`, `prv`] and `alg` set.  
-@param  {Key}     cozKey
-@return {boolean}
-@throws {error}
+Correct checks for the correct construction of a Coz key, but may return
+true on cryptographically invalid public keys.  Key must have `alg` and at
+least one of `tmb`, `pub`, and `prv`. Using input information, if it is possible
+to definitively know the given key is incorrect, Correct returns false, but
+if it's plausible it's correct, Correct returns true. Correct answers the
+question: "Is the given Coz key reasonable using the information provided?".
+Correct is useful for sanity checking public keys without signed messages,
+sanity checking `tmb` only keys, and validating private keys. Use function
+"Verify" instead for verifying public keys when a signed message is
+available. Correct is considered an advanced function. Please understand it
+thoroughly before use.
+
+Correct:
+
+1. Checks the length of `pub` and/or `tmb` against `alg`.
+2. If `pub` and `tmb` are present, verifies correct `tmb`.
+3. If `prv` is present, verifies correct `tmb` and `pub` if present, and verifies
+the key by verifying a generated signature.
+@param   {Key}     ck
+@returns {boolean}
  */
-async function Correct(cozKey) {
-	// Check sizes
-	if (!isEmpty(cozKey.pub) && cozKey.pub.length > 0) {
-		// Verify tmb matches
-		if (!isEmpty(cozKey.tmb)) {
-			let tmb = await Thumbprint(cozKey);
-			if (tmb !== cozKey.tmb) {
-				throw new Error("Correct: Incorrect tmb");
-			}
+async function Correct(ck) {
+	if (typeof ck !== "object") {
+		console.error("Correct: CozKey must be passed in as an object.");
+		return false;
+	}
+
+	if (isEmpty(ck.alg)) {
+		console.error("Correct: Alg must be set");
+		return false;
+	}
+
+	let p = Enum.Params(ck.alg);
+
+	let isTmbEmpty = isEmpty(ck.tmb);
+	let isPubEmpty = isEmpty(ck.pub);
+	let isPrvEmpty = isEmpty(ck.prv);
+
+	if (isTmbEmpty && isPubEmpty && isPrvEmpty) {
+		console.error("Correct: At least one of [pub, tmb, prv] must be set");
+		return false;
+	}
+
+	// tmb only key
+	if (isPubEmpty && isPrvEmpty) {
+		if (isTmbEmpty || ck.tmb.length !== p.HashSizeB64) {
+			console.error("Correct: Incorrect `tmb` size: ", ck.tmb.length);
+			return false;
+		}
+		return true;
+	}
+
+	// prv is not set
+	if (!isPubEmpty && ck.pub.length !== p.PubSizeB64) {
+		console.error("Correct: Incorrect pub size: ", ck.pub.length);
+		return false;
+	}
+
+	// We currently do not support recalculating `pub`, as subtle does not provide
+	// the necessary API for computing the points from the private component.
+	// https://developer.mozilla.org/en-US/docs/Web/API/Crypto/subtle
+	//
+	// See RecalcX docs below
+	//
+	// If prv and (pub and/or tmb) is given, recompute from prv and compare:
+	// let pub = RecalcX(ck);
+
+	// If tmb is set, recompute and compare.
+	if (!isTmbEmpty && !isPubEmpty) {
+		let t = await Thumbprint(ck);
+		if (ck.tmb !== t) {
+			console.error("Correct: Incorrect given `tmb`: ", ck.tmb);
+			return false;
 		}
 	}
 
-	// validate by signing and verifying only when both pub and prv are present.
-	// SubtleCrypto cannot derive pub from prv, so we can only validate when pub
-	// is also available.
-	if (!isEmpty(cozKey.prv) && !isEmpty(cozKey.pub)) {
-		if (!await Valid(cozKey)) {
-			throw new Error("Correct: key is invalid");
-		}
-	}
+	// If private key, validate by signing and verifying.
+	// `pub` must also be populated, for cryptokey, since we do not have RecalcX().
+	if (!isPrvEmpty && !isPubEmpty) {
+		let Coze = await import('./coze.js');
+		let cryptoKey = await CTK.CryptoKey.FromCozKey(ck);
+		let mldBuffer = await Coze.SToArrayBuffer("Test Signing")
+		let sig = await CTK.CryptoKey.SignBuffer(cryptoKey, mldBuffer);
+		let pubKey = await CTK.CryptoKey.FromCozKey(ck, true);
+		let result = await CTK.CryptoKey.VerifyArrayBuffer(ck.alg, pubKey, mldBuffer, sig);
 
-	if (isEmpty(cozKey.pub) && isEmpty(cozKey.prv)) {
-		// tmb only key - verify length
-		if (!isEmpty(cozKey.tmb)) {
-			return true;
+		if (!result) {
+			console.error("Correct: private key invalid.");
+			return false;
 		}
-		throw new Error("Correct: at least one of [pub, tmb, prv] must be set");
 	}
 
 	return true;
-}
+};
+
+
+// TODO Support RecalcX if crypto.subtle provides necessary API for computing
+// https://stackoverflow.com/questions/72151096/how-to-derive-public-key-from-private-key-using-webcryptoapi/72153942#72153942
+//
+// scalar/jacobian/affinity from private component.
+// Alternatively, use noble.
+// function RecalcX(ck) {
+//	let x;
+//	switch (ck.alg) {
+//		case "ES256":
+//		case "ES384":
+//		case "ES512":
+//			break;
+//		default:
+//			x = null;
+//	}
+
+//	return x;
+// }
 
 
 /**
-Revoke creates a self-revoke message from a given private Coz key.
-@param   {Key}       cozKey       A private Coz key.
-@param   {string}    [msg]        An optional message.
-@returns {Coz}                    A signed Coz with revoke message.
-@throws  {error}
+Revoke generates a self revoke message and sets the input key as revoked.
+'rvk' will be set on given cozKey.
+@param   {Key}       cozKey  Private Coz key.
+@param   {string}    [msg]   Optional, human readable non programmatic reason for revoking the key.
+@returns {Coz}               Signed revoke Coz.
+@throws  {error}             Fails if cryptoKeyPrivate is nil or invalid.
  */
 async function Revoke(cozKey, msg) {
+	if (isEmpty(cozKey)) {
+		throw new Error("CozKey.Revoke: Private key not set.  Cannot sign message");
+	}
+
 	let Coze = await import('./coze.js');
 
-	let coz = {
-		pay: {
-			alg: cozKey.alg,
-			now: Math.round((Date.now() / 1000)),
-			rvk: Math.round((Date.now() / 1000)),
-			tmb: await Thumbprint(cozKey),
-			typ: "cyphr.me/key/revoke",
-		}
-	};
-	if (!isEmpty(msg)) {
+	var coz = {};
+	coz.pay = {};
+	if (!isEmpty(msg)) { // Optional revoke message. 
 		coz.pay.msg = msg;
 	}
+	coz.pay.rvk = Math.round((Date.now() / 1000)); // Javascript's Date converted to Unix time.
 
 	// Enforce revoke message max size to prevent DoS.
 	if (Coze.RVK_MAX_SIZE > 0) {
@@ -159,13 +240,19 @@ async function Revoke(cozKey, msg) {
 		}
 	}
 
-	coz.sig = await Coze.SignPayRaw(JSON.stringify(coz.pay), cozKey);
+	// Sign does not allow revoked keys to sign messages.  Temporarily remove
+	// key.rvk and then set back afterward, otherwise set key with new revoke.
+	let prevRvk = cozKey.rvk;
+	delete cozKey.rvk;
+	coz = await Coze.Sign(coz, cozKey);
+	if (prevRvk !== undefined) {
+		cozKey.rvk = prevRvk;
+	} else {
+		cozKey.rvk = coz.pay.rvk;
+	}
 
-	// Set rvk on the key itself.
-	cozKey.rvk = coz.pay.rvk;
-	return coz;
+	return coz
 };
-
 
 /**
 IsRevoked returns true if the given Key is marked as revoked.
