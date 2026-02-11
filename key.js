@@ -45,7 +45,7 @@ async function NewKey(alg, tag) {
 		throw new Error("Coz.NewKey: only ECDSA algs are currently supported.");
 	}
 
-	let k = await CTK.CryptoKey.ToCozKey(keyPair.privateKey);
+	let k = await CTK.CryptoKey.CryptoKeyToCozKey(keyPair.privateKey);
 	k.now = Math.floor(Date.now() / 1000); // To get Unix from js, divide by 1000.
 	k.tmb = await Thumbprint(k);
 	if (!isEmpty(tag)) {

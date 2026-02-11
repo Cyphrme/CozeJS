@@ -116,7 +116,7 @@ var CryptoKey = {
 	},
 
 	/**
-	ToCozKey returns a Coz Key from Javascript's "CryptoKey" type.
+	CryptoKeyToCozKey returns a Coz Key from Javascript's "CryptoKey" type.
 	(https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey) Coz keys are
 	similar to JOSE JWK's but has a few significant differences.
 	See the Coz docs for more on these differences.
@@ -179,7 +179,7 @@ var CryptoKey = {
 	@returns {Key}
 	@throws  {error}
 	*/
-	ToCozKey: async function (cryptoKey) {
+	CryptoKeyToCozKey: async function (cryptoKey) {
 		let exported = await window.crypto.subtle.exportKey(
 			"jwk",
 			cryptoKey
@@ -351,7 +351,7 @@ var CryptoKey = {
 				alg = Alg.Algs.ES512;
 				break;
 			default:
-				throw new Error("CryptoKey.ToCozKey: Unsupported key algorithm.");
+				throw new Error("CryptoKey.CryptoKeyToCozKey: Unsupported key algorithm.");
 		}
 		return alg;
 	}
