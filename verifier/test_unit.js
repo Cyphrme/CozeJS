@@ -2,7 +2,7 @@
 
 // Unit tests are ran using the `browsertestjs` directory/package.
 
-import * as Coze from './coze_all.min.js';
+import * as Coz from './coze_all.min.js';
 
 export {
 	TestBrowserJS, // Export "TestBrowserJS" is expected by `browsertestjs`
@@ -189,13 +189,13 @@ let Algs = ["ES256", "ES384", "ES512"];
 
 // test_Sign
 // Tests each supported alg.
-// 1.) Coze.NewKey
-// 2.) Coze.Sign
-// 3.) Coze.Verify
+// 1.) Coz.NewKey
+// 2.) Coz.Sign
+// 3.) Coz.Verify
 async function test_Sign() {
 	for (const alg of Algs) {
-		let cozKey = await Coze.NewKey(alg);
-		let coz = await Coze.Sign({
+		let cozKey = await Coz.NewKey(alg);
+		let coz = await Coz.Sign({
 			"pay": {
 				"msg": "Test Message",
 				"now": 3,
@@ -203,7 +203,7 @@ async function test_Sign() {
 		},
 			cozKey
 		);
-		if (true !== await Coze.Verify(coz, cozKey)) {
+		if (true !== await Coz.Verify(coz, cozKey)) {
 			return false
 		}
 	}
@@ -213,16 +213,16 @@ async function test_Sign() {
 
 // test_SignPay
 // Tests each supported alg.
-// 1.) Coze.NewKey
-// 2.) Coze.SignPayRaw
-// 3.) Coze.VerifyPay
+// 1.) Coz.NewKey
+// 2.) Coz.SignPayRaw
+// 3.) Coz.VerifyPay
 async function test_SignPay() {
 	for (const alg of Algs) {
-		let cozKey = await Coze.NewKey(alg);
+		let cozKey = await Coz.NewKey(alg);
 		let pay = `{"msg":"Test Message"}`;
-		let sig = await Coze.SignPayRaw(pay, cozKey);
+		let sig = await Coz.SignPayRaw(pay, cozKey);
 
-		if ((await Coze.VerifyPay(pay, cozKey, sig)) !== true) {
+		if ((await Coz.VerifyPay(pay, cozKey, sig)) !== true) {
 			console.error("Failed on alg: " + alg)
 			return false
 		}
@@ -239,7 +239,7 @@ async function test_ValidateTimestamp() {
 	let validValues = [0, 1, 1623132000, 9007199254740991];
 	for (let v of validValues) {
 		try {
-			Coze.validateTimestamp(v);
+			Coz.validateTimestamp(v);
 		} catch (e) {
 			console.error("validateTimestamp: Rejected valid value: " + v);
 			return false;
@@ -250,7 +250,7 @@ async function test_ValidateTimestamp() {
 	let invalidValues = [-1, -100, 9007199254740992, Number.MAX_SAFE_INTEGER + 2];
 	for (let v of invalidValues) {
 		try {
-			Coze.validateTimestamp(v);
+			Coz.validateTimestamp(v);
 			console.error("validateTimestamp: Accepted invalid value: " + v);
 			return false;
 		} catch (e) {
@@ -259,8 +259,8 @@ async function test_ValidateTimestamp() {
 	}
 
 	// Verify MaxSafeTimestamp is exported and correct.
-	if (Coze.MaxSafeTimestamp !== 9007199254740991) {
-		console.error("MaxSafeTimestamp: Incorrect value: " + Coze.MaxSafeTimestamp);
+	if (Coz.MaxSafeTimestamp !== 9007199254740991) {
+		console.error("MaxSafeTimestamp: Incorrect value: " + Coz.MaxSafeTimestamp);
 		return false;
 	}
 
@@ -268,12 +268,12 @@ async function test_ValidateTimestamp() {
 };
 
 async function test_Verify() {
-	let v = await Coze.Verify(GoldenCoz, GoldenCozKey)
+	let v = await Coz.Verify(GoldenCoz, GoldenCozKey)
 	if (v !== true) {
 		console.error(`Coz test: Failed on Verify: Coz: ${GoldenCoz}, Key: ${GoldenCozKey}`)
 		return false
 	}
-	v = await Coze.Verify(GoldenCozBad, GoldenCozKey)
+	v = await Coz.Verify(GoldenCozBad, GoldenCozKey)
 	if (v !== false) {
 		return false
 	}
@@ -283,8 +283,8 @@ async function test_Verify() {
 
 // Tests VerifyCozArray().
 async function test_VerifyArray() {
-	let cozKey = await Coze.NewKey(Coze.Algs.ES256);
-	let cozies = [await Coze.Sign({
+	let cozKey = await Coz.NewKey(Coz.Algs.ES256);
+	let cozies = [await Coz.Sign({
 		"pay": {
 			"msg": "First",
 			"now": 1,
@@ -292,7 +292,7 @@ async function test_VerifyArray() {
 	},
 		cozKey
 	),
-	await Coze.Sign({
+	await Coz.Sign({
 		"pay": {
 			"msg": "Second",
 			"now": 2,
@@ -300,7 +300,7 @@ async function test_VerifyArray() {
 	},
 		cozKey
 	),
-	await Coze.Sign({
+	await Coz.Sign({
 		"pay": {
 			"msg": "Third",
 			"now": 3,
@@ -309,7 +309,7 @@ async function test_VerifyArray() {
 		cozKey
 	),
 	];
-	let v = await Coze.VerifyCozArray(cozies, cozKey);
+	let v = await Coz.VerifyCozArray(cozies, cozKey);
 	if (v.FailedCount !== 0 || v.FailedCozies.length > 0 || !v.VerifiedAll || v.VerifiedCount !== 3) {
 		return false;
 	}
@@ -321,7 +321,7 @@ async function test_VerifyArray() {
 
 // test_Thumbprint tests generating a thumbprint for a known `tmb`.
 async function test_Thumbprint() {
-	let t = await Coze.Thumbprint(GoldenCozKey);
+	let t = await Coz.Thumbprint(GoldenCozKey);
 	if (t !== GoldenCozKey.tmb) {
 		console.error("Thumbprint does not match: Calculated: " + t);
 		return false;
@@ -335,7 +335,7 @@ async function test_Param() {
 	let algs = ["ES224", "ES256", "ES384", "ES512", "Ed25519", "Ed25519ph", "Ed448", "SHA-224", "SHA-256", "SHA-384", "SHA-512", "SHA3-224", "SHA3-256", "SHA3-384", "SHA3-512", "SHAKE128", "SHAKE256"];
 	let results = "";
 	for (let alg of algs) {
-		results += JSON.stringify(Coze.Params(alg)) + "\n";
+		results += JSON.stringify(Coz.Params(alg)) + "\n";
 	}
 	return results;
 };
@@ -344,14 +344,14 @@ async function test_Param() {
 // This test should closely resemble the Go implementation test
 // `ExampleCoz_MetaWithAlg`
 async function test_Meta() {
-	let meta = JSON.stringify(await Coze.Meta(GoldenCoz))
+	let meta = JSON.stringify(await Coz.Meta(GoldenCoz))
 	let goldenMeta = `{"alg":"ES256","now":1623132000,"tmb":"U5XUZots-WmQYcQWmsO751Xk0yeVi9XUKWQ2mGz6Aqg","typ":"cyphr.me/msg/create","can":["msg","alg","now","tmb","typ"],"cad":"XzrXMGnY0QFwAKkr43Hh-Ku3yUS8NVE0BdzSlMLSuTU","sig":"OJ4_timgp-wxpLF3hllrbe55wdjhzGOLgRYsGO1BmIMYbo4VKAdgZHnYyIU907ZTJkVr8B81A2K8U4nQA6ONEg","czd":"xrYMu87EXes58PnEACcDW1t0jF2ez4FCN-njTF0MHNo"}`
 	if (meta != goldenMeta) {
 		throw new Error("meta and goldenMeta not equal")
 	}
 
 	// No coz.pay.alg but parameter alg given.
-	meta = JSON.stringify(await Coze.Meta(JSON.parse(`{
+	meta = JSON.stringify(await Coz.Meta(JSON.parse(`{
     "pay": {
         "msg": "Coz is a cryptographic JSON messaging specification.",
         "now": 1623132000,
@@ -367,7 +367,7 @@ async function test_Meta() {
 
 	// No coz.pay.alg but parameter alg given. No coz.sig so coz.sig must not be
 	// populated and coz.czd not calculated. 
-	meta = JSON.stringify(await Coze.Meta(JSON.parse(`{
+	meta = JSON.stringify(await Coz.Meta(JSON.parse(`{
     "pay": {
         "msg": "Coz is a cryptographic JSON messaging specification.",
         "now": 1623132000,
@@ -383,18 +383,18 @@ async function test_Meta() {
 	// Meta with mismatched alg must fail
 	let errored = false
 	try {
-		meta = JSON.stringify(await Coze.Meta(GoldenCoz, "ES512"))
+		meta = JSON.stringify(await Coz.Meta(GoldenCoz, "ES512"))
 	} catch (e) {
 		errored = true
 	}
 	if (errored == false) {
-		throw new Error("Coze.Meta must fail if coz.pay.alg is mismatched with alg. ")
+		throw new Error("Coz.Meta must fail if coz.pay.alg is mismatched with alg. ")
 	}
 
 	// Meta with no alg must fail.  
 	errored = false
 	try {
-		meta = await Coze.Meta(JSON.parse(`{
+		meta = await Coz.Meta(JSON.parse(`{
 	"pay": {
 			"msg": "Coz is a cryptographic JSON messaging specification.",
 			"now": 1623132000,
@@ -407,7 +407,7 @@ async function test_Meta() {
 		errored = true
 	}
 	if (errored == false) {
-		throw new Error("Coze.Meta must fail if coz.pay.alg is unpopulated and alg is not provided.")
+		throw new Error("Coz.Meta must fail if coz.pay.alg is unpopulated and alg is not provided.")
 	}
 
 	return true
@@ -431,7 +431,7 @@ async function test_Canon() {
 		"Hello World": "!",
 	};
 	let canon = ["Action", "Hello World", "Image", "hello"];
-	return Coze.CanonicalS(object, canon);
+	return Coz.CanonicalS(object, canon);
 };
 
 
@@ -453,14 +453,14 @@ async function test_Canon_repeat() {
 	try {
 		// Test for proper failure on Canonical with duplicate fields in Canon.
 		let badCanon = ["a", "b", "c", "c", "b", "a"];
-		await Coze.CanonicalS(object, badCanon);
+		await Coz.CanonicalS(object, badCanon);
 	} catch (e) {
 		if (e.message !== "Canonical: Canon cannot have duplicate fields.") {
 			throw new Error(e);
 		}
 	}
 	let goodCanon = ["a", "b", "c"];
-	return await Coze.CanonicalS(object, goodCanon);
+	return await Coz.CanonicalS(object, goodCanon);
 };
 
 // test_CanonicalHash tests CanonicalHashB64, for all currently supported
@@ -478,7 +478,7 @@ async function test_CanonicalHashB64() {
 			"hello": "world!",
 			"Image": "6gt3OmYBEDHODQ9SUc8q2momInw6GR9GT_AVN2DTZ5U",
 		};
-		results.push(await Coze.CanonicalHash64(object, alg, canon));
+		results.push(await Coz.CanonicalHash64(object, alg, canon));
 	}
 	for (let gold in golden) {
 		if (golden[gold] != results[gold]) {
@@ -525,12 +525,12 @@ async function test_Duplicate() {
 }
 
 
-// Tests "Coze.Thumbprint" and "Coze.Valid"
+// Tests "Coz.Thumbprint" and "Coz.Valid"
 async function test_Valid() {
-	if (!await Coze.Valid(GoldenCozKey)) {
+	if (!await Coz.Valid(GoldenCozKey)) {
 		return false;
 	}
-	if (await Coze.Valid(GoldenBadCozKey)) {
+	if (await Coz.Valid(GoldenBadCozKey)) {
 		return false;
 	}
 	return true;
@@ -540,8 +540,8 @@ async function test_Valid() {
 // test_Revoke test will test signing a message with a Coz Key, and validating
 // the coz that is generated.
 async function test_Revoke() {
-	let coz = await Coze.Revoke(GoldenCozKey, "Test revoke.");
-	if (!(await Coze.Verify(coz, GoldenCozKey)) || !Coze.IsRevoked(GoldenCozKey)) {
+	let coz = await Coz.Revoke(GoldenCozKey, "Test revoke.");
+	if (!(await Coz.Verify(coz, GoldenCozKey)) || !Coz.IsRevoked(GoldenCozKey)) {
 		return false;
 	}
 	return true;
@@ -551,20 +551,20 @@ async function test_Revoke() {
 // test_RVKMaxSize tests RVK_MAX_SIZE enforcement at both creation and
 // verification.  Uses a fresh key to avoid rvk state from test_Revoke.
 async function test_RVKMaxSize() {
-	let key = await Coze.NewKey("ES256");
+	let key = await Coz.NewKey("ES256");
 
 	// 1. Normal revoke with short message — should succeed.
-	let coz = await Coze.Revoke(key, "Short revoke.");
-	if (!(await Coze.Verify(coz, key))) {
+	let coz = await Coz.Revoke(key, "Short revoke.");
+	if (!(await Coz.Verify(coz, key))) {
 		console.error("RVKMaxSize: Normal revoke failed verification.");
 		return false;
 	}
 
 	// 2. Oversized revoke message — Revoke() should throw.
 	let bigMsg = "x".repeat(3000);
-	let key2 = await Coze.NewKey("ES256");
+	let key2 = await Coz.NewKey("ES256");
 	try {
-		await Coze.Revoke(key2, bigMsg);
+		await Coz.Revoke(key2, bigMsg);
 		console.error("RVKMaxSize: Revoke() accepted oversized message.");
 		return false;
 	} catch (e) {
@@ -576,7 +576,7 @@ async function test_RVKMaxSize() {
 
 	// 3. Verify() rejects oversized revoke payload.
 	//    Construct a coz with rvk > 0 and oversized pay manually.
-	let key3 = await Coze.NewKey("ES256");
+	let key3 = await Coz.NewKey("ES256");
 	let fakeCoz = {
 		"pay": {
 			"alg": key3.alg,
@@ -587,7 +587,7 @@ async function test_RVKMaxSize() {
 		"sig": "AAAA" // Invalid sig, but RVK_MAX_SIZE check is before sig verify.
 	};
 	try {
-		await Coze.Verify(fakeCoz, key3);
+		await Coz.Verify(fakeCoz, key3);
 		console.error("RVKMaxSize: Verify() accepted oversized revoke payload.");
 		return false;
 	} catch (e) {
@@ -615,14 +615,14 @@ async function test_CozKeyCorrect() {
 	];
 	let keys = [GoldenBadCozKey, GoldenCozKey];
 	for (let alg of Algs) {
-		keys.push(await Coze.NewKey(alg));
+		keys.push(await Coz.NewKey(alg));
 	}
 
 	// On failure, correct is throwing errors, so instead of having to wrap each
 	// call to Correct in a try, we can use this wrapper function.
 	let isCorrect = async (k) => {
 		try {
-			if (await Coze.Correct(k)) {
+			if (await Coz.Correct(k)) {
 				return true;
 			}
 			return false;
@@ -688,7 +688,7 @@ async function test_CozKeyCorrect() {
 
 // test_CryptoKeySign contains tests for `cryptokey.js`.
 // Tests
-// 1.) Coze.NewKey
+// 1.) Coz.NewKey
 // 2.) CryptoKey.New (called from new coz key)
 // 3.) CryptoKey.FromCozKey
 // 4.) CryptoKey.SignString
@@ -702,32 +702,32 @@ async function test_CozKeyCorrect() {
 // create an invalid cryptokey. The test will fail at `FromCozKey`.
 async function test_CryptoKeySign() {
 	let msg = "Test Message";
-	let abMsg = await Coze.SToArrayBuffer(msg);
+	let abMsg = await Coz.SToArrayBuffer(msg);
 	let testGSHAFCK = [];
 
 	for (const alg of Algs) {
-		let cozKey = await Coze.NewKey(alg);
-		let cryptoKey = await Coze.CryptoKey.FromCozKey(cozKey);
+		let cozKey = await Coz.NewKey(alg);
+		let cryptoKey = await Coz.CryptoKey.FromCozKey(cozKey);
 
 		// Sign string
-		let sig = await Coze.CryptoKey.SignString(cryptoKey, msg);
-		let pcc = await Coze.CryptoKey.FromCozKey(cozKey, true);
-		let result = await Coze.CryptoKey.VerifyMsg(alg, pcc, msg, sig);
+		let sig = await Coz.CryptoKey.SignString(cryptoKey, msg);
+		let pcc = await Coz.CryptoKey.FromCozKey(cozKey, true);
+		let result = await Coz.CryptoKey.VerifyMsg(alg, pcc, msg, sig);
 		if (result !== true) {
 			return false
 		}
 
 		// Sign array buffer
-		sig = await Coze.CryptoKey.SignBuffer(cryptoKey, abMsg);
-		result = await Coze.CryptoKey.VerifyArrayBuffer(alg, pcc, abMsg, sig);
+		sig = await Coz.CryptoKey.SignBuffer(cryptoKey, abMsg);
+		result = await Coz.CryptoKey.VerifyArrayBuffer(alg, pcc, abMsg, sig);
 		if (result !== true) {
 			console.log(`Test failed on ${alg}`);
 			return false
 		}
-		testGSHAFCK.push(await Coze.CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey));
+		testGSHAFCK.push(await Coz.CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey));
 	}
 	console.log(testGSHAFCK);
-	if (JSON.stringify(testGSHAFCK) !== JSON.stringify([Coze.Algs.SHA256, Coze.Algs.SHA384, Coze.Algs.SHA512])) {
+	if (JSON.stringify(testGSHAFCK) !== JSON.stringify([Coz.Algs.SHA256, Coz.Algs.SHA384, Coz.Algs.SHA512])) {
 		return false;
 	}
 
@@ -737,13 +737,13 @@ async function test_CryptoKeySign() {
 	let e = null;
 	try {
 		// Should error here, but right now (2023/07/14) only Chrome errors here. 
-		let ck = await Coze.CryptoKey.FromCozKey(GoldenBadCozKey);
+		let ck = await Coz.CryptoKey.FromCozKey(GoldenBadCozKey);
 
 		// Firefox does not appear to error on bad private keys until signing.  
 		console.log("Import should have errored for this key:", ck);
 
 		// Sign array buffer.  The following should throw an error everywhere (Chrome/Firefox)
-		let _ = await Coze.CryptoKey.VerifyArrayBuffer(ck.alg, pcc, abMsg, await Coze.CryptoKey.SignBuffer(ck, abMsg));
+		let _ = await Coz.CryptoKey.VerifyArrayBuffer(ck.alg, pcc, abMsg, await Coz.CryptoKey.SignBuffer(ck, abMsg));
 		return false // Should never get to this line.  
 	} catch (error) {
 		e = error;
@@ -760,11 +760,11 @@ async function test_CryptoKeySign() {
 async function test_LowS() {
 	// All cozies should be low-S
 	for (const alg of Algs) {
-		let cozKey = await Coze.NewKey(alg);
+		let cozKey = await Coz.NewKey(alg);
 		let pay = `{"msg":"Test Message"}`;
-		let sig = await Coze.SignPayRaw(pay, cozKey);
+		let sig = await Coz.SignPayRaw(pay, cozKey);
 
-		if ((await Coze.VerifyPay(pay, cozKey, sig)) !== true) {
+		if ((await Coz.VerifyPay(pay, cozKey, sig)) !== true) {
 			console.error("Failed on alg: " + alg)
 			return false
 		}
@@ -780,13 +780,13 @@ async function test_LowS() {
 	for (let c of highSCozies) {
 		let coz = JSON.parse(c);
 
-		let v = await Coze.Verify(coz, GoldenCozKey);
+		let v = await Coz.Verify(coz, GoldenCozKey);
 		if (v) {
 			return ("High-S Should not be valid. ");
 		}
 
-		coz.sig = await Coze.SigToLowS("ES256", coz.sig);
-		v = await Coze.Verify(coz, GoldenCozKey);
+		coz.sig = await Coz.SigToLowS("ES256", coz.sig);
+		v = await Coz.Verify(coz, GoldenCozKey);
 		if (!v) {
 			return ("High-S to low-S should be valid. ");
 		}
@@ -808,11 +808,11 @@ async function test_LowS() {
 // Thankfully, JSON unmarshal does not, making Coz's interpretation of base 64
 // non-malleable since Coz is JSON.
 async function test_B64Canonical() {
-	let ab1 = Coze.B64uToArrayBuffer("Aqg") // correct
+	let ab1 = Coz.B64uToArrayBuffer("Aqg") // correct
 
 	let failed = false
 	try {
-		let ab2 = Coze.B64uToArrayBuffer("Aqh") // non-canonical
+		let ab2 = Coz.B64uToArrayBuffer("Aqh") // non-canonical
 	} catch (e) {
 		failed = true;
 	}
@@ -832,7 +832,7 @@ async function test_B64Canonical() {
 	}
 	failed = false
 	try {
-		failed = await Coze.Verify(nonCanonicalCozSig, GoldenCozKey)
+		failed = await Coz.Verify(nonCanonicalCozSig, GoldenCozKey)
 	} catch (e) {
 		failed = true
 	}
@@ -852,7 +852,7 @@ async function test_B64Canonical() {
 	}
 	failed = false
 	try {
-		failed = await Coze.Verify(nonCanonicalCozTmb, GoldenCozKey)
+		failed = await Coz.Verify(nonCanonicalCozTmb, GoldenCozKey)
 	} catch (e) {
 		failed = true
 	}

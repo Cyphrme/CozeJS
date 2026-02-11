@@ -83,10 +83,10 @@ async function Valid(privateCozKey) {
 		return false;
 	}
 	try {
-		let Coze = await import('./coze.js');
+		let Coz = await import('./coze.js');
 		let msg = `7AtyaCHO2BAG06z0W1tOQlZFWbhxGgqej4k9-HWP3DE-zshRbrE-69DIfgY704_FDYez7h_rEI1WQVKhv5Hd5Q`;
-		let sig = await Coze.SignPayRaw(msg, privateCozKey);
-		return Coze.VerifyPay(msg, privateCozKey, sig);
+		let sig = await Coz.SignPayRaw(msg, privateCozKey);
+		return Coz.VerifyPay(msg, privateCozKey, sig);
 	} catch (e) {
 		//console.debug("Valid error: " + e);
 		return false;
@@ -173,9 +173,9 @@ async function Correct(ck) {
 	// If private key, validate by signing and verifying.
 	// `pub` must also be populated, for cryptokey, since we do not have RecalcX().
 	if (!isPrvEmpty && !isPubEmpty) {
-		let Coze = await import('./coze.js');
+		let Coz = await import('./coze.js');
 		let cryptoKey = await CTK.CryptoKey.FromCozKey(ck);
-		let mldBuffer = await Coze.SToArrayBuffer("Test Signing")
+		let mldBuffer = await Coz.SToArrayBuffer("Test Signing")
 		let sig = await CTK.CryptoKey.SignBuffer(cryptoKey, mldBuffer);
 		let pubKey = await CTK.CryptoKey.FromCozKey(ck, true);
 		let result = await CTK.CryptoKey.VerifyArrayBuffer(ck.alg, pubKey, mldBuffer, sig);
@@ -223,7 +223,7 @@ async function Revoke(cozKey, msg) {
 		throw new Error("CozKey.Revoke: Private key not set.  Cannot sign message");
 	}
 
-	let Coze = await import('./coze.js');
+	let Coz = await import('./coze.js');
 
 	var coz = {};
 	coz.pay = {};
@@ -233,10 +233,10 @@ async function Revoke(cozKey, msg) {
 	coz.pay.rvk = Math.round((Date.now() / 1000)); // Javascript's Date converted to Unix time.
 
 	// Enforce revoke message max size to prevent DoS.
-	if (Coze.RVK_MAX_SIZE > 0) {
+	if (Coz.RVK_MAX_SIZE > 0) {
 		let paySize = JSON.stringify(coz.pay).length;
-		if (paySize > Coze.RVK_MAX_SIZE) {
-			throw new Error(`Revoke: revoke message size ${paySize} exceeds RVK_MAX_SIZE ${Coze.RVK_MAX_SIZE}`);
+		if (paySize > Coz.RVK_MAX_SIZE) {
+			throw new Error(`Revoke: revoke message size ${paySize} exceeds RVK_MAX_SIZE ${Coz.RVK_MAX_SIZE}`);
 		}
 	}
 
@@ -244,7 +244,7 @@ async function Revoke(cozKey, msg) {
 	// key.rvk and then set back afterward, otherwise set key with new revoke.
 	let prevRvk = cozKey.rvk;
 	delete cozKey.rvk;
-	coz = await Coze.Sign(coz, cozKey);
+	coz = await Coz.Sign(coz, cozKey);
 	if (prevRvk !== undefined) {
 		cozKey.rvk = prevRvk;
 	} else {

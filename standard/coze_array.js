@@ -9,7 +9,7 @@ export {
 	VerifyCozArray
 }
 /**
-@typedef {import('../typedef.js').Coze}  Coze
+@typedef {import('../typedef.js').Coz}  Coz
 */
 
 /**
@@ -25,7 +25,7 @@ VerifiedArray - Used when verifying array of coz objects.
 @property {boolean}   VerifiedAll
 @property {number}    VerifiedCount
 @property {number}    FailedCount
-@property {Coze[]}    FailedCozies
+@property {Coz[]}    FailedCozies
 @property {Number[]}  FailedPositions
 */
 
@@ -34,14 +34,14 @@ VerifyCozArray verifies an array of coz objects and returns a single
 "VerifiedArray" object.  If a coz has a key, it is ignored, the given
 cozKey is always used.  Assumes that object has no duplicate fields since
 this is disallowed in Javascript.
-@param  {coze[]}           coze       Array of Coz objects.
+@param  {coz[]}           coz        Array of Coz objects.
 @param  {Key}              cozKey     Javascript object. Coz Key.
 @return {VerifiedArray}
 @throws {error}
 */
-async function VerifyCozArray(coze, cozKey) {
-	if (!Array.isArray(coze)) {
-		return Verify(coze, cozKey)
+async function VerifyCozArray(coz, cozKey) {
+	if (!Array.isArray(coz)) {
+		return Verify(coz, cozKey)
 	}
 
 	/** @type {VerifiedCozArray} */
@@ -54,7 +54,7 @@ async function VerifyCozArray(coze, cozKey) {
 	};
 
 	let i = 0;
-	let copy = [...coze]; // Copy so original isn't modified.
+	let copy = [...coz]; // Copy so original isn't modified.
 	for (let c of copy) {
 
 		if (!isEmpty(c.coz)) { // "coz" encapsulated?

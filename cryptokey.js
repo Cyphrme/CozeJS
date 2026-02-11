@@ -1,6 +1,6 @@
 "use strict";
 
-import * as Coze from './coze.js';
+import * as Coz from './coze.js';
 import * as Alg from './alg.js';
 import * as CZK from './key.js';
 import {
@@ -77,9 +77,9 @@ var CryptoKey = {
 		jwk.kty = Alg.FamAlgs.EC;
 
 		let half = Alg.PubSize(cozKey.alg) / 2;
-		let xyab = await Coze.B64ToUint8Array(cozKey.pub);
-		jwk.x = await Coze.ArrayBufferTo64ut(xyab.slice(0, half));
-		jwk.y = await Coze.ArrayBufferTo64ut(xyab.slice(half));
+		let xyab = await Coz.B64ToUint8Array(cozKey.pub);
+		jwk.x = await Coz.ArrayBufferTo64ut(xyab.slice(0, half));
+		jwk.y = await Coz.ArrayBufferTo64ut(xyab.slice(half));
 
 		// Public CryptoKey "crypto.subtle.importKey" needs key use to be "verify"
 		// even though this doesn't exist in JWK RFC or IANA registry. (2021/05/12)
@@ -190,13 +190,13 @@ var CryptoKey = {
 		// Concatenate x and y, but concatenation is done at the byte level, so:
 		// unencode, concatenated, and encoded.
 		// Note: exported.x and exported.y are JWK field names, not Coz field names.
-		let xui8 = Coze.B64ToUint8Array(exported.x);
-		let yui8 = Coze.B64ToUint8Array(exported.y);
+		let xui8 = Coz.B64ToUint8Array(exported.x);
+		let yui8 = Coz.B64ToUint8Array(exported.y);
 		var xyui8 = new Uint8Array([
 			...xui8,
 			...yui8,
 		]);
-		czk.pub = Coze.ArrayBufferTo64ut(xyui8.buffer);
+		czk.pub = Coz.ArrayBufferTo64ut(xyui8.buffer);
 
 		// Only private ECDSA keys have `d` (JWK field name).
 		if (exported.hasOwnProperty('d')) {
@@ -245,7 +245,7 @@ var CryptoKey = {
 	@returns {B64}
 	*/
 	SignBufferB64: async function (cryptoKey, arrayBuffer) {
-		return await Coze.ArrayBufferTo64ut(await CryptoKey.SignBuffer(cryptoKey, arrayBuffer));
+		return await Coz.ArrayBufferTo64ut(await CryptoKey.SignBuffer(cryptoKey, arrayBuffer));
 	},
 
 	/**
@@ -256,7 +256,7 @@ var CryptoKey = {
 	@returns {B64}
 	*/
 	SignString: async function (cryptoKey, utf8) {
-		return await CryptoKey.SignBufferB64(cryptoKey, await Coze.SToArrayBuffer(utf8));
+		return await CryptoKey.SignBufferB64(cryptoKey, await Coz.SToArrayBuffer(utf8));
 	},
 
 	/**
@@ -299,7 +299,7 @@ var CryptoKey = {
 	@returns {boolean}
 	*/
 	VerifyMsg: async function (alg, cryptoKey, msg, sig) {
-		return CryptoKey.VerifyArrayBuffer(alg, cryptoKey, await Coze.SToArrayBuffer(msg), await Coze.B64uToArrayBuffer(sig));
+		return CryptoKey.VerifyArrayBuffer(alg, cryptoKey, await Coz.SToArrayBuffer(msg), await Coz.B64uToArrayBuffer(sig));
 	},
 
 	/**
@@ -400,9 +400,9 @@ on "low-S"
 @throws  {error}
 */
 async function SigToLowS(alg, sig) {
-	let ab = await Coze.B64uToArrayBuffer(sig);
+	let ab = await Coz.B64uToArrayBuffer(sig);
 	let lowSSigAB = await sigToLowSArrayBuffer(alg, ab);
-	return Coze.ArrayBufferTo64ut(lowSSigAB);
+	return Coz.ArrayBufferTo64ut(lowSSigAB);
 }
 
 /** SigIsLowS checks if S in sig is a "low-S".  See the Coz docs on "low-S"
