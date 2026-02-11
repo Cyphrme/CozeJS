@@ -45,10 +45,10 @@ const PayCanon = ["alg", "now", "tmb", "typ"];
 
 
 /**
-Sign signs in place coz.pay.  It populates/replaces alg and tmb using
-the given private Coz key and populates/updates now if non-zero. Returns the
-same, but updated, coz.  The optional canon is used to canonicalize pay before
-signing.  If needing a coz without alg, tmb, or now, use SignCozRaw.  
+Sign signs in place coz.pay.  It populates/replaces alg, tmb, and now using
+the given private Coz key. Returns the same, but updated, coz.  The optional
+canon is used to canonicalize pay before signing.  If needing a coz without
+alg, tmb, or now, use SignCozRaw.
 
 Sign, SignCozRaw, and Verify assumes that object has no duplicate
 fields since this is disallowed in Javascript.
@@ -65,10 +65,7 @@ async function Sign(coz, cozKey, canon) {
 
 	coz.pay.alg = cozKey.alg;
 	coz.pay.tmb = await CZK.Thumbprint(cozKey);
-	// If now is non-zero, update it to the current time.
-	if (!isEmpty(coz.pay.now)) {
-		coz.pay.now = Math.round((Date.now() / 1000)); // Javascript's Date converted to Unix time.
-	}
+	coz.pay.now = Math.round((Date.now() / 1000)); // Unix timestamp.
 
 	if (!isEmpty(canon)) {
 		coz.pay = await Can.Canonical(coz.pay, canon);
