@@ -1,6 +1,6 @@
 "use strict";
 
-import * as Coze from './coze.min.js';
+import * as Coz from './coz.min.js';
 var InputMsg;
 var InputKey;
 var OutMsg;
@@ -10,8 +10,8 @@ var RvkMsg;
 // Metas
 var MetaAlg;
 var MetaTmb;
-var MetaIat;
-var MetaIats;
+var MetaNow;
+var MetaNows;
 var MetaTyp;
 var MetaCan;
 var MetaCad;
@@ -20,7 +20,7 @@ var MetaCzd;
 
 // DOM load
 document.addEventListener('DOMContentLoaded', () => {
-	if (window.location.hostname === "localhost"){
+	if (window.location.hostname === "localhost") {
 		// Fix for local deving.  Change from `cyphr.me/coze` to
 		// `localhost/coze` 
 		document.getElementById('VerifierLink').href = "/coze";
@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Meta
 	MetaAlg = document.querySelector("#MetaAlg");
 	MetaTmb = document.querySelector("#MetaTmb");
-	MetaIat = document.querySelector("#MetaIat");
-	MetaIats = document.querySelector("#MetaIats");
+	MetaNow = document.querySelector("#MetaNow");
+	MetaNows = document.querySelector("#MetaNows");
 	MetaTyp = document.querySelector("#MetaTyp");
 	MetaCan = document.querySelector("#MetaCan");
 	MetaCad = document.querySelector("#MetaCad");
@@ -51,15 +51,15 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.getElementById('CopyBtn').addEventListener('click', Copy);
 });
 
-function Copy(){
-    // Select the text.
-    var selection = window.getSelection();
-    var range = document.createRange();
-    range.selectNodeContents(OutMsg);
-    selection.removeAllRanges();
-    selection.addRange(range);
-    //Add to clipboard.
-    document.execCommand('copy');
+function Copy() {
+	// Select the text.
+	var selection = window.getSelection();
+	var range = document.createRange();
+	range.selectNodeContents(OutMsg);
+	selection.removeAllRanges();
+	selection.addRange(range);
+	//Add to clipboard.
+	document.execCommand('copy');
 }
 
 
@@ -70,32 +70,32 @@ async function Verify() {
 	console.log(InputMsg.value, InputKey.value);
 
 	try {
-		var coze = JSON.parse(InputMsg.value);
+		var coz = JSON.parse(InputMsg.value);
 	} catch (e) {
-		OutMsg.innerText = "❌ Error parsing coze - " + e;
+		OutMsg.innerText = "❌ Error parsing coz - " + e;
 		return;
 	}
 
 	try {
 		var key = JSON.parse(InputKey.value);
-		var verified = await Coze.Verify(coze, key);
+		var verified = await Coz.Verify(coz, key);
 
-		if (Coze.IsRevoked(key)) {
+		if (Coz.IsRevoked(key)) {
 			RvkMsg.innerText = "⚠️ Key is revoked since " + new Date(key.rvk * 1000).toLocaleString()
 		}
 
 		if (verified) {
 			OutMsg.innerText = "✅ Verified";
-			Meta(coze, key);
+			Meta(coz, key);
 			return;
 		}
-	} catch (e) {}
-	// Still show meta on Coze even if key is bad or signature failed.  Generate
-	// key with alg from select for contextual cozies (such as the empty coze).  
+	} catch (e) { }
+	// Still show meta on Coz even if key is bad or signature failed.  Generate
+	// key with alg from select for contextual cozies (such as the empty coz).  
 	let AlgFromSelectKey = {
 		alg: AlgSelect.value
 	};
-	Meta(coze, AlgFromSelectKey);
+	Meta(coz, AlgFromSelectKey);
 }
 
 async function Sign() {
@@ -103,7 +103,7 @@ async function Sign() {
 	console.log(InputMsg.value, InputKey.value);
 
 	try {
-		var cozeKey = JSON.parse(InputKey.value);
+		var cozKey = JSON.parse(InputKey.value);
 	} catch (e) {
 		console.log();
 		OutMsg.innerText = "❌ Error parsing key - " + e;
@@ -111,60 +111,60 @@ async function Sign() {
 	}
 
 	try {
-		var coze = JSON.parse(InputMsg.value);
+		var coz = JSON.parse(InputMsg.value);
 	} catch (e) {
 		// Assume string on JSON parse error. 
 		let pay = {
 			msg: InputMsg.value,
-			alg: cozeKey.alg,
-			iat: Math.floor(Date.now() / 1000), // To get Unix time from js time, divide by 1000. 
-			tmb: cozeKey.tmb,
+			alg: cozKey.alg,
+			now: Math.floor(Date.now() / 1000), // To get Unix time from js time, divide by 1000. 
+			tmb: cozKey.tmb,
 			typ: "cyphr.me/msg/create"
 		};
 
-		coze = {
+		coz = {
 			pay: pay
 		};
 	}
 
 	// Set the correct tmb if present in pay.  
-	if (('tmb' in coze)) {
-		coze.pay.tmb = cozeKey.tmb
+	if (('tmb' in coz)) {
+		coz.pay.tmb = cozKey.tmb
 	}
 
 	// Set the correct alg if present in pay.  
-	if (('alg' in coze)) {
-		coze.pay.alg = cozeKey.alg
+	if (('alg' in coz)) {
+		coz.pay.alg = cozKey.alg
 	}
 
-	// Update iat if present in pay.  
-	if (('iat' in coze)) {
-		coze.pay.iat = Math.round((Date.now() / 1000)); // Javascript's Date converted to Unix time.
+	// Update now if present in pay.  
+	if (('now' in coz)) {
+		coz.pay.now = Math.round((Date.now() / 1000)); // Javascript's Date converted to Unix time.
 	}
 
 
 	try {
-		var newCoze = await Coze.SignCozeRaw(coze, cozeKey);
+		var newCoz = await Coz.SignCozRaw(coz, cozKey);
 	} catch (e) {
 		console.log();
 		OutMsg.innerText = "❌ Error: " + e;
 		return;
 	}
 
-	console.log(newCoze);
+	console.log(newCoz);
 
 
-	OutMsg.textContent = JSON.stringify(newCoze, null, "  ");
+	OutMsg.textContent = JSON.stringify(newCoz, null, "  ");
 
 
-	Meta(newCoze, cozeKey);
+	Meta(newCoz, cozKey);
 }
 
 
 async function GenKey() {
 	Reset();
 	try {
-		var newKey = await Coze.NewKey(AlgSelect.value);
+		var newKey = await Coz.NewKey(AlgSelect.value);
 	} catch (e) {
 		console.log();
 		OutMsg.innerText = "❌ Error: " + e;
@@ -186,8 +186,8 @@ function Reset() {
 
 	// Meta
 	MetaAlg.textContent = "";
-	MetaIat.textContent = "";
-	MetaIats.textContent = "";
+	MetaNow.textContent = "";
+	MetaNows.textContent = "";
 	MetaTmb.textContent = "";
 	MetaTyp.textContent = "";
 	MetaCan.textContent = "";
@@ -197,23 +197,23 @@ function Reset() {
 }
 
 
-async function Meta(coze, key) {
-	console.log(coze, key);
+async function Meta(coz, key) {
+	console.log(coz, key);
 	let meta = {}
 
 	// Set fields for meta.  May be empty on "contextual" cozies.
 	if ('alg' in key) {
-		meta = await Coze.Meta(coze, key.alg);
+		meta = await Coz.Meta(coz, key.alg);
 	} else {
-		meta = await Coze.Meta(coze);
+		meta = await Coz.Meta(coz);
 	}
 
 	console.log(meta)
 
 	MetaAlg.textContent = meta.alg;
-	if (('iat' in meta)) {
-		MetaIat.textContent = meta.iat;
-		MetaIats.textContent = "(" + new Date(meta.iat * 1000).toLocaleString() + ")";
+	if (('now' in meta)) {
+		MetaNow.textContent = meta.now;
+		MetaNows.textContent = "(" + new Date(meta.now * 1000).toLocaleString() + ")";
 	}
 	MetaTmb.textContent = meta.tmb;
 	MetaTyp.textContent = meta.typ;

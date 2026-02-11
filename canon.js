@@ -4,7 +4,7 @@ import {
 	isEmpty,
 	SToArrayBuffer,
 	ArrayBufferTo64ut
-} from './coze.js';
+} from './coz.js';
 
 export {
 	Canon,

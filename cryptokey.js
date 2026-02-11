@@ -1,11 +1,11 @@
 "use strict";
 
-import * as Coze from './coze.js';
+import * as Coz from './coz.js';
 import * as Alg from './alg.js';
 import * as CZK from './key.js';
 import {
 	isEmpty
-} from './coze.js';
+} from './coz.js';
 
 
 export {
@@ -33,7 +33,7 @@ var CryptoKey = {
 	@return {CryptoKeyPair}
 	@throws {error}         Error, SyntaxError, DOMException, TypeError
 	*/
-	New: async function(alg) {
+	New: async function (alg) {
 		if (isEmpty(alg)) {
 			alg = Alg.Algs.ES256;
 		}
@@ -44,9 +44,9 @@ var CryptoKey = {
 			case Alg.Algs.ES384:
 			case Alg.Algs.ES512:
 				return await window.crypto.subtle.generateKey({
-						name: Alg.GenAlgs.ECDSA,
-						namedCurve: Alg.Curve(alg)
-					},
+					name: Alg.GenAlgs.ECDSA,
+					namedCurve: Alg.Curve(alg)
+				},
 					true,
 					["sign", "verify"]
 				);
@@ -56,46 +56,47 @@ var CryptoKey = {
 	},
 
 	/**
-	FromCozeKey returns a Javascript CryptoKey from a Coze Key.  Only supports
+	FromCozKey returns a Javascript CryptoKey from a Coz Key.  Only supports
 	ECDSA because of Crypto.subtle limitations.  Throws error on invalid keys.
 	https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#JSON_Web_Key
-	@param   {Key}        cozeKey          Coze key.
+	@param   {Key}        cozKey           Coz key.
 	@param   {boolean}    [public=false]   Return only a public key.
 	@returns {CryptoKey}
 	@throws  {error}                Error, SyntaxError, DOMException, TypeError
 	*/
-	FromCozeKey: async function(cozeKey, onlyPublic) {
-		if (Alg.Genus(cozeKey.alg) != Alg.GenAlgs.ECDSA) {
-			throw new Error("CryptoKey.FromCozeKey: unsupported CryptoKey algorithm: " + cozeKey.alg);
+	FromCozKey: async function (cozKey, onlyPublic) {
+		if (Alg.Genus(cozKey.alg) != Alg.GenAlgs.ECDSA) {
+			throw new Error("CryptoKey.FromCozKey: unsupported CryptoKey algorithm: " + cozKey.alg);
 		}
 
-		// Create a new JWK that can be used to create and "import" a CryptoKey
+		// Create a new JWK that can be used to create and "import" a CryptoKey.
+		// JWK fields x, y, d are W3C/JOSE standard names — NOT Coz field names.
 		var jwk = {};
 		jwk.use = Alg.Uses.Sig;
-		jwk.crv = Alg.Curve(cozeKey.alg);
+		jwk.crv = Alg.Curve(cozKey.alg);
 		jwk.kty = Alg.FamAlgs.EC;
 
-		let half = Alg.XSize(cozeKey.alg) / 2;
-		let xyab = await Coze.B64ToUint8Array(cozeKey.x);
-		jwk.x = await Coze.ArrayBufferTo64ut(xyab.slice(0, half));
-		jwk.y = await Coze.ArrayBufferTo64ut(xyab.slice(half));
+		let half = Alg.PubSize(cozKey.alg) / 2;
+		let xyab = await Coz.B64ToUint8Array(cozKey.pub);
+		jwk.x = await Coz.ArrayBufferTo64ut(xyab.slice(0, half));
+		jwk.y = await Coz.ArrayBufferTo64ut(xyab.slice(half));
 
 		// Public CryptoKey "crypto.subtle.importKey" needs key use to be "verify"
 		// even though this doesn't exist in JWK RFC or IANA registry. (2021/05/12)
 		// Gawd help us.  Private CryptoKey needs key `use` to be "sign".
-		if (isEmpty(cozeKey.d) || onlyPublic) {
+		if (isEmpty(cozKey.prv) || onlyPublic) {
 			var signOrVerify = "verify";
 		} else {
 			signOrVerify = "sign";
-			jwk.d = cozeKey.d;
+			jwk.d = cozKey.prv;
 		}
 
 		return await crypto.subtle.importKey(
 			"jwk",
 			jwk, {
-				name: Alg.GenAlgs.ECDSA,
-				namedCurve: jwk.crv,
-			},
+			name: Alg.GenAlgs.ECDSA,
+			namedCurve: jwk.crv,
+		},
 			true,
 			[signOrVerify]
 		);
@@ -107,25 +108,25 @@ var CryptoKey = {
 	@param   {CryptoKey} cryptoKey
 	@returns {void}
 	*/
-	ToPublic: async function(cryptoKey) {
-		delete cryptoKey.d; // Remove private `d` from the key.
+	ToPublic: async function (cryptoKey) {
+		delete cryptoKey.d; // Remove private `d` from the key (JWK field name).
 		// Only ["verify"] is a valid `key_ops` value for a public CryptoKey.
 		// `key_ops` must be an array.
 		cryptoKey.key_ops = ["verify"];
 	},
 
 	/**
-	CryptoKeyToCozeKey returns a Coze Key from Javascript's "CryptoKey" type.
-	(https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey) Coze keys are
-	similiar to JOSE JWK's but has a few significant differences.
-	See the Coze docs for more on these differences.
+	CryptoKeyToCozKey returns a Coz Key from Javascript's "CryptoKey" type.
+	(https://developer.mozilla.org/en-US/docs/Web/API/CryptoKey) Coz keys are
+	similar to JOSE JWK's but has a few significant differences.
+	See the Coz docs for more on these differences.
 	
-	- Coze Byte-to-string values are always b64ut, "RFC 4648 base64 URI Safe
+	- Coz Byte-to-string values are always b64ut, "RFC 4648 base64 URI Safe
 	Truncated".
-	- Coze keys also use the field `alg` to denote everything about the key:
+	- Coz keys also use the field `alg` to denote everything about the key:
 	it's use, hashing algorithm, curve, family, signature size, private
 	component size, public component size, etc...
-	- A Coze key's Thumbprint's hashing algorithm must always be in alignment
+	- A Coz key's Thumbprint's hashing algorithm must always be in alignment
 	with the alg.  This is unlike JOSE which appears to use SHA-256 even for
 	keys that don't use that algorithm.
 	
@@ -164,7 +165,7 @@ var CryptoKey = {
 	it.  However, this may need to be added again later if the key is further
 	manipulated by SubtleCrypto. 
 	
-	Coze does not use "crv", "kty", or "use" and instead relies solely on
+	Coz does not use "crv", "kty", or "use" and instead relies solely on
 	"alg". Since alg is not given, it's assumed from `crv` while `kty`is
 	ignored.
 	
@@ -178,7 +179,7 @@ var CryptoKey = {
 	@returns {Key}
 	@throws  {error}
 	*/
-	ToCozeKey: async function(cryptoKey) {
+	CryptoKeyToCozKey: async function (cryptoKey) {
 		let exported = await window.crypto.subtle.exportKey(
 			"jwk",
 			cryptoKey
@@ -187,29 +188,30 @@ var CryptoKey = {
 		var czk = {};
 		czk.alg = await CryptoKey.algFromCrv(exported.crv);
 		// Concatenate x and y, but concatenation is done at the byte level, so:
-		// unencode, concatenated, and encoded. 
-		let xui8 = Coze.B64ToUint8Array(exported.x);
-		let yui8 = Coze.B64ToUint8Array(exported.y);
+		// unencode, concatenated, and encoded.
+		// Note: exported.x and exported.y are JWK field names, not Coz field names.
+		let xui8 = Coz.B64ToUint8Array(exported.x);
+		let yui8 = Coz.B64ToUint8Array(exported.y);
 		var xyui8 = new Uint8Array([
 			...xui8,
 			...yui8,
 		]);
-		czk.x = Coze.ArrayBufferTo64ut(xyui8.buffer);
+		czk.pub = Coz.ArrayBufferTo64ut(xyui8.buffer);
 
-		// Only private ECDSA keys have `d`.
+		// Only private ECDSA keys have `d` (JWK field name).
 		if (exported.hasOwnProperty('d')) {
-			czk.d = exported.d;
+			czk.prv = exported.d;
 		}
 
 		czk.tmb = await CZK.Thumbprint(czk);
-		// console.log("exported: " + JSON.stringify(exported), "Coze Key: " + JSON.stringify(czk)); // Debugging
+		// console.log("exported: " + JSON.stringify(exported), "Coz Key: " + JSON.stringify(czk)); // Debugging
 		return czk;
 	},
 
 	/**
 	Uses a Javascript `CryptoKey` to sign a array buffer.  Returns array buffer
 	bytes of the signature. Returns empty buffer on error.The signing algorithm's
-	hashing algorithm is used for the digest of the payload.  Coze uses UTF-8.
+	hashing algorithm is used for the digest of the payload.  Coz uses UTF-8.
 	https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#JSON_Web_Key
 	https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
 	@param   {CryptoKey}      cryptoKey
@@ -217,14 +219,14 @@ var CryptoKey = {
 	@returns {ArrayBuffer}
 	@throws  {error}
 	*/
-	SignBuffer: async function(cryptoKey, arrayBuffer) {
+	SignBuffer: async function (cryptoKey, arrayBuffer) {
 		let alg = await CryptoKey.algFromCrv(cryptoKey.algorithm.namedCurve);
 		let sig = await window.crypto.subtle.sign({
-				name: Alg.GenAlgs.ECDSA,
-				hash: {
-					name: Alg.HashAlg(alg)
-				},
+			name: Alg.GenAlgs.ECDSA,
+			hash: {
+				name: Alg.HashAlg(alg)
 			},
+		},
 			cryptoKey,
 			arrayBuffer
 		);
@@ -237,24 +239,24 @@ var CryptoKey = {
 	/**
 	SignBufferB64 signs a buffer with a CryptoKey and returns the b64ut
 	signature. The input is hashed before it's signed.
-	Coze uses UTF-8.
+	Coz uses UTF-8.
 	@param   {CryptoKey}   cryptoKey       Private CryptoKey
 	@param   {ArrayBuffer} arrayBuffer     ArrayBuffer to sign.
 	@returns {B64}
 	*/
-	SignBufferB64: async function(cryptoKey, arrayBuffer) {
-		return await Coze.ArrayBufferTo64ut(await CryptoKey.SignBuffer(cryptoKey, arrayBuffer));
+	SignBufferB64: async function (cryptoKey, arrayBuffer) {
+		return await Coz.ArrayBufferTo64ut(await CryptoKey.SignBuffer(cryptoKey, arrayBuffer));
 	},
 
 	/**
 	SignString signs a string and returns the b64ut signature.
-	Coze uses UTF-8.
+	Coz uses UTF-8.
 	@param   {CryptoKey} cryptoKey      Private key used for signing.
 	@param   {string}    utf8           String to sign.
 	@returns {B64}
 	*/
-	SignString: async function(cryptoKey, utf8) {
-		return await CryptoKey.SignBufferB64(cryptoKey, await Coze.SToArrayBuffer(utf8));
+	SignString: async function (cryptoKey, utf8) {
+		return await CryptoKey.SignBufferB64(cryptoKey, await Coz.SToArrayBuffer(utf8));
 	},
 
 	/**
@@ -267,8 +269,8 @@ var CryptoKey = {
 	@param   {ArrayBuffer} msg                 Message.
 	@returns {boolean}
 	*/
-	VerifyArrayBuffer: async function(alg, cryptoKey, msg, sig) {
-		// Currently, CozeJS is only ECDSA.  For ECDSA, only accept low-S
+	VerifyArrayBuffer: async function (alg, cryptoKey, msg, sig) {
+		// Currently, CozJS is only ECDSA.  For ECDSA, only accept low-S
 		// signatures.  
 		if (!(await IsSigLowS(alg, sig))) {
 			return false;
@@ -277,11 +279,11 @@ var CryptoKey = {
 		// Guarantee key is not private to appease Javascript 😔:
 		await CryptoKey.ToPublic(cryptoKey);
 		return await window.crypto.subtle.verify({
-				name: Alg.GenAlgs.ECDSA,
-				hash: {
-					name: await CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey)
-				},
+			name: Alg.GenAlgs.ECDSA,
+			hash: {
+				name: await CryptoKey.GetSignHashAlgoFromCryptoKey(cryptoKey)
 			},
+		},
 			cryptoKey,
 			sig,
 			msg);
@@ -296,8 +298,8 @@ var CryptoKey = {
 	@param   {Sig}        sig               B64 signature.
 	@returns {boolean}
 	*/
-	VerifyMsg: async function(alg, cryptoKey, msg, sig) {
-		return CryptoKey.VerifyArrayBuffer(alg, cryptoKey, await Coze.SToArrayBuffer(msg), await Coze.B64uToArrayBuffer(sig));
+	VerifyMsg: async function (alg, cryptoKey, msg, sig) {
+		return CryptoKey.VerifyArrayBuffer(alg, cryptoKey, await Coz.SToArrayBuffer(msg), await Coz.B64uToArrayBuffer(sig));
 	},
 
 	/**
@@ -323,7 +325,7 @@ var CryptoKey = {
 	@returns {Hsh}
 	@throws  {error}                Fails if alg is not supported.
 	*/
-	GetSignHashAlgoFromCryptoKey: async function(cryptoKey) {
+	GetSignHashAlgoFromCryptoKey: async function (cryptoKey) {
 		return Alg.HashAlg(await CryptoKey.algFromCrv(cryptoKey.algorithm.namedCurve));
 	},
 
@@ -334,7 +336,7 @@ var CryptoKey = {
 	@returns {Alg}
 	@throws  {error}
 	*/
-	algFromCrv: async function(crv) {
+	algFromCrv: async function (crv) {
 		switch (crv) {
 			case Alg.Curves.P224:
 				var alg = Alg.Algs.ES224;
@@ -349,7 +351,7 @@ var CryptoKey = {
 				alg = Alg.Algs.ES512;
 				break;
 			default:
-				throw new Error("CryptoKey.ToCozeKey: Unsupported key algorithm.");
+				throw new Error("CryptoKey.CryptoKeyToCozKey: Unsupported key algorithm.");
 		}
 		return alg;
 	}
@@ -358,7 +360,7 @@ var CryptoKey = {
 
 
 /** 
-Checks if S is a "low-S".  See the Coze docs on "Low-S"
+Checks if S is a "low-S".  See the Coz docs on "Low-S"
 @param   {Alg}        alg
 @param   {BigInt}     s
 @returns {BigInt}
@@ -372,7 +374,7 @@ function IsLowS(alg, s) {
 }
 
 /** 
-Makes sure that s is a "low-S".  See the Coze docs on "Low-S" and the Go
+Makes sure that s is a "low-S".  See the Coz docs on "Low-S" and the Go
 package's "ToLowS" function.  
 @param   {Alg}       alg
 @param   {BigInt}    s
@@ -390,7 +392,7 @@ function toLowS(alg, s) {
 }
 
 /** 
-Makes sure that S in sig is a "low-S" and converts if needed.  See the Coze docs
+Makes sure that S in sig is a "low-S" and converts if needed.  See the Coz docs
 on "low-S"
 @param   {Alg}      alg
 @param   {Sig}      sig
@@ -398,12 +400,12 @@ on "low-S"
 @throws  {error}
 */
 async function SigToLowS(alg, sig) {
-	let ab = await Coze.B64uToArrayBuffer(sig);
+	let ab = await Coz.B64uToArrayBuffer(sig);
 	let lowSSigAB = await sigToLowSArrayBuffer(alg, ab);
-	 return Coze.ArrayBufferTo64ut(lowSSigAB);
+	return Coz.ArrayBufferTo64ut(lowSSigAB);
 }
 
-/** SigIsLowS checks if S in sig is a "low-S".  See the Coze docs on "low-S"
+/** SigIsLowS checks if S in sig is a "low-S".  See the Coz docs on "low-S"
 @param   {Alg}      alg
 @param   {Sig}      sig
 @returns {boolean}
@@ -441,13 +443,6 @@ async function sigToLowSArrayBuffer(alg, sig) {
 	let s = sig.slice(half);
 	let bigIntS = arrayBufferToBigInt(s);
 	let bigIntNormS = toLowS(alg, bigIntS);
-	// console.log("sig in:", sig);
-	// console.log("r:", r);
-	// console.log("s:", s);
-	// console.log("s hex:", bigIntS.toString(16).toUpperCase());
-	// console.log("IsLowS: ", IsLowS(alg, bigIntS));
-	// console.log("Before toLowS", bigIntS)
-	// console.log("After toLowS", bigIntNormS)
 	let normS = bigIntToArrayBuffer(Alg.SigSize(alg) / 2, bigIntNormS);
 
 	// Add two ArrayBuffers, but it's Javascript so it's hard.  😔 This is just

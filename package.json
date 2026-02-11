@@ -1,8 +1,8 @@
 {
-  "name": "coze",
+  "name": "coz",
   "version": "0.0.1",
-  "description": "Coze - A cryptographic JSON messaging specification designed for human readability.",
-  "main": "coze.js",
+  "description": "Coz - A cryptographic JSON messaging specification designed for human readability.",
+  "main": "coz.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,17 +11,18 @@
     "url": "git+https://github.com/Cyphrme/CozeJS.git"
   },
   "keywords": [
+    "Coz",
     "Coze",
     "JSON",
     "alg",
-    "iat",
+    "now",
     "tmb",
     "typ",
     "rvk",
-    "kid",
-    "d",
-    "x",
-    "coze",
+    "tag",
+    "prv",
+    "pub",
+    "coz",
     "pay",
     "key",
     "can",
