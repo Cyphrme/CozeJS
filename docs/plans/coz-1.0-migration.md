@@ -111,6 +111,38 @@ All resolved during CHALLENGE/SCOPE:
    - [x] Fix `coze_array.js`: `c.coze` → `c.coz` (JSON wrapper field per spec)
    - [x] Rebuild all bundles, 20/20 browser tests pass
 
+5. **Phase 5: PR Review Remediation** — Address zamicol's review on PR #10.
+
+   **Signing function consolidation (`coze.js`):**
+   - [ ] Rename `SignPay` → `SignPayRaw` (the crypto leaf that does not update `now`)
+   - [ ] Remove the current `SignPayRaw` wrapper (redundant with `SignCozRaw`)
+   - [ ] Update all internal callers: `Sign`, `SignCozRaw`, `key.js:Valid`, `key.js:Revoke`
+   - [ ] Update export list (drop old `SignPayRaw`, keep `SignPayRaw` as the renamed leaf)
+   - [ ] Remove Go-reference comment on `MaxSafeTimestamp` ("Go Coz literally does this because of JavaScript")
+
+   **`key.js` reversions and fixes:**
+   - [ ] Revert `Correct()` to original logic with field renames only (`x`→`pub`, `d`→`prv`).
+         Phase 1 commit `26ae320` rewrote the function minimally (259→164 lines),
+         losing: 14-line explanatory JSDoc, `typeof` check, `alg` requirement,
+         `Alg.Params()` size validation for `pub`/`tmb`, detailed `console.error`
+         messages. Keep only the `!isEmpty(cozKey.pub)` guard on `Valid()` call
+         (SubtleCrypto can't derive pub from prv).
+   - [ ] Restore `RecalcX` TODO comment + commented-out function skeleton
+   - [ ] Revert `privateCozKey` → `cozKey` param rename (Zami: "Keep name `privateCozKey`")
+   - [ ] Investigate Zami's "Kinda wtf on this" comment — identify specific line and address
+   - [ ] Restore `now` and `tmb` setting in `NewKey()` — original set `iat`/`tmb`/`kid`, our rewrite only kept `tag`
+   - [ ] Investigate `Revoke()` rewrite — original used `Coze.Sign()` with temp rvk deletion; ours manually constructs pay
+
+   **`cryptokey.js` concerns (pre-existing code, not our diff):**
+   - [ ] Investigate "Where is 'Coze' coming from?" — likely a stale namespace reference
+   - [ ] Investigate `CryptoKeyToCozKey` naming concern
+
+   **Test/doc cleanup:**
+   - [ ] Investigate reduced "high cozies" test coverage (Zami: "four high cozies before, probably okay just having one")
+   - [ ] Remove redundant `Thumbprint` test code
+   - [ ] Investigate empty coz sig change (Zami: "I'm curious why the empty needed a new sig")
+   - [ ] Rebuild bundles, rerun all tests
+
 ## Verification
 
 - [x] All 17 existing browser tests pass after Phase 1
@@ -127,11 +159,12 @@ All resolved during CHALLENGE/SCOPE:
   Empty at plan creation. Populated during /core execution.
 -->
 
-| Item                                                                        | Severity | Why Introduced                                                                                                                    | Follow-Up                                                                                                          | Resolved |
-| :-------------------------------------------------------------------------- | :------- | :-------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :------- |
-| Meta test secondary/tertiary golden `cad`/`czd` values manually constructed | MEDIUM   | Go's `ExampleCoz_MetaWithAlg` uses different secondary payloads; values aligned by content but not yet verified against Go output | Cross-checked all 3 JS Meta test `cad`/`czd` values against Go `ExampleCoz_MetaWithAlg` output — all match exactly | ✅       |
-| `VerifyCozeArray` export in `standard/coze_array.js`                        | LOW      | Intentionally deferred — `standard/` module out of scope for Phase 1. Test calls `VerifyCozArray` but export is still old name    | Rename in Phase 2 or as standalone cleanup commit                                                                  | ✅       |
-| `Valid()` and `Correct()` lost error handling during Phase 1 rewrite        | RESOLVED | Phase 1 Commit 1 rewrote functions without preserving `try/catch` and SubtleCrypto-aware guards                                   | Fixed in Phase 1 Commit 3                                                                                          | ✅       |
+| Item                                                                        | Severity | Why Introduced                                                                                                                                                                                                                                                                                          | Follow-Up                                                                                                          | Resolved |
+| :-------------------------------------------------------------------------- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------- | :------- |
+| Meta test secondary/tertiary golden `cad`/`czd` values manually constructed | MEDIUM   | Go's `ExampleCoz_MetaWithAlg` uses different secondary payloads; values aligned by content but not yet verified against Go output                                                                                                                                                                       | Cross-checked all 3 JS Meta test `cad`/`czd` values against Go `ExampleCoz_MetaWithAlg` output — all match exactly | ✅       |
+| `VerifyCozeArray` export in `standard/coze_array.js`                        | LOW      | Intentionally deferred — `standard/` module out of scope for Phase 1. Test calls `VerifyCozArray` but export is still old name                                                                                                                                                                          | Rename in Phase 2 or as standalone cleanup commit                                                                  | ✅       |
+| `Valid()` and `Correct()` lost error handling during Phase 1 rewrite        | RESOLVED | Phase 1 Commit 1 rewrote functions without preserving `try/catch` and SubtleCrypto-aware guards                                                                                                                                                                                                         | Fixed in Phase 1 Commit 3                                                                                          | ✅       |
+| `Correct()` lost validation logic, JSDoc, and `RecalcX` TODO                | HIGH     | Phase 1 commit `26ae320` bulk-rewrote `key.js` (259→164 lines) instead of surgical rename. Size validation via `Alg.Params()`, detailed JSDoc, `typeof` check, and `RecalcX` SO reference were collateral damage. Only error handling was restored in Commit 3 — the broader logic loss went unnoticed. | Revert to original logic with field renames (`x`→`pub`, `d`→`prv`) only. Phase 5.                                  | ❌       |
 
 ## Retrospective
 
