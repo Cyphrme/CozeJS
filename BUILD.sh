@@ -5,23 +5,23 @@
 # Coz Core
 (
 cd $COZEJS 
-esbuild join.js --bundle --format=esm --platform=browser --minify --sourcemap --outfile=coze.min.js
+esbuild join.js --bundle --format=esm --platform=browser --minify --sourcemap --outfile=coz.min.js
 # Copy for verifier app
-cp coze.min.js     verifier/coze.min.js
-cp coze.min.js.map verifier/coze.min.js.map
+cp coz.min.js     verifier/coz.min.js
+cp coz.min.js.map verifier/coz.min.js.map
 )
 
 # Coz all 
 (
 cd $COZEJS/all; 
-esbuild join_all.js --bundle --format=esm --platform=browser --minify --sourcemap --outfile=coze_all.min.js;
+esbuild join_all.js --bundle --format=esm --platform=browser --minify --sourcemap --outfile=coz_all.min.js;
 # Copy for testing
-cp coze_all.min.js     ../verifier/coze_all.min.js
-cp coze_all.min.js.map ../verifier/coze_all.min.js.map
+cp coz_all.min.js     ../verifier/coz_all.min.js
+cp coz_all.min.js.map ../verifier/coz_all.min.js.map
 )
 
 # Coz standard
 (
 cd $COZEJS/standard; 
-esbuild join_standard.js --bundle --format=esm --platform=browser --minify --sourcemap --outfile=coze_standard.min.js
+esbuild join_standard.js --bundle --format=esm --platform=browser --minify --sourcemap --outfile=coz_standard.min.js
 )

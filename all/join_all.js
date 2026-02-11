@@ -2,13 +2,13 @@
 //
 //
 // ```
-// esbuild join_all.js --bundle --format=esm --minify --sourcemap --outfile=coze_all.min.js
+// esbuild join_all.js --bundle --format=esm --minify --sourcemap --outfile=coz_all.min.js
 // ```
 // Coz Core
 export * from '../canon.js';
 export * from '../alg.js';
-export * from '../coze.js';
+export * from '../coz.js';
 export * from '../key.js';
 export * from '../cryptokey.js';
 // Coz Standard
-export * from '../standard/coze_array.js';
+export * from '../standard/coz_array.js';

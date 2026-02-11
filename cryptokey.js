@@ -1,11 +1,11 @@
 "use strict";
 
-import * as Coz from './coze.js';
+import * as Coz from './coz.js';
 import * as Alg from './alg.js';
 import * as CZK from './key.js';
 import {
 	isEmpty
-} from './coze.js';
+} from './coz.js';
 
 
 export {

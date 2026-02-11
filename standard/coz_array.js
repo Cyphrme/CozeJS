@@ -3,7 +3,7 @@
 import {
 	isEmpty,
 	Verify
-} from '../coze.js';
+} from '../coz.js';
 
 export {
 	VerifyCozArray

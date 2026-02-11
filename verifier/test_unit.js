@@ -2,7 +2,7 @@
 
 // Unit tests are ran using the `browsertestjs` directory/package.
 
-import * as Coz from './coze_all.min.js';
+import * as Coz from './coz_all.min.js';
 
 export {
 	TestBrowserJS, // Export "TestBrowserJS" is expected by `browsertestjs`
