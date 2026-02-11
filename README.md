@@ -116,7 +116,7 @@ Then go to `https://localhost:8082`.
 
 ----------------------------------------------------------------------
 # Attribution, Trademark Notice, and License
-Coze and CozeJS are released under The 3-Clause BSD License. 
+Coz and CozJS are released under The 3-Clause BSD License.
 
 "Cyphr.me" is a trademark of Cypherpunk, LLC. The Cyphr.me logo is all rights
 reserved Cypherpunk, LLC and may not be used without permission.
