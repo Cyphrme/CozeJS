@@ -27,11 +27,6 @@ let t_SignPay = {
 	"func": test_SignPay,
 	"golden": true,
 };
-let t_SignPayRaw = {
-	"name": "Sign Pay Raw",
-	"func": test_SignPayRaw,
-	"golden": true,
-};
 let t_ValidateTimestamp = {
 	"name": "Validate Timestamp",
 	"func": test_ValidateTimestamp,
@@ -219,13 +214,13 @@ async function test_Sign() {
 // test_SignPay
 // Tests each supported alg.
 // 1.) Coze.NewKey
-// 2.) Coze.SignPay
+// 2.) Coze.SignPayRaw
 // 3.) Coze.VerifyPay
 async function test_SignPay() {
 	for (const alg of Algs) {
 		let cozKey = await Coze.NewKey(alg);
 		let pay = `{"msg":"Test Message"}`;
-		let sig = await Coze.SignPay(pay, cozKey);
+		let sig = await Coze.SignPayRaw(pay, cozKey);
 
 		if ((await Coze.VerifyPay(pay, cozKey, sig)) !== true) {
 			console.error("Failed on alg: " + alg)
@@ -235,32 +230,6 @@ async function test_SignPay() {
 	return true;
 };
 
-
-// test_SignPayRaw
-// Signs with SignPayRaw (no field modification) and verifies the result.
-async function test_SignPayRaw() {
-	for (const alg of Algs) {
-		let cozKey = await Coze.NewKey(alg);
-		let coz = {
-			"pay": {
-				"msg": "Test Message",
-				"alg": cozKey.alg,
-				"tmb": cozKey.tmb,
-			}
-		};
-		let signed = await Coze.SignPayRaw(coz, cozKey);
-		if (true !== await Coze.Verify(signed, cozKey)) {
-			console.error("SignPayRaw: Failed verification on alg: " + alg);
-			return false;
-		}
-		// Verify that now was NOT set (SignPayRaw must not touch fields).
-		if (signed.pay.now !== undefined) {
-			console.error("SignPayRaw: now was set but should not have been. alg: " + alg);
-			return false;
-		}
-	}
-	return true;
-};
 
 
 // test_ValidateTimestamp
@@ -793,7 +762,7 @@ async function test_LowS() {
 	for (const alg of Algs) {
 		let cozKey = await Coze.NewKey(alg);
 		let pay = `{"msg":"Test Message"}`;
-		let sig = await Coze.SignPay(pay, cozKey);
+		let sig = await Coze.SignPayRaw(pay, cozKey);
 
 		if ((await Coze.VerifyPay(pay, cozKey, sig)) !== true) {
 			console.error("Failed on alg: " + alg)
@@ -911,7 +880,6 @@ let TestsToRun = [
 	t_VerifyArray,
 	t_Sign,
 	t_SignPay,
-	t_SignPayRaw,
 	t_ValidateTimestamp,
 	t_RVKMaxSize,
 	t_CryptoKeySign,

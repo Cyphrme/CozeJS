@@ -113,14 +113,16 @@ All resolved during CHALLENGE/SCOPE:
 
 5. **Phase 5: PR Review Remediation** — Address zamicol's review on PR #10.
 
-   **Signing function consolidation (`coze.js`):**
-   - [ ] Rename `SignPay` → `SignPayRaw` (the crypto leaf that does not update `now`)
-   - [ ] Remove the current `SignPayRaw` wrapper (redundant with `SignCozRaw`)
-   - [ ] Update all internal callers: `Sign`, `SignCozRaw`, `key.js:Valid`, `key.js:Revoke`
-   - [ ] Update export list (drop old `SignPayRaw`, keep `SignPayRaw` as the renamed leaf)
-   - [ ] Remove Go-reference comment on `MaxSafeTimestamp` ("Go Coz literally does this because of JavaScript")
+   **Commit 1: Signing function consolidation (`coze.js`) ✅**
+   - [x] Rename `SignPay` → `SignPayRaw` (the crypto leaf that does not update `now`)
+   - [x] Remove the current `SignPayRaw` wrapper (redundant with `SignCozRaw`)
+   - [x] Update all internal callers: `Sign`, `SignCozRaw`, `key.js:Valid`, `key.js:Revoke`
+   - [x] Update export list (drop old `SignPayRaw`, keep `SignPayRaw` as the renamed leaf)
+   - [x] Remove Go-reference comment on `MaxSafeTimestamp`
+   - [x] Update `test_unit.js`: rename all `Coze.SignPay` calls; remove deleted wrapper test
+   - [x] Rebuild bundles, 19/19 browser tests pass
 
-   **`key.js` reversions and fixes:**
+   **Commit 2: `key.js` reversions and fixes:**
    - [ ] Revert `Correct()` to original logic with field renames only (`x`→`pub`, `d`→`prv`).
          Phase 1 commit `26ae320` rewrote the function minimally (259→164 lines),
          losing: 14-line explanatory JSDoc, `typeof` check, `alg` requirement,
@@ -129,19 +131,14 @@ All resolved during CHALLENGE/SCOPE:
          (SubtleCrypto can't derive pub from prv).
    - [ ] Restore `RecalcX` TODO comment + commented-out function skeleton
    - [ ] Revert `privateCozKey` → `cozKey` param rename (Zami: "Keep name `privateCozKey`")
-   - [ ] Investigate Zami's "Kinda wtf on this" comment — identify specific line and address
    - [ ] Restore `now` and `tmb` setting in `NewKey()` — original set `iat`/`tmb`/`kid`, our rewrite only kept `tag`
-   - [ ] Investigate `Revoke()` rewrite — original used `Coze.Sign()` with temp rvk deletion; ours manually constructs pay
-
-   **`cryptokey.js` concerns (pre-existing code, not our diff):**
-   - [ ] Investigate "Where is 'Coze' coming from?" — likely a stale namespace reference
-   - [ ] Investigate `CryptoKeyToCozKey` naming concern
-
-   **Test/doc cleanup:**
-   - [ ] Investigate reduced "high cozies" test coverage (Zami: "four high cozies before, probably okay just having one")
-   - [ ] Remove redundant `Thumbprint` test code
-   - [ ] Investigate empty coz sig change (Zami: "I'm curious why the empty needed a new sig")
+   - [ ] Revert `Revoke()` to original pattern using `Coze.Sign()` + temp rvk deletion trick; keep `RVK_MAX_SIZE` enforcement
    - [ ] Rebuild bundles, rerun all tests
+
+   **Deferred (not this CORE round):**
+   - `cryptokey.js` concerns — pre-existing code, not our diff
+   - "Kinda wtf" comment — absorbed into `Correct()` revert
+   - High cozies, redundant thumbprint test, empty coz sig — test/doc cleanup pass
 
 ## Verification
 

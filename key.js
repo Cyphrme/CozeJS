@@ -79,7 +79,7 @@ async function Valid(cozKey) {
 	try {
 		let Coze = await import('./coze.js');
 		let msg = `7AtyaCHO2BAG06z0W1tOQlZFWbhxGgqej4k9-HWP3DE-zshRbrE-69DIfgY704_FDYez7h_rEI1WQVKhv5Hd5Q`;
-		let sig = await Coze.SignPay(msg, cozKey);
+		let sig = await Coze.SignPayRaw(msg, cozKey);
 		return Coze.VerifyPay(msg, cozKey, sig);
 	} catch (e) {
 		//console.debug("Valid error: " + e);
@@ -159,7 +159,7 @@ async function Revoke(cozKey, msg) {
 		}
 	}
 
-	coz.sig = await Coze.SignPay(JSON.stringify(coz.pay), cozKey);
+	coz.sig = await Coze.SignPayRaw(JSON.stringify(coz.pay), cozKey);
 
 	// Set rvk on the key itself.
 	cozKey.rvk = coz.pay.rvk;

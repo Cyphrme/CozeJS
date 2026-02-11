@@ -7,9 +7,8 @@ import * as CTK from './cryptokey.js';
 
 export {
 	Sign,
-	SignPay,
-	SignCozRaw,
 	SignPayRaw,
+	SignCozRaw,
 	Verify,
 	VerifyPay,
 	Meta,
@@ -75,20 +74,20 @@ async function Sign(coz, cozKey, canon) {
 		coz.pay = await Can.Canonical(coz.pay, canon);
 	}
 
-	coz.sig = await SignPay(JSON.stringify(coz.pay), cozKey);
+	coz.sig = await SignPayRaw(JSON.stringify(coz.pay), cozKey);
 	return coz;
 }
 
 
 
 /**
-SignPay signs message with private Coz key and returns b64ut sig.
+SignPayRaw signs message with private Coz key and returns b64ut sig.
 @param   {Pay}       pay      ay. e.g. `{"alg"...}` May also be any message.  
 @param   {Key}       cozKey
 @returns {Sig}
 @throws  {error}     Error, SyntaxError, DOMException, TypeError
  */
-async function SignPay(pay, cozKey) {
+async function SignPayRaw(pay, cozKey) {
 	return CTK.CryptoKey.SignBufferB64(
 		await CTK.CryptoKey.FromCozKey(cozKey),
 		await SToArrayBuffer(pay)
@@ -121,32 +120,10 @@ async function SignCozRaw(coz, cozKey, canon) {
 	if (!isEmpty(canon)) {
 		coz.pay = await Can.Canonical(coz.pay, canon);
 	}
-	coz.sig = await SignPay(JSON.stringify(coz.pay), cozKey);
+	coz.sig = await SignPayRaw(JSON.stringify(coz.pay), cozKey);
 	return coz;
 }
 
-
-/**
-SignPayRaw signs coz.pay without modifying any fields.  Unlike Sign, it does
-not set `alg`, `tmb`, or update `now`.  Use this when exact control over the
-payload is needed.  Matches Go's Key.SignPayRaw.
-@param   {Coz}       coz        Object coz.
-@param   {Key}       cozKey     A private coz key.
-@param   {Can}       [canon]    Array for canonical keys.
-@returns {Coz}                  Coz with new `sig`.
-@throws  {error}                Fails on rvk.
- */
-async function SignPayRaw(coz, cozKey, canon) {
-	if (CZK.IsRevoked(cozKey)) {
-		throw new Error("SignPayRaw: Cannot sign with revoked key.");
-	}
-
-	if (!isEmpty(canon)) {
-		coz.pay = await Can.Canonical(coz.pay, canon);
-	}
-	coz.sig = await SignPay(JSON.stringify(coz.pay), cozKey);
-	return coz;
-}
 
 
 /**
@@ -396,7 +373,6 @@ function isBool(bool) {
 
 
 // MaxSafeTimestamp is the maximum valid timestamp value: 2^53 - 1.
-// Matches Go's coz.MaxSafeTimestamp.
 const MaxSafeTimestamp = 9007199254740991;
 
 // RVK_MAX_SIZE is the maximum allowed payload size in bytes for revoke
